@@ -18,6 +18,7 @@ RECORD_SECONDS = 5
 WAVE_INPUT_FILENAME = "input.wav"
 WAVE_OUTPUT_FILENAME = "output.wav"
 
+
 class StegoMode:
     Encode = 0,
     Decode = 1
