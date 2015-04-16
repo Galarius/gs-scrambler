@@ -57,6 +57,7 @@ class StegoSession:
 
     def recording_callback(self, in_data, frame_count, time_info, status):
         #if self.stream_source == StreamSource.File:
+
         in_data = self.file_source.readframes(frame_count)
         self.output_wave_file.writeframes(in_data)
 
