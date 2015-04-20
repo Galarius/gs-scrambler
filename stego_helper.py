@@ -2,6 +2,12 @@ __author__ = 'galarius'
 
 import math
 
+from math import floor
+from numpy import sign
+import struct
+import numpy as np
+from operator import itemgetter
+
 def str_2_vec(str):
     """
     Convert string to vector of integers
@@ -20,6 +26,33 @@ def vec_2_str(vec):
     return ''.join([str(unichr(i)) for i in vec])
 
 
+def d_2_b(x, size=8):
+    """
+    Convert decimal to byte list
+    :param x:    decimal
+    :param size: the size of byte list
+    :return: e.g. [0, 0, 1, ...]
+    """
+    s = sign(x)
+    v = size * [None]
+    for i in range(0, size):
+        v[i] = abs(x) % 2
+        x = int(floor(abs(x) / 2.0))
+    return [s * x for x in v]
+
+
+def b_2_d(x):
+    """
+    Convert byte list to decimal
+    :param x:   byte list
+    :return:    decimal
+    """
+    s = 0
+    for i in range(0, len(x)):
+        s += x[i] * 2 ** i
+    return s
+
+
 def message_to_matrix(message):
     """
     Transform message to matrix.
@@ -30,13 +63,14 @@ def message_to_matrix(message):
     msg_vec = str_2_vec(message)
     size = int(math.ceil(math.sqrt(len(msg_vec))))
     M = []
-    for i in range(0, size+1):
+    for i in range(0, size + 1):
         m = []
-        for j in range(0, size+1):
-            idx = j + size*i
+        for j in range(0, size + 1):
+            idx = j + size * i
             m.append(msg_vec[idx] if idx < len(msg_vec) else 0)
         M.append(m)
     return M
+
 
 def matrix_to_message(M):
     """
@@ -46,8 +80,75 @@ def matrix_to_message(M):
     """
     msg_vec = []
     size = int(len(M))
-    for i in range(0, size-1):
-        for j in range(0, size-1):
+    for i in range(0, size - 1):
+        for j in range(0, size - 1):
             msg_vec.append(M[i][j]) if not M[i][j] == 0 else None
     msg = vec_2_str(msg_vec)
     return msg
+
+
+def int_matrix_to_bits_matrix(M):
+    M_bits = []
+    size = int(len(M))
+    for i in range(0, size - 1):
+        m = []
+        for j in range(0, size - 1):
+            m.append(d_2_b(M[i][j]))
+        M_bits.append(m)
+    return M_bits
+
+
+def audio_decode(in_data, frame_count, channels):
+    """
+    Convert a byte stream into tuple (left, right)
+    """
+    out = struct.unpack_from("%dh" % frame_count, in_data)
+    # Convert 2 channels to numpy arrays
+    if channels == 2:
+        left = np.array(list(out[0::2]))
+        right = np.array(list(out[1::2]))
+    else:
+        left = np.array(out)
+        right = left
+    return (left, right)
+
+
+def audio_encode(samples, nchannels):
+    """
+
+    """
+    if nchannels == 2:
+        data = [None] * (len(samples[0]) + len(samples[1]))
+        data[::2] = samples[0]
+        data[1::2] = samples[1]
+    else:
+        data = samples[0]
+    frames = struct.pack("%dh" % len(data), *data)
+    return frames
+
+
+def jonson(data):
+    """
+    :param data:
+    :return:
+    The program process data with Jonson function
+    """
+    # Process
+    n = len(data)
+    nD = n  # int(0.75 * n)
+    dataD = []
+    for tD in range(nD):
+        sum = 0
+        for t in range(n - tD):
+            sum += abs(float(data[t + tD]) - float(data[t]))
+        if n - tD != 0:
+            dataD.append(1.0 / (n - tD) * sum)
+    l = int(0.1 * n)        # 10 % from len
+    semi_period_idx = 0
+    while semi_period_idx == 0:
+        del dataD[-l:]          # remove last l elements
+        del dataD[:l]           # remove first l elements
+        semi_period_idx = min(enumerate(dataD), key=itemgetter(1))[0]
+    semi_period = dataD[semi_period_idx]
+    print semi_period_idx, semi_period
+    return semi_period_idx, semi_period

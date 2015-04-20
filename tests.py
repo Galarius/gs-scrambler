@@ -47,7 +47,9 @@ M = message_to_matrix(msg_o)
 E = QMatrix.encode_matrix_message(M, 1)
 _M = QMatrix.decode_matrix_message(E, 1)
 msg = matrix_to_message(_M)
-print msg
+#print msg
+M_bits = int_matrix_to_bits_matrix(E)
+QMatrix.pretty_print_matrix(M_bits)
 
 # test 4
 # q = QMatrix(10, 1)

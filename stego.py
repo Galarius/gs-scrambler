@@ -9,6 +9,8 @@ import pyaudio
 import time
 import sys
 import wave
+import stego_helper
+import q_matrix as qm
 
 CHUNK = 1024
 FORMAT = pyaudio.paInt16
@@ -59,14 +61,23 @@ class StegoSession:
         #if self.stream_source == StreamSource.File:
 
         in_data = self.file_source.readframes(frame_count)
-        self.output_wave_file.writeframes(in_data)
+
+        left, right = stego_helper.audio_decode(in_data, int(len(in_data)/2.0), self.file_source.getnchannels())
+
+        stego_helper.jonson(left)
+        #c = [stego_helper.d_2_b(x) for x in left]
+        #print c[0], c[1]
+
+        processed_data = stego_helper.audio_encode((left, right), self.file_source.getnchannels())
+
+        self.output_wave_file.writeframes(processed_data)
 
         #if self.stream_mode == StreamMode.RecordAndWrite:
         #    self.output_wave_file.writeframes(in_data)
         #elif self.stream_mode == StreamMode.RecordAndPlay:
         #    self.stream.write(in_data, frame_count)
 
-        return in_data, pyaudio.paContinue
+        return processed_data, pyaudio.paContinue
 
     def open_stream(self):
 
