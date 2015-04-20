@@ -145,10 +145,15 @@ def jonson(data):
             dataD.append(1.0 / (n - tD) * sum)
     l = int(0.1 * n)        # 10 % from len
     semi_period_idx = 0
-    while semi_period_idx == 0:
-        del dataD[-l:]          # remove last l elements
-        del dataD[:l]           # remove first l elements
-        semi_period_idx = min(enumerate(dataD), key=itemgetter(1))[0]
-    semi_period = dataD[semi_period_idx]
-    print semi_period_idx, semi_period
-    return semi_period_idx, semi_period
+    if len(dataD) > 0:
+        while semi_period_idx == 0:
+            del dataD[-l:]          # remove last l elements
+            del dataD[:l]           # remove first l elements
+            try:
+                semi_period_idx = min(enumerate(dataD), key=itemgetter(1))[0]
+            except ValueError as e:
+                semi_period_idx = 0
+        print semi_period_idx
+        return semi_period_idx
+    else:
+        return 0,0

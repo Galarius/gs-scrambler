@@ -10,7 +10,7 @@ import time
 import sys
 import wave
 import stego_helper
-import q_matrix as qm
+import stego_core
 
 CHUNK = 1024
 FORMAT = pyaudio.paInt16
@@ -36,11 +36,12 @@ class StreamSource:
 
 
 class StegoSession:
-    def __init__(self, p_audio, stream_mode, stream_source):
+    def __init__(self, p_audio, stream_mode, stream_source, message):
         self.p_audio = p_audio
         self.stream_mode = stream_mode
         self.stream_source = stream_source
         self.stream = None
+        self.message = message
 
         if self.stream_source == StreamSource.File:
             self.file_source = wave.open(WAVE_INPUT_FILENAME, 'rb')
@@ -62,13 +63,14 @@ class StegoSession:
 
         in_data = self.file_source.readframes(frame_count)
 
-        left, right = stego_helper.audio_decode(in_data, int(len(in_data)/2.0), self.file_source.getnchannels())
-
-        stego_helper.jonson(left)
-        #c = [stego_helper.d_2_b(x) for x in left]
-        #print c[0], c[1]
-
-        processed_data = stego_helper.audio_encode((left, right), self.file_source.getnchannels())
+        if len(in_data) >= 1024:
+            left, right = stego_helper.audio_decode(in_data, int(len(in_data)/2.0), self.file_source.getnchannels())
+            left = stego_core.integrate(self.message, left)
+            #c = [stego_helper.d_2_b(x) for x in left]
+            #print c[0], c[1]
+            processed_data = stego_helper.audio_encode((left, right), self.file_source.getnchannels())
+        else:
+            processed_data = in_data
 
         self.output_wave_file.writeframes(processed_data)
 
@@ -111,7 +113,7 @@ class StegoSession:
 
 def main(argv):
     p = pyaudio.PyAudio()
-    stego_session = StegoSession(p, StreamMode.RecordAndWrite, StreamSource.File)
+    stego_session = StegoSession(p, StreamMode.RecordAndWrite, StreamSource.File, "Hello, stego world!")
     stego_session.open_stream()
     try:
         while stego_session.stream.is_active():
