@@ -4,11 +4,20 @@ import math
 
 def str_2_vec(str):
     """
-    Convert vector of integers to string.
+    Convert string to vector of integers
     :param str: string
     :return:    [int, int, int, ...]
     """
     return [ord(i) for i in str]
+
+
+def vec_2_str(vec):
+    """
+    Convert vector of integers to string.
+    :param vec: [int, int, int, ...]
+    :return:    string
+    """
+    return ''.join([str(unichr(i)) for i in vec])
 
 
 def message_to_matrix(message):
@@ -28,3 +37,17 @@ def message_to_matrix(message):
             m.append(msg_vec[idx] if idx < len(msg_vec) else 0)
         M.append(m)
     return M
+
+def matrix_to_message(M):
+    """
+    Transform matrix to message.
+    :param M: matrix to transform
+    :return: message
+    """
+    msg_vec = []
+    size = int(len(M))
+    for i in range(0, size-1):
+        for j in range(0, size-1):
+            msg_vec.append(M[i][j]) if not M[i][j] == 0 else None
+    msg = vec_2_str(msg_vec)
+    return msg
