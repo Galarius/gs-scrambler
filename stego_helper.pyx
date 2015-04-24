@@ -94,13 +94,22 @@ def matrix_to_message(M):
 def int_matrix_to_bits_matrix(M):
     M_bits = []
     size = int(len(M))
-    for i in range(0, size - 1):
+    for i in range(0, size):
         m = []
-        for j in range(0, size - 1):
+        for j in range(0, size):
             m.append(d_2_b(M[i][j]))
         M_bits.append(m)
     return M_bits
 
+def bits_matrix_to_int_matrix(M_bits):
+    M = []
+    size = int(len(M_bits))
+    for i in range(0, size):
+        m = []
+        for j in range(0, size):
+            m.append(b_2_d(M_bits[i][j]))
+        M.append(m)
+    return M
 
 def audio_decode(in_data, frame_count, channels):
     """

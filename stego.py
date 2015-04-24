@@ -21,13 +21,16 @@ class StegoSession:
     def __init__(self, p_audio, message, key, stego_mode):
         self.p_audio = p_audio
         self.stream = None
+        self.stego_mode = stego_mode
         self.core = sc.StegoCore(message, key, stego_mode)
 
-        self.file_source = wave.open(WAVE_INPUT_FILENAME, 'rb')
-        self.output_wave_file = wave.open(WAVE_OUTPUT_FILENAME, 'wb')
-        self.output_wave_file.setnchannels(self.file_source.getnchannels())
-        self.output_wave_file.setsampwidth(self.file_source.getsampwidth())
-        self.output_wave_file.setframerate(self.file_source.getframerate())
+        input = WAVE_INPUT_FILENAME if stego_mode == sc.StegoMode.Encode else WAVE_OUTPUT_FILENAME
+        self.file_source = wave.open(input, 'rb')
+        if stego_mode == sc.StegoMode.Encode:
+            self.output_wave_file = wave.open(WAVE_OUTPUT_FILENAME, 'wb')
+            self.output_wave_file.setnchannels(self.file_source.getnchannels())
+            self.output_wave_file.setsampwidth(self.file_source.getsampwidth())
+            self.output_wave_file.setframerate(self.file_source.getframerate())
 
 
     def recording_callback(self, in_data, frame_count, time_info, status):
@@ -41,7 +44,8 @@ class StegoSession:
         else:
             processed_data = in_data
 
-        self.output_wave_file.writeframes(processed_data)
+        if self.stego_mode == sc.StegoMode.Encode:
+            self.output_wave_file.writeframes(processed_data)
 
         return processed_data, pyaudio.paContinue
 
@@ -58,13 +62,14 @@ class StegoSession:
     def close_stream(self):
         self.stream.stop_stream()
         self.stream.close()
-        self.output_wave_file.close()
         self.file_source.close()
+        if self.stego_mode == sc.StegoMode.Encode:
+            self.output_wave_file.close()
 
 
 def main(argv):
     p = pyaudio.PyAudio()
-    stego_session = StegoSession(p, "Hello, stego world!", 1, sc.StegoMode.Encode)
+    stego_session = StegoSession(p, "Hello, stego world!", 1, sc.StegoMode.Decode)
     stego_session.open_stream()
     try:
         while stego_session.stream.is_active():
@@ -73,6 +78,7 @@ def main(argv):
         pass
     finally:
         stego_session.close_stream()
+        print stego_session.core.recover_message()
         p.terminate()
     sys.exit(0)
 

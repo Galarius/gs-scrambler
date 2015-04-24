@@ -48,17 +48,43 @@ from stego_helper import *
 
 # test 3
 msg_o = "In the field of audio steganography, fundamental spread spectrum (SS) techniques attempts to distribute secret data throughout the frequency spectrum of the audio signal to the maximum possible level."
-M = message_to_matrix(msg_o)
-E = QMatrix.encode_matrix_message(M, 1)
-_M = QMatrix.decode_matrix_message(E, 1)
-msg = matrix_to_message(_M)
-#print msg
-M_bits = int_matrix_to_bits_matrix(E)
-QMatrix.pretty_print_matrix(M_bits)
-msg_matr_encoded_array = np.array(M_bits)
-message_to_proc_part = msg_matr_encoded_array.ravel()
-print len(message_to_proc_part)
+# M = message_to_matrix(msg_o)
+# E = QMatrix.encode_matrix_message(M, 1)
+# _M = QMatrix.decode_matrix_message(E, 1)
+# msg = matrix_to_message(_M)
+# #print msg
+# M_bits = int_matrix_to_bits_matrix(E)
+# QMatrix.pretty_print_matrix(M_bits)
+# msg_matr_encoded_array = np.array(M_bits)
+# message_to_proc_part = msg_matr_encoded_array.ravel()
+# print len(message_to_proc_part)
 
 # test 4
 # q = QMatrix(10, 1)
 # q.pretty_print()
+
+#test 5
+msg_matr = message_to_matrix(msg_o)
+msg_matr_encoded = QMatrix.encode_matrix_message(msg_matr, 1)
+#print QMatrix.pretty_print_matrix(msg_matr_encoded)
+msg_matr_encoded_bits = int_matrix_to_bits_matrix(msg_matr_encoded)
+#print QMatrix.pretty_print_matrix(msg_matr_encoded_bits)
+msg_matr_encoded_array = np.array(msg_matr_encoded_bits)
+#print msg_matr_encoded_array
+message_to_proc_part = msg_matr_encoded_array.ravel()
+#print message_to_proc_part
+
+s = math.sqrt(len(message_to_proc_part)/8)
+B = np.reshape(message_to_proc_part, (s, s, 8))
+#print B
+C = B.tolist()
+#print QMatrix.pretty_print_matrix(C)
+E = bits_matrix_to_int_matrix(C)
+#print QMatrix.pretty_print_matrix(M)
+M = QMatrix.decode_matrix_message(E, 1)
+msg_ = matrix_to_message(M)
+print msg_
+
+
+
+
