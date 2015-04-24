@@ -2,6 +2,7 @@ __author__ = 'galarius'
 
 from stego_helper import *
 from q_matrix import *
+from cpu_info import cpu_count
 
 
 class StegoMode:
@@ -20,7 +21,8 @@ class StegoCore:
     def prepare_message(self):
         msg_matr = message_to_matrix(self.message)
         msg_matr_encoded = QMatrix.encode_matrix_message(msg_matr, 1)
-        msg_matr_encoded_array = np.array(msg_matr_encoded)
+        msg_matr_encoded_bits = int_matrix_to_bits_matrix(msg_matr_encoded)
+        msg_matr_encoded_array = np.array(msg_matr_encoded_bits)
         self.message_to_proc_part = msg_matr_encoded_array.ravel()
 
     def process(self, chunk):
@@ -34,24 +36,26 @@ class StegoCore:
             pass
         return processed_chunk
 
-
     def hide(self, message_part, chunck):
+
         semi_p = jonson(chunck)
+
         if semi_p == 0:
-            print 'Wrong semi period'
+            print '[Error] Wrong semi-period.'
             return message_part, chunck
 
-        step = len(chunck) / semi_p
+        step = int(len(chunck) / float(semi_p))
         k = 0
-        for i in range(0, len(chunck), step):
-            print i, k
+        for i in range(semi_p, len(chunck), step):
             if k < len(message_part):
-                chunck[i] = message_part[k]
-                k = k + 1
+                bits = d_2_b(chunck[i], 16)
+                sign = 1 if chunck[i] >= 0 else -1
+                bits[0] = sign * message_part[k]
+                chunck[i] = b_2_d(bits)
+                k += 1
             else:
                 break
         message_part = message_part[:k-1]
-        print len(message_part)
         return message_part, chunck
 
     def recover(self):

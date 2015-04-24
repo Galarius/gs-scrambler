@@ -55,6 +55,9 @@ msg = matrix_to_message(_M)
 #print msg
 M_bits = int_matrix_to_bits_matrix(E)
 QMatrix.pretty_print_matrix(M_bits)
+msg_matr_encoded_array = np.array(M_bits)
+message_to_proc_part = msg_matr_encoded_array.ravel()
+print len(message_to_proc_part)
 
 # test 4
 # q = QMatrix(10, 1)

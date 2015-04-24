@@ -139,24 +139,21 @@ def jonson(data):
     """
     # Process
     n = len(data)
-    nD = n  # int(0.75 * n)
-    dataD = []
-    for tD in range(nD):
+    data_processed = []
+    for tau in range(n):
         sum = 0
-        for t in range(n - tD):
-            sum += abs(float(data[t + tD]) - float(data[t]))
-        if n - tD != 0:
-            dataD.append(1.0 / (n - tD) * sum)
-    l = int(0.1 * n)        # 10 % from len
-    semi_period_idx = 0
-    if len(dataD) > 0:
-        while semi_period_idx == 0:
-            del dataD[-l:]          # remove last l elements
-            del dataD[:l]           # remove first l elements
-            try:
-                semi_period_idx = min(enumerate(dataD), key=itemgetter(1))[0]
-            except ValueError as e:
-                semi_period_idx = 0
-        return semi_period_idx
-    else:
-        return 0,0
+        for t in range(n - tau):
+            sum += abs(float(data[t + tau]) - float(data[t]))
+        if n - tau != 0:
+            data_processed.append(1.0 / (n - tau) * sum)
+
+    # calculate semi-period from calculated data
+    l = int(0.1 * n)                 # 10 % from len
+    del data_processed[-l:]          # remove last l elements
+    del data_processed[:l]           # remove first l elements
+    try:
+        # find min
+        semi_period_idx = min(enumerate(data_processed), key=itemgetter(1))[0]
+    except ValueError as e:
+        semi_period_idx = 0
+    return semi_period_idx
