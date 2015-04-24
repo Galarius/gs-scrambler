@@ -10,24 +10,18 @@ import time
 import sys
 import wave
 import stego_helper
-import stego_core
+import stego_core as sc
 
 
 WAVE_INPUT_FILENAME = "input.wav"
 WAVE_OUTPUT_FILENAME = "output.wav"
 
 
-class StegoMode:
-    Encode = 0,
-    Decode = 1
-
-
 class StegoSession:
-    def __init__(self, p_audio, message, stego_mode):
+    def __init__(self, p_audio, message, key, stego_mode):
         self.p_audio = p_audio
         self.stream = None
-        self.message = message
-        self.stego_mode = stego_mode
+        self.core = sc.StegoCore(message, key, stego_mode)
 
         self.file_source = wave.open(WAVE_INPUT_FILENAME, 'rb')
         self.output_wave_file = wave.open(WAVE_OUTPUT_FILENAME, 'wb')
@@ -41,12 +35,7 @@ class StegoSession:
 
         if len(in_data) >= 1024:    # temp
             left, right = stego_helper.audio_decode(in_data, int(len(in_data) / 2.0), self.file_source.getnchannels())
-            if self.stego_mode == StegoMode.Encode:
-                # integrate
-                left = stego_core.integrate(self.message, left)
-            else:
-                # deintegrate
-                pass
+            left = self.core.process(left)
             # write back
             processed_data = stego_helper.audio_encode((left, right), self.file_source.getnchannels())
         else:
@@ -75,7 +64,7 @@ class StegoSession:
 
 def main(argv):
     p = pyaudio.PyAudio()
-    stego_session = StegoSession(p, "Hello, stego world!", StegoMode.Encode)
+    stego_session = StegoSession(p, "Hello, stego world!", 1, sc.StegoMode.Encode)
     stego_session.open_stream()
     try:
         while stego_session.stream.is_active():
