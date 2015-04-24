@@ -50,7 +50,7 @@ class StegoSession:
         self.stream = self.p_audio.open(format=self.p_audio.get_format_from_width(self.file_source.getsampwidth()),
                                         channels=self.file_source.getnchannels(),
                                         rate=self.file_source.getframerate(),
-                                        # input=True,
+                                        #input=True,
                                         output=True,
                                         stream_callback=self.recording_callback)
         self.stream.start_stream()

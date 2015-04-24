@@ -154,6 +154,6 @@ def jonson(data):
     try:
         # find min
         semi_period_idx = min(enumerate(data_processed), key=itemgetter(1))[0]
-    except ValueError as e:
+    except ValueError:
         semi_period_idx = 0
     return semi_period_idx
