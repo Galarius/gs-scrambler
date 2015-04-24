@@ -1,39 +1,43 @@
-__author__ = 'galarius'
+# -*- coding: utf-8 -*-
 
-from stego_helper import *
+__author__ = 'Ilya Shoshin'
+__copyright__ = 'Copyright 2015, Ilya Shoshin'
+
 
 class QMatrix:
+    """
+    Generalized Q-matrix of fibonacci numbers
+    """
     def __init__(self, p, n):
         """
-        Create matrix with size (p+1)*(p+1) of power n
+        Init q-matrix with size (p+1)*(p+1) of power n
         """
         self.p = p
         self.n = n
         self.Q = []
-        for i in range(0, p+1):
+        # create matrix
+        self.create()
+
+    def create(self):
+        """
+        Q-matrix creation method
+        """
+        for i in range(0, self.p+1):
             mm = []
-            for j in range(0, p+1):
-                k = n-p+i-j if i != 0 else n+1-j
+            for j in range(0, self.p+1):
+                k = self.n-self.p+i-j if i != 0 else self.n+1-j
                 mm.append(self.fib(k))
             self.Q.append(mm)
 
-    def pretty_print(self):
-        for i in range(0, self.p+1):
-            print self.Q[i]
-        print ''
-
-    @staticmethod
-    def pretty_print_matrix(M):
-        for i in range(0, len(M)):
-            print M[i]
-        print ''
-
     def det(self):
+        """
+        Determinant of the matrix
+        """
         return (-1)**(self.p*self.n)
 
     def fib(self, n):
         """
-        Fibonacci extended to negative range.
+        Fibonacci numbers extended to negative range.
         """
         if n == 0:
             return 0
@@ -48,13 +52,26 @@ class QMatrix:
 
 
     @staticmethod
-    def mult(a,b):
+    def mult(a, b):
+        """
+        Multiply a matrix with matrix b.
+        Assuming sizes are correct
+        :param a: left matrix
+        :param b: other (right) matrix
+        :return:  multiplication
+        """
         zip_b = zip(*b)
         return [[sum(ele_a*ele_b for ele_a, ele_b in zip(row_a, col_b))
                for col_b in zip_b] for row_a in a]
 
     @staticmethod
     def encode_matrix_message(M, n):
+        """
+        Encode matrix M with Q-matrix of power n
+        :param M: matrix to encode
+        :param n: power of Q-Matrix
+        :return:  encoded matrix M
+        """
         p = len(M)-1
         Q = QMatrix(p, n)
         E = QMatrix.mult(M, Q.Q)
@@ -62,7 +79,30 @@ class QMatrix:
 
     @staticmethod
     def decode_matrix_message(E, n):
+        """
+        Decode matrix E with Q-matrix of power n
+        :param E: matrix to decode
+        :param n: power of Q-Matrix
+        :return:  decoded matrix E
+        """
         p = len(E)-1
         Q = QMatrix(p, -n)
         M = QMatrix.mult(E, Q.Q)
         return M
+
+    def pretty_print(self):
+        """
+        Print current Q-matrix
+        """
+        for i in range(0, self.p+1):
+            print self.Q[i]
+        print ''
+
+    @staticmethod
+    def pretty_print_matrix(M):
+        """
+        Print 'M'
+        """
+        for i in range(0, len(M)):
+            print M[i]
+        print ''

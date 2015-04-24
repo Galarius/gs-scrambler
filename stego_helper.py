@@ -1,4 +1,7 @@
-__author__ = 'galarius'
+# -*- coding: utf-8 -*-
+
+__author__ = 'Ilya Shoshin'
+__copyright__ = 'Copyright 2015, Ilya Shoshin'
 
 import math
 
@@ -7,6 +10,7 @@ from numpy import sign
 import struct
 import numpy as np
 from operator import itemgetter
+
 
 def str_2_vec(str):
     """
@@ -115,7 +119,7 @@ def audio_decode(in_data, frame_count, channels):
 
 def audio_encode(samples, nchannels):
     """
-
+    Convert a tuple (left, right) into byte stream
     """
     if nchannels == 2:
         data = [None] * (len(samples[0]) + len(samples[1]))
@@ -131,7 +135,7 @@ def jonson(data):
     """
     :param data:
     :return:
-    The program process data with Jonson function
+    The program process data with Jonson function to determine semi_period
     """
     # Process
     n = len(data)

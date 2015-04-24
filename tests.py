@@ -1,6 +1,11 @@
-__author__ = 'galarius'
+# -*- coding: utf-8 -*-
+#!/usr/bin/env python
+
+__author__ = 'Ilya Shoshin'
+__copyright__ = 'Copyright 2015, Ilya Shoshin'
 
 from q_matrix import *
+from stego_helper import *
 
 # test 1
 #q = QMatrix(1, 0)
