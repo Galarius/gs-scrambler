@@ -24,9 +24,9 @@ class StegoSession:
         self.stego_mode = stego_mode
         self.core = sc.StegoCore(message, key, stego_mode)
 
-        input = WAVE_INPUT_FILENAME if stego_mode == sc.StegoMode.Encode else WAVE_OUTPUT_FILENAME
+        input = WAVE_INPUT_FILENAME if stego_mode == sc.StegoMode.Hide else WAVE_OUTPUT_FILENAME
         self.file_source = wave.open(input, 'rb')
-        if stego_mode == sc.StegoMode.Encode:
+        if stego_mode == sc.StegoMode.Hide:
             self.output_wave_file = wave.open(WAVE_OUTPUT_FILENAME, 'wb')
             self.output_wave_file.setnchannels(self.file_source.getnchannels())
             self.output_wave_file.setsampwidth(self.file_source.getsampwidth())
@@ -44,7 +44,7 @@ class StegoSession:
         else:
             processed_data = in_data
 
-        if self.stego_mode == sc.StegoMode.Encode:
+        if self.stego_mode == sc.StegoMode.Hide:
             self.output_wave_file.writeframes(processed_data)
 
         return processed_data, pyaudio.paContinue
@@ -63,13 +63,16 @@ class StegoSession:
         self.stream.stop_stream()
         self.stream.close()
         self.file_source.close()
-        if self.stego_mode == sc.StegoMode.Encode:
+        if self.stego_mode == sc.StegoMode.Hide:
             self.output_wave_file.close()
 
 
 def main(argv):
     p = pyaudio.PyAudio()
-    stego_session = StegoSession(p, "Hello, stego world!", 1, sc.StegoMode.Decode)
+    msg = "Hello, stego world!"
+    key = 1
+    stego_session = StegoSession(p, msg, key, sc.StegoMode.Hide)
+    #stego_session = StegoSession(p, msg, key, sc.StegoMode.Recover)
     stego_session.open_stream()
     try:
         while stego_session.stream.is_active():
