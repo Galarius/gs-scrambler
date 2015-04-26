@@ -38,7 +38,7 @@ class StegoSession:
 
         if len(in_data) >= 1024:    # temp
             left, right = stego_helper.audio_decode(in_data, int(len(in_data) / 2.0), self.file_source.getnchannels())
-            left = self.core.process(left)
+            right = self.core.process(left, right)
             # write back
             processed_data = stego_helper.audio_encode((left, right), self.file_source.getnchannels())
         else:
@@ -69,10 +69,11 @@ class StegoSession:
 
 def main(argv):
     p = pyaudio.PyAudio()
-    msg = "Hello, stego world!"
+    #msg = "Hello, stego world!"
+    msg = "In the field of audio steganography, fundamental spread spectrum (SS) techniques attempts to distribute secret data throughout the frequency spectrum of the audio signal to the maximum possible level."
     key = 1
-    stego_session = StegoSession(p, msg, key, sc.StegoMode.Hide)
-    #stego_session = StegoSession(p, msg, key, sc.StegoMode.Recover)
+    #stego_session = StegoSession(p, msg, key, sc.StegoMode.Hide)
+    stego_session = StegoSession(p, msg, key, sc.StegoMode.Recover)
     stego_session.open_stream()
     try:
         while stego_session.stream.is_active():
@@ -81,8 +82,10 @@ def main(argv):
         pass
     finally:
         stego_session.close_stream()
-        print stego_session.core.recover_message()
+        if stego_session.stego_mode == sc.StegoMode.Recover:
+            print stego_session.core.recover_message()
         p.terminate()
+        print 'Done!'
     sys.exit(0)
 
 if __name__ == "__main__":

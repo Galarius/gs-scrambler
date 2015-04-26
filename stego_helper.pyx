@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#cython: boundscheck=False, wraparound=False, nonecheck=False
 
 __author__ = 'Ilya Shoshin'
 __copyright__ = 'Copyright 2015, Ilya Shoshin'
@@ -10,7 +11,7 @@ from numpy import sign
 import struct
 import numpy as np
 from operator import itemgetter
-
+import string
 
 def str_2_vec(str):
     """
@@ -27,7 +28,7 @@ def vec_2_str(vec):
     :param vec: [int, int, int, ...]
     :return:    string
     """
-    return ''.join([str(unichr(i)) for i in vec])
+    return ''.join([chr(i) if i < 256 else '' for i in vec])
 
 
 def d_2_b(x, size=8):
@@ -122,7 +123,7 @@ def audio_decode(in_data, frame_count, channels):
         right = np.array(list(out[1::2]))
     else:
         left = np.array(out)
-        right = left
+        right = list(left)
     return (left, right)
 
 
@@ -157,12 +158,9 @@ def jonson(data):
             data_processed.append(1.0 / (n - tau) * sum)
 
     # calculate semi-period from calculated data
-    l = int(0.1 * n)                 # 10 % from len
-    del data_processed[-l:]          # remove last l elements
-    del data_processed[:l]           # remove first l elements
-    try:
-        # find min
-        semi_period_idx = min(enumerate(data_processed), key=itemgetter(1))[0]
-    except ValueError:
-        semi_period_idx = 0
+    l = int(0.1 * len(data_processed))                 # 10 % from len
+    data_real = data_processed[-l:]          # remove last l elements
+    data_real = data_real[:l]           # remove first l elements
+    # find min
+    semi_period_idx = min(enumerate(data_real), key=itemgetter(1))[0]
     return semi_period_idx
