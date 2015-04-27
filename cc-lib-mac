@@ -2,7 +2,7 @@
 me=${0##*/}
 case $1 in
 "" )
-    set --  jonson.cpp Jonson.cpp ;;  # default: g++ these
+    set --  j.cpp jonson_c.cpp ;;  # default: g++ these
 -h* | --h* )
     echo "
 $me [g++ flags] xx.c yy.cpp zz.o ...

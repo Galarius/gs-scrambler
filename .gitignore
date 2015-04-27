@@ -1,3 +1,5 @@
 .idea/
 *.wav
 *.pyc
+*.c
+*.so
