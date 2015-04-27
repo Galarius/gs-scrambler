@@ -75,11 +75,11 @@ class StegoSession:
 
 def main(argv):
     p = pyaudio.PyAudio()
-    #msg = "Hello, stego world!"
-    msg = "In the field of audio steganography, fundamental spread spectrum (SS) techniques attempts to distribute secret data throughout the frequency spectrum of the audio signal to the maximum possible level."
+    #msg = u"Hello, stego world!"
+    #msg = "In the field of audio steganography, fundamental spread spectrum (SS) techniques attempts to distribute secret data throughout the frequency spectrum of the audio signal to the maximum possible level."
     key = 1
-    #stego_session = StegoSession(p, msg, key, sc.StegoMode.Hide)
-    stego_session = StegoSession(p, sc.StegoMode.Recover, key, **{sc.StegoCore.LENGTH_KEY:2048})
+    #stego_session = StegoSession(p, sc.StegoMode.Hide, key, **{sc.StegoCore.MESSAGE_KEY:msg})
+    stego_session = StegoSession(p, sc.StegoMode.Recover, key, **{sc.StegoCore.LENGTH_KEY:288})
     stego_session.open_stream()
     try:
         while stego_session.stream.is_active():
@@ -90,6 +90,8 @@ def main(argv):
         stego_session.close_stream()
         if stego_session.stego_mode == sc.StegoMode.Recover:
             print stego_session.core.recover_message()
+        else:
+            print stego_session.core.mediate_length
         p.terminate()
         print 'Done!'
     sys.exit(0)

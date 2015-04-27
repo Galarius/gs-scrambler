@@ -5,6 +5,7 @@ __copyright__ = 'Copyright 2015, Ilya Shoshin'
 
 from q_matrix import *
 import stego_helper as sh
+import jonson as j
 import numpy as np
 import math
 
@@ -112,29 +113,23 @@ class StegoCore:
         :param chunk: chunk to be used as container
         :return:      processed or the original chunk
         """
-
-        semi_p = sh.jonson(chunk_source)   # calculate semi-period
+        # calculate semi-period
+        jsn = j.PyJonson(chunk_source, len(chunk_source))
+        jsn.calculate()
+        semi_p = jsn.getSemiPeriod()
         if semi_p == 0:
-            self.lock.release()
             return chunk_container            # wrong semi-period, return original data
 
         # perform lsb method on current chunk with calculated unique step
         length = len(chunk_container)
         step = int(length / float(semi_p))
         for i in range(semi_p, length, step):
-            #if k < len(self.message_to_proc_part):
             bits = sh.d_2_b(chunk_container[i], 16)
             sign = 1 if chunk_container[i] >= 0 else -1
             bits[0] = (sign * self.message_to_proc_part[0]) if len(self.message_to_proc_part) > 0 else bits[0]
-            print "len: " + str(len(self.message_to_proc_part))
             if len(self.message_to_proc_part) > 0:
-                print self.message_to_proc_part[0]
                 self.message_to_proc_part = self.message_to_proc_part[1:]
             chunk_container[i] = sh.b_2_d(bits)
-            # test
-            print len(chunk_container), semi_p, chunk_container[i], bits
-            #else:
-            #    break
 
         return chunk_container
 
@@ -144,7 +139,10 @@ class StegoCore:
         :param chunk: container
         """
 
-        semi_p = sh.jonson(chunk_source)   # calculate semi-period
+        # calculate semi-period
+        jsn = j.PyJonson(chunk_source, len(chunk_source))
+        jsn.calculate()
+        semi_p = jsn.getSemiPeriod()
         if semi_p != 0:
             message_part = []
             length = len(chunk_container)
@@ -152,9 +150,6 @@ class StegoCore:
             for i in range(semi_p, length, step):
                 bits = sh.d_2_b(chunk_container[i], 16)
                 message_part.append(abs(bits[0]))
-                print abs(bits[0])
-                # test
-                print len(chunk_container), semi_p, chunk_container[i], bits
 
             # extend msg part array
             self.message_to_proc_part.extend(message_part)
