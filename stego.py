@@ -18,11 +18,11 @@ WAVE_OUTPUT_FILENAME = "output.wav"
 
 
 class StegoSession:
-    def __init__(self, p_audio, message, key, stego_mode):
+    def __init__(self, p_audio, stego_mode, key, **kwargs):
         self.p_audio = p_audio
         self.stream = None
         self.stego_mode = stego_mode
-        self.core = sc.StegoCore(message, key, stego_mode)
+        self.core = sc.StegoCore(stego_mode, key, **kwargs)
 
         input = WAVE_INPUT_FILENAME if stego_mode == sc.StegoMode.Hide else WAVE_OUTPUT_FILENAME
         self.file_source = wave.open(input, 'rb')
@@ -34,16 +34,22 @@ class StegoSession:
 
 
     def recording_callback(self, in_data, frame_count, time_info, status):
+        """
+        :param in_data:
+        :param frame_count:
+        :param time_info:
+        :param status:
+        :return:
+        """
+        # read frames
         in_data = self.file_source.readframes(frame_count)
-
-        if len(in_data) >= 1024:    # temp
-            left, right = stego_helper.audio_decode(in_data, int(len(in_data) / 2.0), self.file_source.getnchannels())
-            right = self.core.process(left, right)
-            # write back
-            processed_data = stego_helper.audio_encode((left, right), self.file_source.getnchannels())
-        else:
-            processed_data = in_data
-
+        # decode frames
+        left, right = stego_helper.audio_decode(in_data, int(len(in_data) / 2.0), self.file_source.getnchannels())
+        # process frames
+        right = self.core.process(left, right)
+        # encode back
+        processed_data = stego_helper.audio_encode((left, right), self.file_source.getnchannels())
+        # write back
         if self.stego_mode == sc.StegoMode.Hide:
             self.output_wave_file.writeframes(processed_data)
 
@@ -73,7 +79,7 @@ def main(argv):
     msg = "In the field of audio steganography, fundamental spread spectrum (SS) techniques attempts to distribute secret data throughout the frequency spectrum of the audio signal to the maximum possible level."
     key = 1
     #stego_session = StegoSession(p, msg, key, sc.StegoMode.Hide)
-    stego_session = StegoSession(p, msg, key, sc.StegoMode.Recover)
+    stego_session = StegoSession(p, sc.StegoMode.Recover, key, **{sc.StegoCore.LENGTH_KEY:2048})
     stego_session.open_stream()
     try:
         while stego_session.stream.is_active():

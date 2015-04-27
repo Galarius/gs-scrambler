@@ -122,8 +122,8 @@ def audio_decode(in_data, frame_count, channels):
         left = np.array(list(out[0::2]))
         right = np.array(list(out[1::2]))
     else:
-        left = np.array(out)
-        right = list(left)
+        left = np.array(list(out))
+        right = np.array(list(left))
     return (left, right)
 
 
