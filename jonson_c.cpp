@@ -44,14 +44,13 @@ void Jonson::calculate()
     for (int i = l; i < k - l; ++i) {
         data_real[i-l] = data_processed[i];
     }
-    
     m_semi_period = 0;
     for(int i = 1; i < dr_n; ++i)
     {
         if(data_real[i] < data_real[m_semi_period])
             m_semi_period = i;
     }
-    
+    // clean up
     delete [] data_real;
     delete [] data_processed;
 }

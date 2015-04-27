@@ -7,14 +7,15 @@ __copyright__ = 'Copyright 2015, Ilya Shoshin'
 
 import pyaudio
 import time
-import sys
+import sys, getopt
 import wave
 import stego_helper
 import stego_core as sc
+import stego_io as io
 
 
-WAVE_INPUT_FILENAME = "input.wav"
-WAVE_OUTPUT_FILENAME = "output.wav"
+WAVE_INPUT_FILENAME = "wav/input.wav"
+WAVE_OUTPUT_FILENAME = "wav/output.wav"
 
 
 class StegoSession:
@@ -73,7 +74,14 @@ class StegoSession:
             self.output_wave_file.close()
 
 
+def print_usage():
+    print """
+
+          """
+
+
 def main(argv):
+
     p = pyaudio.PyAudio()
     #msg = u"Hello, stego world!"
     #msg = "In the field of audio steganography, fundamental spread spectrum (SS) techniques attempts to distribute secret data throughout the frequency spectrum of the audio signal to the maximum possible level."

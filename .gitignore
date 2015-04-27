@@ -1,4 +1,5 @@
 .idea/
+wav/
 *.wav
 *.pyc
 *.c

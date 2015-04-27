@@ -10,8 +10,6 @@ from math import floor
 from numpy import sign
 import struct
 import numpy as np
-from operator import itemgetter
-import string
 
 def str_2_vec(str):
     """
@@ -139,28 +137,3 @@ def audio_encode(samples, nchannels):
         data = samples[0]
     frames = struct.pack("%dh" % len(data), *data)
     return frames
-
-
-def jonson(data):
-    """
-    :param data:
-    :return:
-    The program process data with Jonson function to determine semi_period
-    """
-    # Process
-    n = len(data)
-    data_processed = []
-    for tau in range(n):
-        sum = 0
-        for t in range(n - tau):
-            sum += abs(float(data[t + tau]) - float(data[t]))
-        if n - tau != 0:
-            data_processed.append(1.0 / (n - tau) * sum)
-
-    # calculate semi-period from calculated data
-    l = int(0.1 * len(data_processed))                 # 10 % from len
-    data_real = data_processed[-l:]          # remove last l elements
-    data_real = data_real[:l]           # remove first l elements
-    # find min
-    semi_period_idx = min(enumerate(data_real), key=itemgetter(1))[0]
-    return semi_period_idx
