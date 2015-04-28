@@ -25,6 +25,8 @@ class StegoCore:
     MESSAGE_KEY = 'message'
     LENGTH_KEY = 'length'
 
+    BITS = 16
+
     def __init__(self, stego_mode, key, **kwargs):
         """
         Init core class instance.
@@ -80,9 +82,8 @@ class StegoCore:
         elif self.message_to_proc_part < mediate_length:
             raise RuntimeError("Couldn't extract message with provided argument.")
 
-        bits = 8
-        s = int(math.sqrt(len(self.message_to_proc_part) / bits))
-        msg_matrix_encoded_array = np.reshape(self.message_to_proc_part, (s, s, bits))
+        s = int(math.ceil(math.sqrt(len(self.message_to_proc_part) / StegoCore.BITS)))
+        msg_matrix_encoded_array = np.reshape(self.message_to_proc_part, (s, s, StegoCore.BITS))
         msg_matrix_encoded_bits = msg_matrix_encoded_array.tolist()
         msg_matrix_encoded = sh.bits_matrix_to_int_matrix(msg_matrix_encoded_bits)
         msg_matrix = QMatrix.decode_matrix_message(msg_matrix_encoded, self.key)
@@ -124,7 +125,7 @@ class StegoCore:
         length = len(chunk_container)
         step = int(length / float(semi_p))
         for i in range(semi_p, length, step):
-            bits = sh.d_2_b(chunk_container[i], 16)
+            bits = sh.d_2_b(chunk_container[i], StegoCore.BITS)
             sign = 1 if chunk_container[i] >= 0 else -1
             bits[0] = (sign * self.message_to_proc_part[0]) if len(self.message_to_proc_part) > 0 else bits[0]
             if len(self.message_to_proc_part) > 0:
@@ -148,7 +149,7 @@ class StegoCore:
             length = len(chunk_container)
             step = int(length / float(semi_p))
             for i in range(semi_p, length, step):
-                bits = sh.d_2_b(chunk_container[i], 16)
+                bits = sh.d_2_b(chunk_container[i], StegoCore.BITS)
                 message_part.append(abs(bits[0]))
 
             # extend msg part array

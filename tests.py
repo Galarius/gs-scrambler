@@ -66,38 +66,58 @@ msg_o = "In the field of audio steganography, fundamental spread spectrum (SS) t
 # q = QMatrix(10, 1)
 # q.pretty_print()
 
+#test 5.0
+
+# msg_matr = message_to_matrix(msg_o)
+# msg_matr_encoded = QMatrix.encode_matrix_message(msg_matr, 7)
+#
+# msg_matrix = QMatrix.decode_matrix_message(msg_matr_encoded, 7)
+# msg = sh.matrix_to_message(msg_matrix)
+# print msg_o == msg
+
+# msg_matr = message_to_matrix(msg_o)
+# msg_matr_encoded = QMatrix.encode_matrix_message(msg_matr, 7)
+# print QMatrix.pretty_print_matrix(msg_matr_encoded)
+# msg_matr_encoded_bits = int_matrix_to_bits_matrix(msg_matr_encoded)
+# msg_matrix_encoded = bits_matrix_to_int_matrix(msg_matr_encoded_bits)
+# print QMatrix.pretty_print_matrix(msg_matrix_encoded)
+
 #test 5
-msg_matr = message_to_matrix(msg_o)
-msg_matr_encoded = QMatrix.encode_matrix_message(msg_matr, 1)
-#print QMatrix.pretty_print_matrix(msg_matr_encoded)
-msg_matr_encoded_bits = int_matrix_to_bits_matrix(msg_matr_encoded)
-#print QMatrix.pretty_print_matrix(msg_matr_encoded_bits)
-msg_matr_encoded_array = np.array(msg_matr_encoded_bits)
-#print msg_matr_encoded_array
-message_to_proc_part = msg_matr_encoded_array.ravel()
-#print message_to_proc_part
-mediate_length = len(message_to_proc_part)
-
-message_to_proc_part = np.append(message_to_proc_part, [x for x in range(0, 100)])
-bits = 8
-if not mediate_length:
-    mediate_length = mediate_length
-    if mediate_length <= 0:
-        raise AttributeError('Necessary argument not specified!')
-
-if len(message_to_proc_part) > mediate_length:
-    message_to_proc_part = message_to_proc_part[:mediate_length]
-elif message_to_proc_part < mediate_length:
-    raise RuntimeError("Couldn't extract message with provided argument.")
-
-bits = 8
-s = int(math.sqrt(len(message_to_proc_part) / bits))
-msg_matrix_encoded_array = np.reshape(message_to_proc_part, (s, s, bits))
-msg_matrix_encoded_bits = msg_matrix_encoded_array.tolist()
-msg_matrix_encoded = sh.bits_matrix_to_int_matrix(msg_matrix_encoded_bits)
-msg_matrix = QMatrix.decode_matrix_message(msg_matrix_encoded, 1)
-msg = sh.matrix_to_message(msg_matrix)
-print msg
+# msg_matr = message_to_matrix(msg_o)
+# msg_matr_encoded = QMatrix.encode_matrix_message(msg_matr, 7)
+# print QMatrix.pretty_print_matrix(msg_matr_encoded)
+# msg_matr_encoded_bits = int_matrix_to_bits_matrix(msg_matr_encoded)
+# #print QMatrix.pretty_print_matrix(msg_matr_encoded_bits)
+# msg_matr_encoded_array = np.array(msg_matr_encoded_bits)
+# #print QMatrix.pretty_print_matrix(msg_matr_encoded_array.tolist())
+# message_to_proc_part = msg_matr_encoded_array.ravel()
+# #print message_to_proc_part
+# mediate_length = len(message_to_proc_part)
+#
+# # message_to_proc_part = np.append(message_to_proc_part, [x for x in range(0, 100)])
+# # bits = 8
+# # if not mediate_length:
+# #     mediate_length = mediate_length
+# #     if mediate_length <= 0:
+# #         raise AttributeError('Necessary argument not specified!')
+# #
+# # if len(message_to_proc_part) > mediate_length:
+# #     message_to_proc_part = message_to_proc_part[:mediate_length]
+# # elif message_to_proc_part < mediate_length:
+# #     raise RuntimeError("Couldn't extract message with provided argument.")
+#
+# bits = 8
+# s = int(math.sqrt(len(message_to_proc_part) / bits))
+# msg_matrix_encoded_array = np.reshape(message_to_proc_part, (s, s, bits))
+# #print QMatrix.pretty_print_matrix(msg_matrix_encoded_array.tolist())
+# msg_matrix_encoded_bits = msg_matrix_encoded_array.tolist()
+# #print QMatrix.pretty_print_matrix(msg_matr_encoded_bits)
+# msg_matrix_encoded = sh.bits_matrix_to_int_matrix(msg_matrix_encoded_bits)
+# print QMatrix.pretty_print_matrix(msg_matrix_encoded)
+# msg_matrix = QMatrix.decode_matrix_message(msg_matrix_encoded, 7)
+# msg = sh.matrix_to_message(msg_matrix)
+# print msg_o == msg
+# print msg
 
 #test 6
 

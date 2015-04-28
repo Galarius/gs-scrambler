@@ -96,7 +96,7 @@ def int_matrix_to_bits_matrix(M):
     for i in range(0, size):
         m = []
         for j in range(0, size):
-            m.append(d_2_b(M[i][j]))
+            m.append(d_2_b(M[i][j], 16))
         M_bits.append(m)
     return M_bits
 
