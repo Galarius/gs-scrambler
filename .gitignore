@@ -1,7 +1,7 @@
 build/
 .idea/
 wav/
-*.wav
+data/
 *.pyc
 *.c
 *.so

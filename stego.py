@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 #!/usr/bin/env python
+# python stego.py -i "wav/input" -m "data/msg.txt" -o "wav/output.wav" -k 7 -r "data/recover_info.txt"
+#
 
 __author__ = 'Ilya Shoshin'
 __copyright__ = 'Copyright 2015, Ilya Shoshin'
@@ -11,7 +13,7 @@ import sys, getopt
 import wave
 import stego_helper
 import stego_core as sc
-import stego_io as io
+import io_stego
 
 
 WAVE_INPUT_FILENAME = "wav/input.wav"
@@ -76,19 +78,75 @@ class StegoSession:
 
 def print_usage():
     print """
-
+            hide msg:    stego.py -i <input_container_file_name> -m <message_file_name> -o <output_container_file_name> -k <key> [-r <recover_info_file_name>]
+            recover msg: stego.py -i <input_container_file_name> -m <message_file_name> -k <key> (-l <message_length> or -r <recover_info_file_name>)
           """
 
 
 def main(argv):
 
-    p = pyaudio.PyAudio()
-    #msg = u"Hello, stego world!"
-    #msg = "In the field of audio steganography, fundamental spread spectrum (SS) techniques attempts to distribute secret data throughout the frequency spectrum of the audio signal to the maximum possible level."
-    key = 1
-    #stego_session = StegoSession(p, sc.StegoMode.Hide, key, **{sc.StegoCore.MESSAGE_KEY:msg})
-    stego_session = StegoSession(p, sc.StegoMode.Recover, key, **{sc.StegoCore.LENGTH_KEY:288})
+    input_container_file_name = ''
+    message_file_name = ''
+    output_container_file_name = ''
+    key = -1
+    message_length = -1
+    recover_info_file_name = 'data/recover_info.txt'
+    # --------------------------------------
+    try:
+       opts, args = getopt.getopt(argv, "hi:m:o:k:l:r:", ["ifile=", "mfile=", "ofile=", "key=", "length=", "recover_info="])
+    except getopt.GetoptError:
+       print_usage()
+       sys.exit(2)
+    for opt, arg in opts:
+        if opt == '-h':
+            print_usage()
+            sys.exit()
+        elif opt in ("-i", "--ifile"):
+            input_container_file_name = arg
+        elif opt in ("-m", "--mfile"):
+            message_file_name = arg
+        elif opt in ("-o", "--ofile"):
+            output_container_file_name = arg
+        elif opt in ("-k", "--key"):
+            key = int(arg)
+        elif opt in ("-l", "--length"):
+            message_length = int(arg)
+        elif opt in ("-r", "--recover_info"):
+            recover_info_file_name = arg
+
+    if input_container_file_name == '' or message_file_name == '':
+        print_usage()
+        sys.exit()
+
+    if not output_container_file_name == '':
+        # --------------------------------------
+        # hide
+        # --------------------------------------
+        message = io_stego.load_message_from_file(message_file_name)
+        if not message == '':
+            p = pyaudio.PyAudio()
+            stego_session = StegoSession(p, sc.StegoMode.Hide, key, **{sc.StegoCore.MESSAGE_KEY:message})
+        else:
+            print "Wrong or empty file with message!"
+            print_usage()
+            sys.exit()
+        # --------------------------------------
+    else:
+        if message_length <= 0:
+            message_length = io_stego.load_data_to_recover(recover_info_file_name)
+        if message_length > 0:
+            # --------------------------------------
+            # recover
+            # --------------------------------------
+            p = pyaudio.PyAudio()
+            stego_session = StegoSession(p, sc.StegoMode.Recover, key, **{sc.StegoCore.LENGTH_KEY:message_length})
+            # --------------------------------------
+        else:
+            print_usage()
+            sys.exit()
+
     stego_session.open_stream()
+
     try:
         while stego_session.stream.is_active():
             time.sleep(0.1)
@@ -97,9 +155,9 @@ def main(argv):
     finally:
         stego_session.close_stream()
         if stego_session.stego_mode == sc.StegoMode.Recover:
-            print stego_session.core.recover_message()
+            io_stego.save_message_to_file(message_file_name, stego_session.core.recover_message())
         else:
-            print stego_session.core.mediate_length
+            io_stego.save_data_to_recover(recover_info_file_name, stego_session.core.mediate_length)
         p.terminate()
         print 'Done!'
     sys.exit(0)

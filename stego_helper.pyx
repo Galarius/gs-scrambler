@@ -26,7 +26,7 @@ def vec_2_str(vec):
     :param vec: [int, int, int, ...]
     :return:    string
     """
-    return ''.join([chr(i) if i < 256 else '' for i in vec])
+    return ''.join([(chr(i) if 0 <= i < 256 else '') for i in vec])
 
 
 def d_2_b(x, size=8):
