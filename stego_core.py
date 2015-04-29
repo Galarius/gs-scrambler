@@ -22,8 +22,9 @@ class StegoCore:
     Perform hide/recover on the txt msg
     """
 
-    MESSAGE_KEY = 'message'
-    LENGTH_KEY = 'length'
+    MESSAGE_KEY = 'message'     # msg to hide
+    LENGTH_KEY = 'length'       # msg length (to recover)
+    SKIP_FRAMES_KEY = 'skip_frames'     # number of frames to skip before integration
 
     BITS = 16
 
@@ -36,20 +37,32 @@ class StegoCore:
         :param kwargs:
                             1) StegoMode.Hide    - necessary keys:
                                 a) StegoCore.MESSAGE_KEY - message to encrypt and hide
+                                b) StegoCore.SKIP_FRAMES_KEY - number of frames to skip before integration
                             2) StegoMode.Recover - optional key:
                                 a) StegoCore.LENGTH_KEY - the mediate length of hidden message (necessary when perform decoding), may be assigned later
+                                b) StegoCore.SKIP_FRAMES_KEY - number of frames to skip before integration
         """
 
         self.key = key                  # key to encrypt/decrypt
         self.stego_mode = stego_mode    # encode or decode
         self.message_to_proc_part = []  # the part of message that left to be integrated
-        self.mediate_length = 0
+        self.skip_frames = 0            # how many frames shoud be skipped
+        self.mediate_length = 0         # length of message to recover (length of bits array)
         if stego_mode == StegoMode.Hide:
             if StegoCore.MESSAGE_KEY not in kwargs:
                 raise AttributeError('Necessary key not specified!')
+            if StegoCore.SKIP_FRAMES_KEY in kwargs:
+                # set number of frames to skip
+                self.skip_frames = kwargs[StegoCore.SKIP_FRAMES_KEY]
+            # set message
             self.message = kwargs[StegoCore.MESSAGE_KEY]
-            self.mediate_length = self.__prepare_message()    # Encode msg and make some preprocessing staff
+            self.mediate_length = self.__prepare_message()    # Encode msg and make some preprocessing staff, get msg bits array
         else:
+            if StegoCore.LENGTH_KEY not in kwargs:
+                raise AttributeError('Necessary key not specified!')
+            if StegoCore.SKIP_FRAMES_KEY in kwargs:
+                # set number of frames to skip
+                self.skip_frames = kwargs[StegoCore.SKIP_FRAMES_KEY]
             self.mediate_length = kwargs[StegoCore.LENGTH_KEY]
 
     def process(self, chunk_source, chunk_container):
@@ -58,13 +71,16 @@ class StegoCore:
         :param chunk: chunk to be used as container to perform integration or recovering
         :return: processed chunk or the original chunk
         """
-        if self.stego_mode == StegoMode.Hide:                           # if hiding
-            if len(self.message_to_proc_part) > 0:                      # if there is smth to hide
-                return self.__hide(chunk_source, chunk_container)       # hide msg and return processed chunk
+        if not self.skip_frames:                                                # if no frames left to skip
+            if self.stego_mode == StegoMode.Hide:                               # if hiding
+                if len(self.message_to_proc_part) > 0:                          # if there is smth to hide
+                    return self.__hide(chunk_source, chunk_container)           # hide msg and return processed chunk
+            else:
+                self.__recover(chunk_source, chunk_container)                   # recover msg part from a chunk
         else:
-            self.__recover(chunk_source, chunk_container)               # recover msg part from a chunk
+                self.skip_frames -= 1
 
-        return chunk_container                                          # return original chunk
+        return chunk_container                                                  # return original chunk
 
     def recover_message(self, mediate_length=0):
         """
@@ -121,6 +137,7 @@ class StegoCore:
         if semi_p == 0:
             return chunk_container            # wrong semi-period, return original data
 
+
         # perform lsb method on current chunk with calculated unique step
         length = len(chunk_container)
         step = int(length / float(semi_p))
@@ -145,6 +162,7 @@ class StegoCore:
         jsn.calculate()
         semi_p = jsn.getSemiPeriod()
         if semi_p != 0:
+
             message_part = []
             length = len(chunk_container)
             step = int(length / float(semi_p))

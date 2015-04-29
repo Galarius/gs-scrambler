@@ -14,6 +14,8 @@ import wave
 import stego_helper
 import stego_core as sc
 import io_stego
+import stego_device_info
+import stego_settings
 
 
 class StegoSession:
@@ -60,11 +62,17 @@ class StegoSession:
 
     def open_stream(self):
 
+        build_in_input_device_idx = stego_device_info.detect_build_in_input_device_idx(self.p_audio)
+        build_in_output_device_idx = stego_device_info.detect_build_in_output_device_idx(self.p_audio)
+        sound_flower_device_idx = stego_device_info.detect_sound_flower_device_idx(self.p_audio)
+
         self.stream = self.p_audio.open(format=self.p_audio.get_format_from_width(self.file_source.getsampwidth()),
                                         channels=self.file_source.getnchannels(),
                                         rate=self.file_source.getframerate(),
                                         #input=True,
                                         output=True,
+                                        input_device_index = build_in_input_device_idx,
+                                        output_device_index = build_in_output_device_idx,
                                         stream_callback=self.recording_callback)
         self.stream.start_stream()
 
@@ -122,12 +130,19 @@ def main(argv):
         # --------------------------------------
         # hide
         # --------------------------------------
+        # load mesage
         message = io_stego.load_message_from_file(message_file_name)
         if not message == '':
             p = pyaudio.PyAudio()
-            stego_session = StegoSession(p, sc.StegoMode.Hide, key, **{sc.StegoCore.MESSAGE_KEY:message,
+            # load settings
+            settings = stego_settings.StegoSettings.Instance()
+            if settings.validate_stream_mode(p):
+                stego_session = StegoSession(p, sc.StegoMode.Hide, key, **{sc.StegoCore.MESSAGE_KEY:message,
                                                         StegoSession.INPUT_FILE_NAME_KEY:input_container_file_name,
+                                                        sc.StegoCore.SKIP_FRAMES_KEY: 10,
                                                         StegoSession.OUTPUT_FILE_NAME_KEY:output_container_file_name})
+            else:
+                print "There are no supported audio devices for current stream mode."
         else:
             print "Wrong or empty file with message!"
             print_usage()
@@ -141,8 +156,14 @@ def main(argv):
             # recover
             # --------------------------------------
             p = pyaudio.PyAudio()
-            stego_session = StegoSession(p, sc.StegoMode.Recover, key, **{sc.StegoCore.LENGTH_KEY:message_length,
+            # load settings
+            settings = stego_settings.StegoSettings.Instance()
+            if settings.validate_stream_mode(p):
+                stego_session = StegoSession(p, sc.StegoMode.Recover, key, **{sc.StegoCore.LENGTH_KEY:message_length,
+                                                                          sc.StegoCore.SKIP_FRAMES_KEY: 10,
                                                         StegoSession.INPUT_FILE_NAME_KEY:input_container_file_name})
+            else:
+                print "There are no supported audio devices for current stream mode."
             # --------------------------------------
         else:
             print_usage()
