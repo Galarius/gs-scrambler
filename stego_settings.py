@@ -36,7 +36,6 @@ class StegoSettings:
     def __init__(self):
         self.frames_to_skip = 5
         self.stream_mode = StreamMode.StreamFromFileToFile
-        self.deserialize()
 
     def serialize(self):
         data = {SETTING_KEY_FRAMES_TO_SKIP: self.frames_to_skip,

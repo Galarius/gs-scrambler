@@ -46,33 +46,65 @@ class StegoSession:
         :param status:
         :return:
         """
-        # read frames
-        in_data = self.file_source.readframes(frame_count)
-        # decode frames
-        left, right = stego_helper.audio_decode(in_data, int(len(in_data) / 2.0), self.file_source.getnchannels())
-        # process frames
-        right = self.core.process(left, right)
-        # encode back
-        processed_data = stego_helper.audio_encode((left, right), self.file_source.getnchannels())
-        # write back
-        if self.stego_mode == sc.StegoMode.Hide:
-            self.output_wave_file.writeframes(processed_data)
+
+        settings = stego_settings.StegoSettings.Instance()
+
+        if settings.stream_mode == stego_settings.StreamMode.StreamFromFileToFile:
+            # read frames
+            in_data = self.file_source.readframes(frame_count)
+            # decode frames
+            left, right = stego_helper.audio_decode(in_data, int(len(in_data) / 2.0), self.file_source.getnchannels())
+            # process frames
+            right = self.core.process(left, right)
+            # encode back
+            processed_data = stego_helper.audio_encode((left, right), self.file_source.getnchannels())
+            # write back
+            if self.stego_mode == sc.StegoMode.Hide:
+                self.output_wave_file.writeframes(processed_data)
+        elif settings.stream_mode == stego_settings.StreamMode.StreamFromBuildInInputToSoundFlower or \
+             settings.stream_mode == stego_settings.StreamMode.StreamFromSoundFlowerToBuildInOutput:
+            # read frames
+            in_data = self.stream.readframes(frame_count)
+            # decode frames
+            left, right = stego_helper.audio_decode(in_data, int(len(in_data) / 2.0), self.file_source.getnchannels())
+            # process frames
+            right = self.core.process(left, right)
+            # encode back
+            processed_data = stego_helper.audio_encode((left, right), self.file_source.getnchannels())
+            # write back
+            self.stream.writeframes(processed_data)
 
         return processed_data, pyaudio.paContinue
 
     def open_stream(self):
 
-        build_in_input_device_idx = stego_device_info.detect_build_in_input_device_idx(self.p_audio)
-        build_in_output_device_idx = stego_device_info.detect_build_in_output_device_idx(self.p_audio)
-        sound_flower_device_idx = stego_device_info.detect_sound_flower_device_idx(self.p_audio)
+        settings = stego_settings.StegoSettings.Instance()
+
+        if settings.stream_mode == stego_settings.StreamMode.StreamFromFileToFile:
+            input_dev_idx = stego_device_info.detect_build_in_input_device_idx(self.p_audio)
+            output_dev_idx = stego_device_info.detect_build_in_output_device_idx(self.p_audio)
+            enable_input=False
+            enable_output=True
+        elif settings.stream_mode == stego_settings.StreamMode.StreamFromBuildInInputToSoundFlower:
+            input_dev_idx = stego_device_info.detect_build_in_input_device_idx(self.p_audio)
+            output_dev_idx = stego_device_info.detect_sound_flower_device_idx(self.p_audio)
+            enable_input=True
+            enable_output=False
+        elif settings.stream_mode == stego_settings.StreamMode.StreamFromSoundFlowerToBuildInOutput:
+            input_dev_idx = stego_device_info.detect_sound_flower_device_idx(self.p_audio)
+            output_dev_idx = stego_device_info.detect_build_in_output_device_idx(self.p_audio)
+            enable_input=False
+            enable_output=True
+        else:
+            print "Unsupported stream mode! [%i]" % self.stream_mode
 
         self.stream = self.p_audio.open(format=self.p_audio.get_format_from_width(self.file_source.getsampwidth()),
                                         channels=self.file_source.getnchannels(),
                                         rate=self.file_source.getframerate(),
-                                        #input=True,
-                                        output=True,
-                                        input_device_index = build_in_input_device_idx,
-                                        output_device_index = build_in_output_device_idx,
+                                        input=enable_input,
+                                        output=enable_output,
+                                        input_device_index = input_dev_idx,
+                                        output_device_index = output_dev_idx,
                                         stream_callback=self.recording_callback)
         self.stream.start_stream()
 
@@ -158,6 +190,7 @@ def main(argv):
             p = pyaudio.PyAudio()
             # load settings
             settings = stego_settings.StegoSettings.Instance()
+            settings.deserialize()
             if settings.validate_stream_mode(p):
                 stego_session = StegoSession(p, sc.StegoMode.Recover, key, **{sc.StegoCore.LENGTH_KEY:message_length,
                                                                           sc.StegoCore.SKIP_FRAMES_KEY: 10,
