@@ -51,3 +51,14 @@ def detect_build_in_output_device_idx(p):
     :return: device index
     """
     return __detect_device_index(p, "Built-in Output")
+
+
+def validate_audio_setup(p, input_format, input_channels, rate, input_device):
+    """
+    Validate pyaudio stream setup
+    :param p: PyAudio instance
+    ...
+    """
+    isSupported = p.is_format_supported(input_format=input_format, input_channels=input_channels, rate=rate,
+                                        input_device=input_device)
+    return isSupported

@@ -27,6 +27,7 @@ class StreamMode:
 SETTINGS_FILE_NAME = 'settings.json'            # settings full file name
 SETTING_KEY_FRAMES_TO_SKIP = 'frames_to_skip'   # how many frames will be skipped before processing
 SETTING_KEY_STREAM_MODE = 'stream_mode'         # which stream mode will be used
+SETTINGS_KEY_FRAME_SIZE = 'frame_size'          # frame size
 
 @Singleton
 class StegoSettings:
@@ -36,10 +37,12 @@ class StegoSettings:
     def __init__(self):
         self.frames_to_skip = 5
         self.stream_mode = StreamMode.StreamFromFileToFile
+        self.frame_size = 1024
 
     def serialize(self):
         data = {SETTING_KEY_FRAMES_TO_SKIP: self.frames_to_skip,
-                SETTING_KEY_STREAM_MODE: self.stream_mode}
+                SETTING_KEY_STREAM_MODE: self.stream_mode,
+                SETTINGS_KEY_FRAME_SIZE: self.frame_size}
         with open(SETTINGS_FILE_NAME, 'w+') as outfile:
             json.dump(data, outfile)
 
@@ -47,8 +50,9 @@ class StegoSettings:
         if os.path.isfile(SETTINGS_FILE_NAME):
                 with open(SETTINGS_FILE_NAME, 'r') as infile:
                     data = json.load(infile)
-                    self.frames_to_skip = int(data[SETTING_KEY_FRAMES_TO_SKIP])
+                    self.frames_to_skip = data[SETTING_KEY_FRAMES_TO_SKIP]
                     self.stream_mode = data[SETTING_KEY_STREAM_MODE]
+                    self.frame_size = data[SETTINGS_KEY_FRAME_SIZE]
         else:
             self.serialize()
             self.deserialize()

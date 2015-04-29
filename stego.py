@@ -39,13 +39,6 @@ class StegoSession:
 
 
     def recording_callback(self, in_data, frame_count, time_info, status):
-        """
-        :param in_data:
-        :param frame_count:
-        :param time_info:
-        :param status:
-        :return:
-        """
 
         settings = stego_settings.StegoSettings.Instance()
 
@@ -85,35 +78,50 @@ class StegoSession:
             output_dev_idx = stego_device_info.detect_build_in_output_device_idx(self.p_audio)
             enable_input=False
             enable_output=True
+            format=self.p_audio.get_format_from_width(self.file_source.getsampwidth())
+            channels=self.file_source.getnchannels()
+            rate=self.file_source.getframerate()
         elif settings.stream_mode == stego_settings.StreamMode.StreamFromBuildInInputToSoundFlower:
             input_dev_idx = stego_device_info.detect_build_in_input_device_idx(self.p_audio)
             output_dev_idx = stego_device_info.detect_sound_flower_device_idx(self.p_audio)
             enable_input=True
             enable_output=False
+            format, channels, rate = pyaudio.paInt16, 2, 44100
         elif settings.stream_mode == stego_settings.StreamMode.StreamFromSoundFlowerToBuildInOutput:
             input_dev_idx = stego_device_info.detect_sound_flower_device_idx(self.p_audio)
             output_dev_idx = stego_device_info.detect_build_in_output_device_idx(self.p_audio)
             enable_input=False
             enable_output=True
+            format, channels, rate = pyaudio.paInt16, 2, 44100
         else:
             print "Unsupported stream mode! [%i]" % self.stream_mode
 
-        self.stream = self.p_audio.open(format=self.p_audio.get_format_from_width(self.file_source.getsampwidth()),
-                                        channels=self.file_source.getnchannels(),
-                                        rate=self.file_source.getframerate(),
+        if stego_device_info.validate_audio_setup(self.p_audio, format, channels, rate, input_dev_idx):
+            self.stream = self.p_audio.open(format=format,
+                                        channels=channels,
+                                        rate=rate,
+                                        frames_per_buffer=settings.frame_size,
                                         input=enable_input,
                                         output=enable_output,
                                         input_device_index = input_dev_idx,
                                         output_device_index = output_dev_idx,
                                         stream_callback=self.recording_callback)
-        self.stream.start_stream()
+            self.stream.start_stream()
+        else:
+            print "Unsupported audio configuration!"
+            raise ValueError("Unsupported audio configuration!")
 
     def close_stream(self):
-        self.stream.stop_stream()
-        self.stream.close()
-        self.file_source.close()
-        if self.stego_mode == sc.StegoMode.Hide:
-            self.output_wave_file.close()
+        settings = stego_settings.StegoSettings.Instance()
+
+        if self.stream:
+            self.stream.stop_stream()
+            self.stream.close()
+
+        if settings.stream_mode == stego_settings.StreamMode.StreamFromFileToFile:
+            self.file_source.close()
+            if self.stego_mode == sc.StegoMode.Hide:
+                self.output_wave_file.close()
 
 
 def print_usage():
@@ -168,6 +176,7 @@ def main(argv):
             p = pyaudio.PyAudio()
             # load settings
             settings = stego_settings.StegoSettings.Instance()
+            settings.deserialize()
             if settings.validate_stream_mode(p):
                 stego_session = StegoSession(p, sc.StegoMode.Hide, key, **{sc.StegoCore.MESSAGE_KEY:message,
                                                         StegoSession.INPUT_FILE_NAME_KEY:input_container_file_name,
@@ -202,7 +211,11 @@ def main(argv):
             print_usage()
             sys.exit()
 
-    stego_session.open_stream()
+    try:
+        stego_session.open_stream()
+    except ValueError:
+        stego_session.close_stream()
+        sys.exit()
 
     try:
         while stego_session.stream.is_active():
