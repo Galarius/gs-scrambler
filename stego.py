@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #!/usr/bin/env python
-# python stego.py -i "wav/input" -m "data/msg.txt" -o "wav/output.wav" -k 7 -r "data/recover_info.txt"
-#
+# python stego.py -i "wav/input.wav" -m "data/msg.txt" -o "wav/output.wav" -k 7 -r "data/recover_info.txt"
+# python stego.py -i "wav/output.wav" -m "data/msg_recovered.txt" -k 7 -r "data/recover_info.txt"
 
 __author__ = 'Ilya Shoshin'
 __copyright__ = 'Copyright 2015, Ilya Shoshin'
@@ -16,21 +16,21 @@ import stego_core as sc
 import io_stego
 
 
-WAVE_INPUT_FILENAME = "wav/input.wav"
-WAVE_OUTPUT_FILENAME = "wav/output.wav"
-
-
 class StegoSession:
+
+    INPUT_FILE_NAME_KEY = 'input'
+    OUTPUT_FILE_NAME_KEY = 'output'
+
     def __init__(self, p_audio, stego_mode, key, **kwargs):
         self.p_audio = p_audio
         self.stream = None
         self.stego_mode = stego_mode
         self.core = sc.StegoCore(stego_mode, key, **kwargs)
 
-        input = WAVE_INPUT_FILENAME if stego_mode == sc.StegoMode.Hide else WAVE_OUTPUT_FILENAME
+        input = kwargs[StegoSession.INPUT_FILE_NAME_KEY]
         self.file_source = wave.open(input, 'rb')
         if stego_mode == sc.StegoMode.Hide:
-            self.output_wave_file = wave.open(WAVE_OUTPUT_FILENAME, 'wb')
+            self.output_wave_file = wave.open(kwargs[StegoSession.OUTPUT_FILE_NAME_KEY], 'wb')
             self.output_wave_file.setnchannels(self.file_source.getnchannels())
             self.output_wave_file.setsampwidth(self.file_source.getsampwidth())
             self.output_wave_file.setframerate(self.file_source.getframerate())
@@ -125,7 +125,9 @@ def main(argv):
         message = io_stego.load_message_from_file(message_file_name)
         if not message == '':
             p = pyaudio.PyAudio()
-            stego_session = StegoSession(p, sc.StegoMode.Hide, key, **{sc.StegoCore.MESSAGE_KEY:message})
+            stego_session = StegoSession(p, sc.StegoMode.Hide, key, **{sc.StegoCore.MESSAGE_KEY:message,
+                                                        StegoSession.INPUT_FILE_NAME_KEY:input_container_file_name,
+                                                        StegoSession.OUTPUT_FILE_NAME_KEY:output_container_file_name})
         else:
             print "Wrong or empty file with message!"
             print_usage()
@@ -139,7 +141,8 @@ def main(argv):
             # recover
             # --------------------------------------
             p = pyaudio.PyAudio()
-            stego_session = StegoSession(p, sc.StegoMode.Recover, key, **{sc.StegoCore.LENGTH_KEY:message_length})
+            stego_session = StegoSession(p, sc.StegoMode.Recover, key, **{sc.StegoCore.LENGTH_KEY:message_length,
+                                                        StegoSession.INPUT_FILE_NAME_KEY:input_container_file_name})
             # --------------------------------------
         else:
             print_usage()
