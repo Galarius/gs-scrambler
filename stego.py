@@ -181,6 +181,7 @@ def main(argv):
                 stego_session = StegoSession(p, sc.StegoMode.Hide, key, **{sc.StegoCore.MESSAGE_KEY:message,
                                                         StegoSession.INPUT_FILE_NAME_KEY:input_container_file_name,
                                                         sc.StegoCore.SKIP_FRAMES_KEY: 10,
+                                                        sc.StegoCore.SYNC_MARK_KEY: settings.sync_mark,
                                                         StegoSession.OUTPUT_FILE_NAME_KEY:output_container_file_name})
             else:
                 print "There are no supported audio devices for current stream mode."
@@ -203,6 +204,7 @@ def main(argv):
             if settings.validate_stream_mode(p):
                 stego_session = StegoSession(p, sc.StegoMode.Recover, key, **{sc.StegoCore.LENGTH_KEY:message_length,
                                                                           sc.StegoCore.SKIP_FRAMES_KEY: 10,
+                                                                          sc.StegoCore.SYNC_MARK_KEY: settings.sync_mark,
                                                         StegoSession.INPUT_FILE_NAME_KEY:input_container_file_name})
             else:
                 print "There are no supported audio devices for current stream mode."

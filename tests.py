@@ -135,6 +135,18 @@ msg_o = "In the field of audio steganography, fundamental spread spectrum (SS) t
 
 
 
+# msg_o = ";/@sf@#1`"
+# M = message_to_matrix(msg_o)
+# QMatrix.pretty_print_matrix(M)
+# E = QMatrix.encode_matrix_message(M, 11)
+# QMatrix.pretty_print_matrix(E)
+# print matrix_to_message(E)
+# _M = QMatrix.decode_matrix_message(E, 11)
+# msg = matrix_to_message(_M)
+# print msg
+
+
+
 
 
 
