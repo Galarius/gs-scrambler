@@ -9,12 +9,13 @@ import jonson as j
 import numpy as np
 import math
 import collections
+from extensions import colorize, COLORS
 
 class StegoMode:
     """
     Enum to indicate process mode
     """
-    Hide = 0,
+    Hide = 0
     Recover = 1
 
 
@@ -22,32 +23,26 @@ class StegoCore:
     """
     Perform hide/recover on the txt msg
     """
-
-    MESSAGE_KEY = 'message'     # msg to hide
-    LENGTH_KEY = 'length'       # msg length (to recover)
     SKIP_FRAMES_KEY = 'skip_frames'     # number of frames to skip before integration
     SYNC_MARK_KEY = 'sync_mark_key'     # synchronization mark
 
     BITS = 16
+    SYNC_KEY = 8
 
-    def __init__(self, stego_mode, key, **kwargs):
+    def __init__(self, stego_mode, **kwargs):
         """
         Init core class instance.
 
         :param stego_mode:  StegoMode.Hide or StegoMode.Recover
-        :param key:         key to encode/decode msg, where 'key' is an unsigned integer
         :param kwargs:
                             1) StegoMode.Hide    - necessary keys:
-                                a) StegoCore.MESSAGE_KEY - message to encrypt and hide
-                                b) StegoCore.SKIP_FRAMES_KEY - number of frames to skip before integration  [optional]
-                                c) StegoCore.SYNC_MARK_KEY - text marker to perform synchronization         [optional]
+                                a) StegoCore.SKIP_FRAMES_KEY - number of frames to skip before integration  [optional]
+                                b) StegoCore.SYNC_MARK_KEY - text marker to perform synchronization         [optional]
                             2) StegoMode.Recover - optional key:
-                                a) StegoCore.LENGTH_KEY - the mediate length of hidden message (necessary when perform decoding), may be assigned later
-                                b) StegoCore.SKIP_FRAMES_KEY - number of frames to skip before integration  [optional]
-                                c) StegoCore.SYNC_MARK_KEY - text marker to perform synchronization         [optional]
+                                a) StegoCore.SKIP_FRAMES_KEY - number of frames to skip before integration  [optional]
+                                b) StegoCore.SYNC_MARK_KEY - text marker to perform synchronization         [optional]
         """
 
-        self.key = key                  # key to encrypt/decrypt
         self.stego_mode = stego_mode    # encode or decode
         self.message_to_proc_part = []  # the part of message that left to be integrated
         self.skip_frames = 0            # how many frames shoud be skipped
@@ -57,8 +52,6 @@ class StegoCore:
         self.sync_mark_encoded_array = []   # synchronization mark encoded
         self.synchronized = False           # is synchronization performed
         if stego_mode == StegoMode.Hide:
-            if StegoCore.MESSAGE_KEY not in kwargs:
-                raise AttributeError('Necessary key not specified!')
             if StegoCore.SKIP_FRAMES_KEY in kwargs:
                 # set number of frames to skip
                 self.skip_frames = kwargs[StegoCore.SKIP_FRAMES_KEY]
@@ -67,12 +60,7 @@ class StegoCore:
                 self.__synchronization_prepare()
             else:
                 self.synchronized = True
-            # set message
-            self.message = kwargs[StegoCore.MESSAGE_KEY]
-            self.mediate_length = self.__prepare_message()    # Encode msg and make some preprocessing staff, get msg bits array
         else:
-            if StegoCore.LENGTH_KEY not in kwargs:
-                raise AttributeError('Necessary key not specified!')
             if StegoCore.SKIP_FRAMES_KEY in kwargs:
                 # set number of frames to skip
                 self.skip_frames = kwargs[StegoCore.SKIP_FRAMES_KEY]
@@ -81,7 +69,25 @@ class StegoCore:
                 self.__synchronization_prepare()
             else:
                 self.synchronized = True
-            self.mediate_length = kwargs[StegoCore.LENGTH_KEY]
+
+    def hide(self, message, key):
+        """
+        Enable hiding process.
+        :param message: message to hide
+        :param key:     key to encode message with
+        :return:        additional key to extract message
+        """
+        # Encode msg and make some preprocessing staff, get msg bits array
+        return self.__prepare_message(message, key)
+
+    def recover(self, user_key, session_key):
+        """
+        Recover message by extracting it with session_key and decoding it with user_key.
+        :param user_key:
+        :param session_key:
+        :return: recovered message
+        """
+        return self.__recover_message(user_key, session_key)
 
     def process(self, chunk_source, chunk_container):
         """
@@ -108,14 +114,15 @@ class StegoCore:
 
         return chunk_container                                                  # return original chunk
 
-    def recover_message(self, mediate_length=0):
+    def __recover_message(self, key, mediate_length):
         """
         After extraction is completed, call this method to decode and extract original message.
         :param mediate_length: the mediate length of hidden message (necessary to perform decoding)
         :return: extracted message
         """
+
         if not mediate_length:
-            mediate_length = self.mediate_length
+            mediate_length = mediate_length
             if mediate_length <= 0:
                 raise AttributeError('Necessary argument not specified!')
 
@@ -125,22 +132,26 @@ class StegoCore:
             raise RuntimeError("Couldn't extract message with provided argument.")
 
         s = int(math.ceil(math.sqrt(len(self.message_to_proc_part) / StegoCore.BITS)))
-        msg_matrix_encoded_array = np.reshape(self.message_to_proc_part, (s, s, StegoCore.BITS))
+        try:
+            msg_matrix_encoded_array = np.reshape(self.message_to_proc_part, (s, s, StegoCore.BITS))
+        except ValueError:
+            print colorize("Wrong session key. Can't extract message.", COLORS.FAIL)
+            return ''
         msg_matrix_encoded_bits = msg_matrix_encoded_array.tolist()
         msg_matrix_encoded = sh.bits_matrix_to_int_matrix(msg_matrix_encoded_bits)
-        msg_matrix = QMatrix.decode_matrix_message(msg_matrix_encoded, self.key)
+        msg_matrix = QMatrix.decode_matrix_message(msg_matrix_encoded, key)
         msg = sh.matrix_to_message(msg_matrix)
         return msg
 
-    def __prepare_message(self):
+    def __prepare_message(self, message, key):
         """
         Prepare message to be integrated, by encoding and several additional transforms
         :return: the mediate length of hidden message (necessary to perform decoding later)
         """
         # 1) Transform to matrix
-        msg_matrix = sh.message_to_matrix(self.message)
+        msg_matrix = sh.message_to_matrix(message)
         # 2) Encode with q-matrix
-        msg_matrix_encoded = QMatrix.encode_matrix_message(msg_matrix, self.key)
+        msg_matrix_encoded = QMatrix.encode_matrix_message(msg_matrix, key)
         # 3) Convert to bits
         msg_matrix_encoded_bits = sh.int_matrix_to_bits_matrix(msg_matrix_encoded)
         # 4) Convert to numpy nested arrays
@@ -160,9 +171,9 @@ class StegoCore:
         jsn = j.PyJonson(chunk_source, len(chunk_source))
         jsn.calculate()
         semi_p = jsn.getSemiPeriod()
+
         if semi_p == 0:
             return chunk_container            # wrong semi-period, return original data
-
 
         # perform lsb method on current chunk with calculated unique step
         length = len(chunk_container)
@@ -187,6 +198,7 @@ class StegoCore:
         jsn = j.PyJonson(chunk_source, len(chunk_source))
         jsn.calculate()
         semi_p = jsn.getSemiPeriod()
+
         if semi_p != 0:
 
             message_part = []
@@ -199,7 +211,6 @@ class StegoCore:
             # extend msg part array
             self.message_to_proc_part.extend(message_part)
 
-
     #--------------------------------------------------------------
     # Synchronization
     #--------------------------------------------------------------
@@ -211,7 +222,7 @@ class StegoCore:
         # 1) Transform to matrix
         sync_marker_matrix = sh.message_to_matrix(self.sync_mark)
         # 2) Encode with q-matrix
-        sync_marker_matrix_encoded = QMatrix.encode_matrix_message(sync_marker_matrix, self.key)
+        sync_marker_matrix_encoded = QMatrix.encode_matrix_message(sync_marker_matrix, StegoCore.SYNC_KEY)
         # 3) Convert to bits
         sync_marker_matrix_encoded_bits = sh.int_matrix_to_bits_matrix(sync_marker_matrix_encoded)
         # 4) Convert to numpy nested arrays

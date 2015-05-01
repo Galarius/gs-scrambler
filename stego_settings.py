@@ -12,21 +12,21 @@ import os
 import json
 import stego_device_info
 
+
 class StreamMode:
     """
     Several stream modes:
-        StreamFromFileToFile - hide info inside a file on your computer and save it to another file
         StreamFromBuildInInputToSoundFlower - record sound from mic, hide message and redirect it to SoundFlower virtual device
         StreamFromSoundFlowerToBuildInOutput - receive sound from  SoundFlower virtual device, recover message and play it in dynamics
+        StreamFromFileToFile - hide info inside a file on your computer and save it to another file
     """
-    StreamFromFileToFile = 0
-    StreamFromBuildInInputToSoundFlower = 1
-    StreamFromSoundFlowerToBuildInOutput = 2
+    StreamFromBuildInInputToSoundFlower = 0
+    StreamFromSoundFlowerToBuildInOutput = 1
+    StreamFromFileToFile = 2
 
 
 SETTINGS_FILE_NAME = 'settings.json'            # settings full file name
 SETTING_KEY_FRAMES_TO_SKIP = 'frames_to_skip'   # how many frames will be skipped before processing
-SETTING_KEY_STREAM_MODE = 'stream_mode'         # which stream mode will be used
 SETTINGS_KEY_FRAME_SIZE = 'frame_size'          # frame size
 SETTINGS_KEY_SYNC_MARK = 'sync_mark'            # synchronization text marker
 
@@ -37,13 +37,11 @@ class StegoSettings:
     """
     def __init__(self):
         self.frames_to_skip = 5
-        self.stream_mode = StreamMode.StreamFromFileToFile
         self.frame_size = 1024
         self.sync_mark = ";/@sf@#1`"
 
     def serialize(self):
         data = {SETTING_KEY_FRAMES_TO_SKIP: self.frames_to_skip,
-                SETTING_KEY_STREAM_MODE: self.stream_mode,
                 SETTINGS_KEY_FRAME_SIZE: self.frame_size,
                 SETTINGS_KEY_SYNC_MARK: self.sync_mark}
         with open(SETTINGS_FILE_NAME, 'w+') as outfile:
@@ -54,22 +52,26 @@ class StegoSettings:
                 with open(SETTINGS_FILE_NAME, 'r') as infile:
                     data = json.load(infile)
                     self.frames_to_skip = data[SETTING_KEY_FRAMES_TO_SKIP]
-                    self.stream_mode = data[SETTING_KEY_STREAM_MODE]
                     self.frame_size = data[SETTINGS_KEY_FRAME_SIZE]
                     self.sync_mark = data[SETTINGS_KEY_SYNC_MARK]
         else:
             self.serialize()
             self.deserialize()
 
-    def validate_stream_mode(self, p_audio):
-        if self.stream_mode == StreamMode.StreamFromFileToFile:
-            return stego_device_info.detect_build_in_input_device_idx(p_audio) >= 0 and \
+    def validate_stream_mode(self, stream_mode):
+        import pyaudio
+        p_audio = pyaudio.PyAudio()
+        result = False
+        if stream_mode == StreamMode.StreamFromFileToFile:
+            result = stego_device_info.detect_build_in_input_device_idx(p_audio) >= 0 and \
                    stego_device_info.detect_build_in_output_device_idx(p_audio) >= 0
-        elif self.stream_mode == StreamMode.StreamFromBuildInInputToSoundFlower:
-            return stego_device_info.detect_build_in_input_device_idx(p_audio) >= 0 and \
+        elif stream_mode == StreamMode.StreamFromBuildInInputToSoundFlower:
+            result = stego_device_info.detect_build_in_input_device_idx(p_audio) >= 0 and \
                    stego_device_info.detect_sound_flower_device_idx(p_audio) >= 0
-        elif self.stream_mode == StreamMode.StreamFromSoundFlowerToBuildInOutput:
-            return stego_device_info.detect_sound_flower_device_idx(p_audio) >= 0 and \
+        elif stream_mode == StreamMode.StreamFromSoundFlowerToBuildInOutput:
+            result = stego_device_info.detect_sound_flower_device_idx(p_audio) >= 0 and \
                    stego_device_info.detect_build_in_output_device_idx(p_audio) >= 0
         else:
-            print "Unsupported stream mode! [%i]" % self.stream_mode
+            print "Unsupported stream mode! [%i]" % stream_mode
+        p_audio.terminate()
+        return result
