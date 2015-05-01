@@ -12,23 +12,20 @@ Moreover it is possible to perform just 'file to file' processing if audio conta
 __author__ = 'Ilya Shoshin'
 __copyright__ = 'Copyright 2015, Ilya Shoshin'
 
-# Example commands
+# Example commands for 'file to file' mode
 # python stego_scrambler.py -i "wav/input.wav" -m "data/msg.txt" -o "wav/output.wav" -k 7 -r "data/recover_info.txt"
 # python stego_scrambler.py -i "wav/output.wav" -m "data/msg_recovered.txt" -k 7 -r "data/recover_info.txt"
 
-import pyaudio
-import time
-import sys, getopt
-import wave
+import pyaudio, wave, time
+
 import stego_helper
-from stego_core import StegoCore, StegoMode
-from stego_settings import StreamMode, StegoSettings
 import io_stego
 import stego_device_info
-import cmd
-import urlparse
+from stego_core import StegoCore, StegoMode
+from stego_settings import StreamMode, StegoSettings
 from extensions import COLORS, colorize
-import inspect
+
+import sys, getopt, cmd, urlparse, inspect
 
 
 RECOVER_INFO_DEFAULT_FILE_NAME = 'data/recover_info.txt'
@@ -94,9 +91,6 @@ class StegoScramblerSession:
         :return:
         """
 
-        if not self.enable_processing:
-            return in_data, pyaudio.paContinue
-
         if self.stream_mode == StreamMode.StreamFromFileToFile:
             # file to file
             # read frames
@@ -110,28 +104,34 @@ class StegoScramblerSession:
             # write back
             if self.stego_mode == StegoMode.Hide:
                 self.output_wave_file.writeframes(processed_data)
-        elif settings.stream_mode == StreamMode.StreamFromBuildInInputToSoundFlower or \
-             settings.stream_mode == StreamMode.StreamFromSoundFlowerToBuildInOutput:
+        elif self.stream_mode == StreamMode.StreamFromBuildInInputToSoundFlower or \
+             self.stream_mode == StreamMode.StreamFromSoundFlowerToBuildInOutput:
+
+            if not self.enable_processing:
+                # left, right = stego_helper.audio_decode(in_data, int(len(in_data) / 2.0), 2)
+                # # process frames
+                # right = [0 for i in range(len(right))]
+                # # encode back
+                # processed_data = stego_helper.audio_encode((left, right), 2)
+                # return processed_data, pyaudio.paContinue
+                return in_data, pyaudio.paContinue
+
             # build-in input to sound flower or
             # sound flower to build-in output
-            # read frames
-            in_data = self.stream.readframes(frame_count)
             # decode frames
-            left, right = stego_helper.audio_decode(in_data, int(len(in_data) / 2.0), self.file_source.getnchannels())
+            left, right = stego_helper.audio_decode(in_data, int(len(in_data) / 2.0), 2)
             # process frames
             right = self.core.process(left, right)
             # encode back
-            processed_data = stego_helper.audio_encode((left, right), self.file_source.getnchannels())
-            # write back
-            self.stream.writeframes(processed_data)
+            processed_data = stego_helper.audio_encode((left, right), 2)
 
         return processed_data, pyaudio.paContinue
 
     def open_stream(self):
-        print "Opening stream..."
         # instantiate PyAudio
         self.p_audio = pyaudio.PyAudio()
         if self.stream_mode == StreamMode.StreamFromFileToFile:
+            print colorize("Opening file stream...", COLORS.WARNING)
             # file to file
             input_dev_idx = stego_device_info.detect_build_in_input_device_idx(self.p_audio)
             output_dev_idx = stego_device_info.detect_build_in_output_device_idx(self.p_audio)
@@ -141,17 +141,19 @@ class StegoScramblerSession:
             channels=self.file_source.getnchannels()
             rate=self.file_source.getframerate()
         elif self.stream_mode == StreamMode.StreamFromBuildInInputToSoundFlower:
+            print colorize("Opening stream...", COLORS.OKBLUE)
             # build-in input to sound flower
             input_dev_idx = stego_device_info.detect_build_in_input_device_idx(self.p_audio)
             output_dev_idx = stego_device_info.detect_sound_flower_device_idx(self.p_audio)
             enable_input=True
-            enable_output=False
+            enable_output=True
             format, channels, rate = pyaudio.paInt16, 2, 44100
         elif self.stream_mode == StreamMode.StreamFromSoundFlowerToBuildInOutput:
+            print colorize("Opening stream...", COLORS.OKGREEN)
             # sound flower to build-in output
             input_dev_idx = stego_device_info.detect_sound_flower_device_idx(self.p_audio)
             output_dev_idx = stego_device_info.detect_build_in_output_device_idx(self.p_audio)
-            enable_input=False
+            enable_input=True
             enable_output=True
             format, channels, rate = pyaudio.paInt16, 2, 44100
         else:
@@ -250,7 +252,6 @@ def print_usage():
                     stego_scrambler.py -i <input_container_file_name> -m <message_file_name> -k <key> (-l <message_length> or -r <recover_info_file_name>)
                     ------------------------------
           """
-
 
 def main(opts):
 
@@ -388,10 +389,10 @@ class InteractiveStegoScrambler(cmd.Cmd):
         Hide message with key.
 
         usage:
-            hide f=<msg filename> k=<key>
+            hide f=<msg filename>&k=<key>
 
         :param msg_file_name: path to the text file with message
-        :param key: key to encode message
+        :param key: key to encode message (unsigned integer)
         """
         args = urlparse.parse_qs(line)
 
@@ -415,14 +416,18 @@ class InteractiveStegoScrambler(cmd.Cmd):
     def do_recover(self, line):
         """
         Recover extracted message with keys. Should be called after sinchronizaion, often after voice chat is over.
-        :param session_key: key to recover message
-        :param user_key: key to decode message
+
+        usage:
+            recover s=<session key>&k=<key>&f=<msg filename>
+
+        :param session_key: key to recover message  (unsigned integer)
+        :param user_key: key to decode message      (unsigned integer)
         :param msg_file_name: name of the file to save message to
         """
         args = urlparse.parse_qs(line)
         try:
             session_key, user_key, msg_file_name = int(args['s'][0]), int(args['k'][0]), args['f'][0]
-            if msg_file_name.strip() == '' or key <= 0 or session_key <= 0:
+            if msg_file_name.strip() == '' or user_key <= 0 or session_key <= 0:
                 self.print_err(inspect.currentframe().f_code.co_name.replace('do_',''))
                 return
         except KeyError:

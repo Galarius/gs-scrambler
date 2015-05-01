@@ -80,14 +80,14 @@ class StegoCore:
         # Encode msg and make some preprocessing staff, get msg bits array
         return self.__prepare_message(message, key)
 
-    def recover(self, user_key, session_key):
+    def recover(self, session_key, user_key):
         """
         Recover message by extracting it with session_key and decoding it with user_key.
         :param user_key:
         :param session_key:
         :return: recovered message
         """
-        return self.__recover_message(user_key, session_key)
+        return self.__recover_message(session_key, user_key)
 
     def process(self, chunk_source, chunk_container):
         """
@@ -114,7 +114,7 @@ class StegoCore:
 
         return chunk_container                                                  # return original chunk
 
-    def __recover_message(self, key, mediate_length):
+    def __recover_message(self, mediate_length, key):
         """
         After extraction is completed, call this method to decode and extract original message.
         :param mediate_length: the mediate length of hidden message (necessary to perform decoding)
@@ -186,6 +186,9 @@ class StegoCore:
                 self.message_to_proc_part = self.message_to_proc_part[1:]
             chunk_container[i] = sh.b_2_d(bits)
 
+        if not len(self.message_to_proc_part):
+            print colorize("Message integrated.", COLORS.OKBLUE)
+
         return chunk_container
 
     def __recover(self, chunk_source, chunk_container):
@@ -244,9 +247,10 @@ class StegoCore:
                 chunk_container[k] = sh.b_2_d(bits)
                 k += 1#sum(bits)
             else:
-                print "Not enough space to integrate sync marker."
+                print colorize("Not enough space to integrate sync marker.", COLORS.FAIL)
 
-        print "Synchronization mark inserted."
+        print '\n'
+        print colorize("Synchronization mark inserted.", COLORS.OKBLUE)
         self.synchronized = True
         return chunk_container
 
@@ -268,9 +272,9 @@ class StegoCore:
         compare = lambda x, y: collections.Counter(x) == collections.Counter(y)
 
         #print self.sync_mark_encoded_array.tolist()
-        #print m
+        # print m
         self.synchronized = compare(self.sync_mark_encoded_array.tolist(), m)
 
         if self.synchronized:
-            print "Synchronization completed."
+            print colorize("Synchronization completed.", COLORS.OKGREEN)
         return self.synchronized
