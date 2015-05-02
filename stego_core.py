@@ -89,12 +89,28 @@ class StegoCore:
         """
         return self.__recover_message(session_key, user_key)
 
+
+    def rms(self, data):
+        count = len(data)
+        sum_squares = 0.0
+        for sample in data:
+            n = sample * (1.0/32768)
+            sum_squares += n*n
+        return math.sqrt( sum_squares / count )
+
+
     def process(self, chunk_source, chunk_container):
         """
         Depending on the init args this method will perform integration or recovering.
         :param chunk: chunk to be used as container to perform integration or recovering
         :return: processed chunk or the original chunk
         """
+
+        # rms = self.rms(chunk_container.tolist())
+        # if rms > 0:
+        #     decibel = 20 * math.log10(rms)
+        #     print decibel
+
         if not self.skip_frames:                                                # if no frames left to skip
             if self.stego_mode == StegoMode.Hide:                               # if hiding
                 # hide
@@ -249,7 +265,6 @@ class StegoCore:
             else:
                 print colorize("Not enough space to integrate sync marker.", COLORS.FAIL)
 
-        print '\n'
         print colorize("Synchronization mark inserted.", COLORS.OKBLUE)
         self.synchronized = True
         return chunk_container

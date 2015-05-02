@@ -71,7 +71,7 @@ class StegoScramblerSession:
                 self.output_wave_file.setnchannels(self.file_source.getnchannels())
                 self.output_wave_file.setsampwidth(self.file_source.getsampwidth())
                 self.output_wave_file.setframerate(self.file_source.getframerate())
-            enable_processing = True
+            self.enable_processing = True
         elif stream_mode == StreamMode.StreamFromBuildInInputToSoundFlower:
             # build-in input to sound flower
             self.stego_mode = StegoMode.Hide
@@ -110,7 +110,8 @@ class StegoScramblerSession:
             if not self.enable_processing:
                 # left, right = stego_helper.audio_decode(in_data, int(len(in_data) / 2.0), 2)
                 # # process frames
-                # right = [0 for i in range(len(right))]
+                # right = [32000 for i in range(len(right))]
+                # left = right
                 # # encode back
                 # processed_data = stego_helper.audio_encode((left, right), 2)
                 # return processed_data, pyaudio.paContinue
@@ -124,6 +125,8 @@ class StegoScramblerSession:
             right = self.core.process(left, right)
             # encode back
             processed_data = stego_helper.audio_encode((left, right), 2)
+        else:
+            return in_data, pyaudio.paContinue
 
         return processed_data, pyaudio.paContinue
 
@@ -158,18 +161,37 @@ class StegoScramblerSession:
             format, channels, rate = pyaudio.paInt16, 2, 44100
         else:
             print colorize("Unsupported stream mode! [%i]" % self.stream_mode, COLORS.FAIL)
+            raise ValueError("Unsupported stream mode! [%i]" % self.stream_mode)
+
+        print colorize("Input device: %i" % input_dev_idx, COLORS.WARNING)
+        print colorize("Output device: %i" % output_dev_idx, COLORS.WARNING)
+
+
+        # standard L-R stereo
+        channel_map = (0, 1)
+
+        try:
+            stream_info = pyaudio.PaMacCoreStreamInfo(
+                flags=pyaudio.PaMacCoreStreamInfo.paMacCorePlayNice, # default
+                channel_map=channel_map)
+        except AttributeError:
+            print("Sorry, couldn't find PaMacCoreStreamInfo. Make sure that "
+                  "you're running on Mac OS X.")
+            sys.exit(-1)
+
 
         settings = StegoSettings.Instance()
         if stego_device_info.validate_audio_setup(self.p_audio, format, channels, rate, input_dev_idx):
             self.stream = self.p_audio.open(format=format,
-                                        channels=channels,
-                                        rate=rate,
-                                        frames_per_buffer=settings.frame_size,
-                                        input=enable_input,
-                                        output=enable_output,
-                                        input_device_index = input_dev_idx,
-                                        output_device_index = output_dev_idx,
-                                        stream_callback=self.__recording_callback)
+                                            channels=channels,
+                                            rate=rate,
+                                            frames_per_buffer=settings.frame_size,
+                                            input=enable_input,
+                                            output=enable_output,
+                                            output_host_api_specific_stream_info=stream_info,
+                                            input_device_index=input_dev_idx,
+                                            output_device_index=output_dev_idx,
+                                            stream_callback=self.__recording_callback)
             self.stream.start_stream()
         else:
             print colorize("Unsupported audio configuration!", COLORS.FAIL)
@@ -226,13 +248,14 @@ class StegoScramblerSession:
         :param user_key:
         :return:
         """
-        if not (self.stream_mode == StreamMode.StreamFromSoundFlowerToBuildInOutput or \
+        if not (self.stream_mode == StreamMode.StreamFromSoundFlowerToBuildInOutput or
                 self.stream_mode == StreamMode.StreamFromFileToFile):
             print colorize("Not applicable for current stream mode!", COLORS.FAIL)
             return
         message = self.core.recover(session_key, user_key)
         io_stego.save_message_to_file(msg_file_name, message)
-        print colorize("Message recovered.", COLORS.OKGREEN)
+        if not message == '':
+            print colorize("Message recovered.", COLORS.OKGREEN)
 
 
 def print_usage():
@@ -295,7 +318,8 @@ def main(opts):
                                                     KEY_STEGO_MODE:StegoMode.Hide,
                                                     KEY_INPUT_FILE_NAME:input_container_file_name,
                                                     KEY_OUTPUT_FILE_NAME:output_container_file_name,
-                                                    StegoCore.SKIP_FRAMES_KEY: settings.frames_to_skip
+                                                    StegoCore.SKIP_FRAMES_KEY: settings.frames_to_skip,
+                                                    StegoCore.SYNC_MARK_KEY: settings.sync_mark
                                                     })
             stego_session.open_stream()
             stego_session.hide(message_file_name, key)
@@ -316,7 +340,8 @@ def main(opts):
                 stego_session = StegoScramblerSession(StreamMode.StreamFromFileToFile, **{
                                                     KEY_STEGO_MODE:StegoMode.Recover,
                                                     KEY_INPUT_FILE_NAME:input_container_file_name,
-                                                    StegoCore.SKIP_FRAMES_KEY: settings.frames_to_skip
+                                                    StegoCore.SKIP_FRAMES_KEY: settings.frames_to_skip,
+                                                    StegoCore.SYNC_MARK_KEY: settings.sync_mark
                                                     })
                 stego_session.open_stream()
                 stego_session.scan()
@@ -335,7 +360,7 @@ def main(opts):
     finally:
         if stego_session.stego_mode == StegoMode.Recover:
             session_key = io_stego.load_data_to_recover(recover_info_file_name)
-            stego_session.recover(key, session_key, message_file_name)
+            stego_session.recover(session_key, key, message_file_name)
         stego_session.close_stream()
         print colorize('Done!', COLORS.WARNING)
     sys.exit(0)
