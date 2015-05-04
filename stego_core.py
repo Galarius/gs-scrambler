@@ -8,7 +8,7 @@ import stego_helper as sh
 import jonson as j
 import numpy as np
 import math
-import collections
+
 from extensions import colorize, COLORS
 
 class StegoMode:
@@ -50,6 +50,7 @@ class StegoCore:
         # synchronization
         self.sync_mark = ''                 # synchronization mark
         self.sync_mark_encoded_array = []   # synchronization mark encoded
+        self.sync_mark_temp_encoded_array = []   # list that may contain sync mark
         self.synchronized = False           # is synchronization performed
         if stego_mode == StegoMode.Hide:
             if StegoCore.SKIP_FRAMES_KEY in kwargs:
@@ -89,16 +90,6 @@ class StegoCore:
         """
         return self.__recover_message(session_key, user_key)
 
-
-    def rms(self, data):
-        count = len(data)
-        sum_squares = 0.0
-        for sample in data:
-            n = sample * (1.0/32768)
-            sum_squares += n*n
-        return math.sqrt( sum_squares / count )
-
-
     def process(self, chunk_source, chunk_container):
         """
         Depending on the init args this method will perform integration or recovering.
@@ -118,17 +109,17 @@ class StegoCore:
                     if len(self.message_to_proc_part) > 0:                          # if there is smth to hide
                         return self.__hide(chunk_source, chunk_container)           # hide msg and return processed chunk
                 else:
-                    return self.__synchronization_put(chunk_container)
+                    return self.__synchronization_put(chunk_source), chunk_container
             else:
                 # recover
                 if self.synchronized:
                     self.__recover(chunk_source, chunk_container)                   # recover msg part from a chunk
                 else:
-                    self.__synchronization_detect(chunk_container)
+                    self.__synchronization_detect(chunk_source)
         else:
             self.skip_frames -= 1
 
-        return chunk_container                                                  # return original chunk
+        return chunk_source, chunk_container                                         # return original chunk
 
     def __recover_message(self, mediate_length, key):
         """
@@ -189,7 +180,7 @@ class StegoCore:
         semi_p = jsn.getSemiPeriod()
 
         if semi_p == 0:
-            return chunk_container            # wrong semi-period, return original data
+            return chunk_source, chunk_container            # wrong semi-period, return original data
 
         # perform lsb method on current chunk with calculated unique step
         length = len(chunk_container)
@@ -202,10 +193,12 @@ class StegoCore:
                 self.message_to_proc_part = self.message_to_proc_part[1:]
             chunk_container[i] = sh.b_2_d(bits)
 
+        chunk_container = np.array([8 for x in range(len(chunk_container))])
+
         if not len(self.message_to_proc_part):
             print colorize("Message integrated.", COLORS.OKBLUE)
 
-        return chunk_container
+        return chunk_source, chunk_container
 
     def __recover(self, chunk_source, chunk_container):
         """
@@ -250,22 +243,27 @@ class StegoCore:
         self.sync_mark_encoded_array = sync_marker_matrix_encoded_array.ravel()
 
     def __synchronization_put(self, chunk_container):
+
         if self.sync_mark == '' or self.synchronized:
-            return
+            print colorize("No sync marker.", COLORS.FAIL)
+            return chunk_container
 
-        length = len(self.sync_mark_encoded_array)
-        k = 0
-        for i in range(0, length):
-            if k < len(chunk_container):
-                bits = sh.d_2_b(chunk_container[k], StegoCore.BITS)
-                sign = 1 if chunk_container[k] >= 0 else -1
-                bits[0] = sign * self.sync_mark_encoded_array[i]
-                chunk_container[k] = sh.b_2_d(bits)
-                k += 1#sum(bits)
-            else:
-                print colorize("Not enough space to integrate sync marker.", COLORS.FAIL)
+        for i in range(len(chunk_container)):
+            bits = sh.d_2_b(chunk_container[i], StegoCore.BITS/2)
+            sign = 1 if chunk_container[i] >= 0 else -1
+            bits[0] = (sign * self.sync_mark_encoded_array[0]) if len(self.sync_mark_encoded_array) > 0 else bits[0]
+            if len(self.sync_mark_encoded_array) > 0:
+                self.sync_mark_encoded_array = self.sync_mark_encoded_array[1:]
+            chunk_container[i] = sh.b_2_d(bits)
 
-        print colorize("Synchronization mark inserted.", COLORS.OKBLUE)
+        chunk_container = np.array([7 for x in range(len(chunk_container))])
+
+
+        if not len(self.sync_mark_encoded_array):
+            print colorize("Synchronization mark inserted.", COLORS.OKBLUE)
+        else:
+            print colorize("Not enough space to integrate sync marker.", COLORS.FAIL)
+
         self.synchronized = True
         return chunk_container
 
@@ -275,21 +273,17 @@ class StegoCore:
             print "Mark is empty"
             return False
 
-        length = len(self.sync_mark_encoded_array)
-        k = 0
-        m = []
-        for i in range(0, length):
-            if k < len(chunk_container):
-                bits = sh.d_2_b(chunk_container[k], StegoCore.BITS)
-                m.append(abs(bits[0]))
-                k += 1#sum(bits)
+        if len(self.sync_mark_temp_encoded_array) >= 3 * len(chunk_container):
+            self.sync_mark_temp_encoded_array = self.sync_mark_temp_encoded_array[len(chunk_container):]
 
-        compare = lambda x, y: collections.Counter(x) == collections.Counter(y)
+        for i in range(len(chunk_container)):
+            bits = sh.d_2_b(chunk_container[i], StegoCore.BITS/2)
+            self.sync_mark_temp_encoded_array.append(abs(bits[0]))
 
-        #print self.sync_mark_encoded_array.tolist()
-        # print m
-        self.synchronized = compare(self.sync_mark_encoded_array.tolist(), m)
+        pos, length = sh.contains(self.sync_mark_encoded_array.tolist(), self.sync_mark_temp_encoded_array)
+        self.synchronized = pos >= 0 and length > 0
 
         if self.synchronized:
             print colorize("Synchronization completed.", COLORS.OKGREEN)
+            del self.sync_mark_temp_encoded_array[:]
         return self.synchronized

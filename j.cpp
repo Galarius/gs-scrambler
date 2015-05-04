@@ -457,7 +457,7 @@ static const char *__pyx_filename;
 
 
 static const char *__pyx_f[] = {
-  "tego/j.pyx",
+  "bler/j.pyx",
   "__init__.pxd",
   "type.pxd",
 };
@@ -750,7 +750,7 @@ typedef npy_cdouble __pyx_t_5numpy_complex_t;
  * 
  * cdef class PyJonson:             # <<<<<<<<<<<<<<
  *     cdef Jonson *thisptr      # hold a C++ instance which we're wrapping
- *     def __cinit__(self, np.ndarray[np.int_t, ndim=1] arr, N):
+ *     def __cinit__(self, np.ndarray[np.int16_t, ndim=1] arr, N):
  */
 struct __pyx_obj_6jonson_PyJonson {
   PyObject_HEAD
@@ -1128,7 +1128,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *, cha
 
 /* Module declarations from 'jonson' */
 static PyTypeObject *__pyx_ptype_6jonson_PyJonson = 0;
-static __Pyx_TypeInfo __Pyx_TypeInfo_nn___pyx_t_5numpy_int_t = { "int_t", NULL, sizeof(__pyx_t_5numpy_int_t), { 0 }, 0, IS_UNSIGNED(__pyx_t_5numpy_int_t) ? 'U' : 'I', IS_UNSIGNED(__pyx_t_5numpy_int_t), 0 };
+static __Pyx_TypeInfo __Pyx_TypeInfo_nn___pyx_t_5numpy_int16_t = { "int16_t", NULL, sizeof(__pyx_t_5numpy_int16_t), { 0 }, 0, IS_UNSIGNED(__pyx_t_5numpy_int16_t) ? 'U' : 'I', IS_UNSIGNED(__pyx_t_5numpy_int16_t), 0 };
 #define __Pyx_MODULE_NAME "jonson"
 int __pyx_module_is_main_jonson = 0;
 
@@ -1202,8 +1202,8 @@ static PyObject *__pyx_tuple__6;
 /* "j.pyx":13
  * cdef class PyJonson:
  *     cdef Jonson *thisptr      # hold a C++ instance which we're wrapping
- *     def __cinit__(self, np.ndarray[np.int_t, ndim=1] arr, N):             # <<<<<<<<<<<<<<
- *         self.thisptr = new Jonson(<int *> arr.data, N)
+ *     def __cinit__(self, np.ndarray[np.int16_t, ndim=1] arr, N):             # <<<<<<<<<<<<<<
+ *         self.thisptr = new Jonson(<short int *> arr.data, N)
  *     def __dealloc__(self):
  */
 
@@ -1290,20 +1290,20 @@ static int __pyx_pf_6jonson_8PyJonson___cinit__(struct __pyx_obj_6jonson_PyJonso
   __pyx_pybuffernd_arr.rcbuffer = &__pyx_pybuffer_arr;
   {
     __Pyx_BufFmt_StackElem __pyx_stack[1];
-    if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_arr.rcbuffer->pybuffer, (PyObject*)__pyx_v_arr, &__Pyx_TypeInfo_nn___pyx_t_5numpy_int_t, PyBUF_FORMAT| PyBUF_STRIDES, 1, 0, __pyx_stack) == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 13; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_arr.rcbuffer->pybuffer, (PyObject*)__pyx_v_arr, &__Pyx_TypeInfo_nn___pyx_t_5numpy_int16_t, PyBUF_FORMAT| PyBUF_STRIDES, 1, 0, __pyx_stack) == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 13; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
   __pyx_pybuffernd_arr.diminfo[0].strides = __pyx_pybuffernd_arr.rcbuffer->pybuffer.strides[0]; __pyx_pybuffernd_arr.diminfo[0].shape = __pyx_pybuffernd_arr.rcbuffer->pybuffer.shape[0];
 
   /* "j.pyx":14
  *     cdef Jonson *thisptr      # hold a C++ instance which we're wrapping
- *     def __cinit__(self, np.ndarray[np.int_t, ndim=1] arr, N):
- *         self.thisptr = new Jonson(<int *> arr.data, N)             # <<<<<<<<<<<<<<
+ *     def __cinit__(self, np.ndarray[np.int16_t, ndim=1] arr, N):
+ *         self.thisptr = new Jonson(<short int *> arr.data, N)             # <<<<<<<<<<<<<<
  *     def __dealloc__(self):
  *         del self.thisptr
  */
   __pyx_t_1 = __Pyx_PyInt_As_int(__pyx_v_N); if (unlikely((__pyx_t_1 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 14; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   try {
-    __pyx_t_2 = new jonson::Jonson(((int *)__pyx_v_arr->data), __pyx_t_1);
+    __pyx_t_2 = new jonson::Jonson(((short *)__pyx_v_arr->data), __pyx_t_1);
   } catch(...) {
     __Pyx_CppExn2PyErr();
     {__pyx_filename = __pyx_f[0]; __pyx_lineno = 14; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -1313,8 +1313,8 @@ static int __pyx_pf_6jonson_8PyJonson___cinit__(struct __pyx_obj_6jonson_PyJonso
   /* "j.pyx":13
  * cdef class PyJonson:
  *     cdef Jonson *thisptr      # hold a C++ instance which we're wrapping
- *     def __cinit__(self, np.ndarray[np.int_t, ndim=1] arr, N):             # <<<<<<<<<<<<<<
- *         self.thisptr = new Jonson(<int *> arr.data, N)
+ *     def __cinit__(self, np.ndarray[np.int16_t, ndim=1] arr, N):             # <<<<<<<<<<<<<<
+ *         self.thisptr = new Jonson(<short int *> arr.data, N)
  *     def __dealloc__(self):
  */
 
@@ -1337,8 +1337,8 @@ static int __pyx_pf_6jonson_8PyJonson___cinit__(struct __pyx_obj_6jonson_PyJonso
 }
 
 /* "j.pyx":15
- *     def __cinit__(self, np.ndarray[np.int_t, ndim=1] arr, N):
- *         self.thisptr = new Jonson(<int *> arr.data, N)
+ *     def __cinit__(self, np.ndarray[np.int16_t, ndim=1] arr, N):
+ *         self.thisptr = new Jonson(<short int *> arr.data, N)
  *     def __dealloc__(self):             # <<<<<<<<<<<<<<
  *         del self.thisptr
  *     def calculate(self):
@@ -1360,7 +1360,7 @@ static void __pyx_pf_6jonson_8PyJonson_2__dealloc__(struct __pyx_obj_6jonson_PyJ
   __Pyx_RefNannySetupContext("__dealloc__", 0);
 
   /* "j.pyx":16
- *         self.thisptr = new Jonson(<int *> arr.data, N)
+ *         self.thisptr = new Jonson(<short int *> arr.data, N)
  *     def __dealloc__(self):
  *         del self.thisptr             # <<<<<<<<<<<<<<
  *     def calculate(self):
@@ -1369,8 +1369,8 @@ static void __pyx_pf_6jonson_8PyJonson_2__dealloc__(struct __pyx_obj_6jonson_PyJ
   delete __pyx_v_self->thisptr;
 
   /* "j.pyx":15
- *     def __cinit__(self, np.ndarray[np.int_t, ndim=1] arr, N):
- *         self.thisptr = new Jonson(<int *> arr.data, N)
+ *     def __cinit__(self, np.ndarray[np.int16_t, ndim=1] arr, N):
+ *         self.thisptr = new Jonson(<short int *> arr.data, N)
  *     def __dealloc__(self):             # <<<<<<<<<<<<<<
  *         del self.thisptr
  *     def calculate(self):

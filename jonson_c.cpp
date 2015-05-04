@@ -11,7 +11,7 @@
 
 using namespace jonson;
 
-Jonson::Jonson(int* data, int n) :
+Jonson::Jonson(short int* data, int n) :
     m_data(data), m_n(n), m_semi_period(0)
 { }
 

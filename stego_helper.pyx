@@ -10,6 +10,8 @@ from math import floor
 from numpy import sign
 import struct
 import numpy as np
+import collections
+import pyaudio
 
 def str_2_vec(str):
     """
@@ -110,30 +112,78 @@ def bits_matrix_to_int_matrix(M_bits):
         M.append(m)
     return M
 
-def audio_decode(in_data, frame_count, channels):
-    """
-    Convert a byte stream into tuple (left, right)
-    """
-    out = struct.unpack_from("%dh" % frame_count, in_data)
-    # Convert 2 channels to numpy arrays
-    if channels == 2:
-        left = np.array(list(out[0::2]))
-        right = np.array(list(out[1::2]))
+def py_audio_format_to_num_py(fmt):
+    if fmt == pyaudio.paInt16:
+        return np.int16
+    elif fmt == pyaudio.paFloat32:
+        return np.float32
     else:
-        left = np.array(list(out))
-        right = np.array(list(left))
-    return (left, right)
+        print 'Unsupported format!'
+    return -1
+
+# based on: https://github.com/mgeier/python-audio/blob/master/audio-files/utility.py
+def pcm_2_float(sig, dtype='float32'):
+    """
+    Convert PCM signal to floating point with a range from -1 to 1.
+    :param sig: Input array, must have (signed) integral type.
+    :param dtype: Desired (floating point) data type.
+    :return: Normalized floating point data.
+    """
+    sig = np.asarray(sig)
+    if sig.dtype.kind != 'i':
+        raise TypeError("'sig' must be an array of signed integers")
+    dtype = np.dtype(dtype)
+    if dtype.kind != 'f':
+        raise TypeError("'dtype' must be floating point type")
+    return sig.astype(dtype) / dtype.type(np.iinfo(sig.dtype).max)
+
+def float_2_pcm(sig, dtype='int16'):
+    """
+    Convert floating point signal with a range from -1 to 1 to PCM.
+    :param sig: Input array, must have floating point type.
+    :param dtype: Desired (integer) data type. [optional]
+    :return: integer data.
+    """
+    sig = np.asarray(sig)
+    if sig.dtype.kind != 'f':
+        raise TypeError("'sig' must be a float array")
+    dtype = np.dtype(dtype)
+    if dtype.kind != 'i':
+        raise TypeError("'dtype' must be signed integer type")
+    return (sig * np.iinfo(dtype).max).astype(dtype)
+
+def audio_decode(in_data, channels, dtype):
+    result = np.fromstring(in_data, dtype=dtype)
+    result = float_2_pcm(result, np.int16)
+    chunk_length = len(result) / channels
+    result = np.reshape(result, (chunk_length, channels))
+    return result[:, 0], result[:, 1]
+
+def audio_encode(samples, dtype):
+    l = pcm_2_float(samples[0], np.float32)
+    r = pcm_2_float(samples[1], np.float32)
+    interleaved = np.array([l, r]).flatten('F')
+    out_data = interleaved.astype(dtype).tostring()
+    return out_data
 
 
-def audio_encode(samples, nchannels):
-    """
-    Convert a tuple (left, right) into byte stream
-    """
-    if nchannels == 2:
-        data = [None] * (len(samples[0]) + len(samples[1]))
-        data[::2] = samples[0]
-        data[1::2] = samples[1]
-    else:
-        data = samples[0]
-    frames = struct.pack("%dh" % len(data), *data)
-    return frames
+def contains(small, big):
+    for i in xrange(len(big)-len(small)+1):
+        for j in xrange(len(small)):
+            if big[i+j] != small[j]:
+                break
+        else:   # for else
+            return i, i + len(small)
+    return -1, 0
+
+def rms(data):
+    count = len(data)
+    sum_squares = 0.0
+    for sample in data:
+        n = sample * (1.0/32768)
+        sum_squares += n*n
+    return math.sqrt( sum_squares / count )
+
+def compare(x, y):
+    return collections.Counter(x) == collections.Counter(y)
+

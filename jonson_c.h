@@ -22,13 +22,13 @@ namespace jonson {
     
     class Jonson {
     public:
-        explicit Jonson(int *data, int n);  // init with data pointer and data size
+        explicit Jonson(short int *data, int n);  // init with data pointer and data size
         ~Jonson();
     public:
         void calculate();                   // calculate semi-period
         const int getSemiPeriod() const;    // get processing result
     private:
-        int *m_data;        // pointer to data which will be processed
+        short int *m_data;        // pointer to data which will be processed
         int m_n;            // data size
         int m_semi_period;  // processing result
     };
