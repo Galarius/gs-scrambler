@@ -79,6 +79,7 @@ class StegoCore:
         :return:        additional key to extract message
         """
         # Encode msg and make some preprocessing staff, get msg bits array
+        self.synchronized = False
         return self.__prepare_message(message, key)
 
     def recover(self, session_key, user_key):
@@ -102,22 +103,22 @@ class StegoCore:
         #     decibel = 20 * math.log10(rms)
         #     print decibel
 
-        if not self.skip_frames:                                                # if no frames left to skip
-            if self.stego_mode == StegoMode.Hide:                               # if hiding
-                # hide
-                if self.synchronized:
-                    if len(self.message_to_proc_part) > 0:                          # if there is smth to hide
-                        return self.__hide(chunk_source, chunk_container)           # hide msg and return processed chunk
-                else:
-                    return self.__synchronization_put(chunk_source), chunk_container
+        #if not self.skip_frames:                                           # if no frames left to skip
+        if self.stego_mode == StegoMode.Hide:                               # if hiding
+            # hide
+            if self.synchronized:
+                if len(self.message_to_proc_part) > 0:                          # if there is smth to hide
+                    return self.__hide(chunk_source, chunk_container)           # hide msg and return processed chunk
             else:
-                # recover
-                if self.synchronized:
-                    self.__recover(chunk_source, chunk_container)                   # recover msg part from a chunk
-                else:
-                    self.__synchronization_detect(chunk_source)
+                return self.__synchronization_put(chunk_source), chunk_container
         else:
-            self.skip_frames -= 1
+            # recover
+            if self.synchronized:
+                self.__recover(chunk_source, chunk_container)                   # recover msg part from a chunk
+            else:
+                self.__synchronization_detect(chunk_source)
+        #else:
+        #    self.skip_frames -= 1
 
         return chunk_source, chunk_container                                         # return original chunk
 
@@ -193,7 +194,7 @@ class StegoCore:
                 self.message_to_proc_part = self.message_to_proc_part[1:]
             chunk_container[i] = sh.b_2_d(bits)
 
-        chunk_container = np.array([8 for x in range(len(chunk_container))])
+        # chunk_container = np.array([8 for x in range(len(chunk_container))], dtype=np.int16)
 
         if not len(self.message_to_proc_part):
             print colorize("Message integrated.", COLORS.OKBLUE)
@@ -256,8 +257,8 @@ class StegoCore:
                 self.sync_mark_encoded_array = self.sync_mark_encoded_array[1:]
             chunk_container[i] = sh.b_2_d(bits)
 
-        chunk_container = np.array([7 for x in range(len(chunk_container))])
-
+        # print chunk_container.tolist()
+        # chunk_container = np.array([69 for x in range(len(chunk_container))], dtype=np.int16)
 
         if not len(self.sync_mark_encoded_array):
             print colorize("Synchronization mark inserted.", COLORS.OKBLUE)

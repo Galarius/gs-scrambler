@@ -94,8 +94,10 @@ class StegoScramblerSession:
         :param status:
         :return:
         """
-        np_format = stego_helper.py_audio_format_to_num_py(FORMAT)
+
         if self.stream_mode == StreamMode.StreamFromFileToFile:
+            np_format = stego_helper.py_audio_format_to_num_py(pyaudio.get_format_from_width(
+                self.file_source.getsampwidth()))
             # file to file
             # read frames
             in_data = self.file_source.readframes(frame_count)
@@ -110,30 +112,31 @@ class StegoScramblerSession:
                 self.output_wave_file.writeframes(processed_data)
 
         elif self.stream_mode == StreamMode.StreamFromBuildInInputToSoundFlower:
+            np_format = stego_helper.py_audio_format_to_num_py(FORMAT)
             if not self.enable_processing:
                 # left, right = stego_helper.audio_decode(in_data, SAMPLE_WIDTH, CHANNELS)
                 # process frames
-                # right = np.array([7 for i in range(1024)], dtype=np.int16)
-                # left = np.copy(right)
+                right = np.array([7 for i in range(1024)], dtype=np.int16)
+                left = np.copy(right)
                 # print left, right[0]
                 # encode back
-                # processed_data = stego_helper.audio_encode((left, right), np_format)
-                # return processed_data, pyaudio.paContinue
-                return in_data, pyaudio.paContinue
+                processed_data = stego_helper.audio_encode((left, right), np_format)
+                return processed_data, pyaudio.paContinue
+                # return in_data, pyaudio.paContinue
 
             # build-in input to sound flower or
             # decode frames
             left, right = stego_helper.audio_decode(in_data, CHANNELS, np_format)
             # process frames
-            n_left, n_right = self.core.process(left, right)
+            left, right = self.core.process(left, right)
             if not len(self.core.message_to_proc_part):
                 self.enable_processing = False
             # print n_left.tolist(), n_right[0]
             # encode back
-            processed_data = stego_helper.audio_encode((n_left, n_right), np_format)
+            processed_data = stego_helper.audio_encode((left, right), np_format)
 
         elif self.stream_mode == StreamMode.StreamFromSoundFlowerToBuildInOutput:
-
+            np_format = stego_helper.py_audio_format_to_num_py(FORMAT)
             if not self.enable_processing:
                 return in_data, pyaudio.paContinue
 
@@ -243,8 +246,8 @@ class StegoScramblerSession:
         if not message == '':
             print colorize("Begin integration...", COLORS.OKBLUE)
             session_key = self.core.hide(message, key)
-            self.enable_processing = True
             io_stego.save_data_to_recover(recover_info_filename, session_key)
+            self.enable_processing = True
         else:
             print colorize("Wrong or empty file with message!", COLORS.FAIL)
 

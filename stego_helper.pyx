@@ -154,14 +154,18 @@ def float_2_pcm(sig, dtype='int16'):
 
 def audio_decode(in_data, channels, dtype):
     result = np.fromstring(in_data, dtype=dtype)
-    result = float_2_pcm(result, np.int16)
+    if dtype == np.float32:
+        result = float_2_pcm(result, np.int16)
     chunk_length = len(result) / channels
     result = np.reshape(result, (chunk_length, channels))
     return result[:, 0], result[:, 1]
 
 def audio_encode(samples, dtype):
-    l = pcm_2_float(samples[0], np.float32)
-    r = pcm_2_float(samples[1], np.float32)
+    if dtype == np.float32:
+        l = pcm_2_float(samples[0], dtype)
+        r = pcm_2_float(samples[1], dtype)
+    else:
+        l, r = samples[0], samples[1]
     interleaved = np.array([l, r]).flatten('F')
     out_data = interleaved.astype(dtype).tostring()
     return out_data
