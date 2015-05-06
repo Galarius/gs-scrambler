@@ -26,6 +26,15 @@ def __detect_device_index(p, device_name):
     return idx
 
 
+def detect_sound_aggregator_device_idx(p):
+    """
+    Detect OS X aggregator virtual device index
+    :param p: PyAudio instance
+    :return: device index
+    """
+    return __detect_device_index(p, "StegoScrambler")
+
+
 def detect_sound_flower_device_idx(p):
     """
     Detect SoundFlower virtual device index
@@ -61,4 +70,4 @@ def validate_audio_setup(p, input_format, input_channels, rate, input_device):
     """
     isSupported = p.is_format_supported(input_format=input_format, input_channels=input_channels, rate=rate,
                                         input_device=input_device)
-    return isSupported
+    return isSupported and input_channels > 1

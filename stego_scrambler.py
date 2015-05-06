@@ -21,12 +21,18 @@ import pyaudio, wave, time
 import stego_helper
 import io_stego
 import stego_device_info
+
+import pyximport; pyximport.install()
 from stego_core import StegoCore, StegoMode
+
 from stego_settings import StreamMode, StegoSettings
 from extensions import COLORS, colorize
 
 import sys, getopt, cmd, urlparse, inspect
 import numpy as np
+import math
+
+
 
 RECOVER_INFO_DEFAULT_FILE_NAME = 'data/recover_info.txt'
 # Keys
@@ -86,69 +92,63 @@ class StegoScramblerSession:
             print colorize("Unsupported stream mode! [%i]" % self.stream_mode, COLORS.FAIL)
 
     def __recording_callback(self, in_data, frame_count, time_info, status):
-        """
-        Audio processing
-        :param in_data:
-        :param frame_count:
-        :param time_info:
-        :param status:
-        :return:
-        """
-
+        #-----------------------------------------------------------------------
         if self.stream_mode == StreamMode.StreamFromFileToFile:
-            np_format = stego_helper.py_audio_format_to_num_py(pyaudio.get_format_from_width(
-                self.file_source.getsampwidth()))
             # file to file
             # read frames
             in_data = self.file_source.readframes(frame_count)
             # decode frames
-            left, right = stego_helper.audio_decode(in_data, self.file_source.getnchannels(), np_format)
+            left, right = stego_helper.audio_decode(in_data, self.file_source.getnchannels())
             # process frames
             left, right = self.core.process(left, right)
             # encode back
-            processed_data = stego_helper.audio_encode((left, right), np_format)
-            # write back
+            processed_data = stego_helper.audio_encode((left, right))
+            # write ro file
             if self.stego_mode == StegoMode.Hide:
                 self.output_wave_file.writeframes(processed_data)
-
+        #-----------------------------------------------------------------------
         elif self.stream_mode == StreamMode.StreamFromBuildInInputToSoundFlower:
-            np_format = stego_helper.py_audio_format_to_num_py(FORMAT)
+            # build-in input to sound flower or
             if not self.enable_processing:
                 # left, right = stego_helper.audio_decode(in_data, SAMPLE_WIDTH, CHANNELS)
                 # process frames
-                right = np.array([7 for i in range(1024)], dtype=np.int16)
-                left = np.copy(right)
+                #right = np.array([7 for i in range(1024)], dtype=np.int16)
+                #left = np.copy(right)
                 # print left, right[0]
                 # encode back
-                processed_data = stego_helper.audio_encode((left, right), np_format)
-                return processed_data, pyaudio.paContinue
-                # return in_data, pyaudio.paContinue
+                #processed_data = stego_helper.audio_encode((left, right), np_format)
+                #return processed_data, pyaudio.paContinue
+                return in_data, pyaudio.paContinue
 
-            # build-in input to sound flower or
             # decode frames
-            left, right = stego_helper.audio_decode(in_data, CHANNELS, np_format)
+            left, right = stego_helper.audio_decode(in_data, CHANNELS)
             # process frames
             left, right = self.core.process(left, right)
+            # print left, right
             if not len(self.core.message_to_proc_part):
                 self.enable_processing = False
             # print n_left.tolist(), n_right[0]
             # encode back
-            processed_data = stego_helper.audio_encode((left, right), np_format)
+            processed_data = stego_helper.audio_encode((left, right))
 
+        #-----------------------------------------------------------------------
         elif self.stream_mode == StreamMode.StreamFromSoundFlowerToBuildInOutput:
-            np_format = stego_helper.py_audio_format_to_num_py(FORMAT)
+            # sound flower to build-in output
             if not self.enable_processing:
                 return in_data, pyaudio.paContinue
 
-            # sound flower to build-in output
             # decode frames
-            left, right = stego_helper.audio_decode(in_data, CHANNELS, np_format)
-            print left, right
+            left, right = stego_helper.audio_decode(in_data, CHANNELS)
+            # print len(left), len(right)
+            # print left, right
             # process frames
             left, right = self.core.process(left, right)
             # encode back
-            processed_data = stego_helper.audio_encode((left, right), np_format)
-
+            processed_data = stego_helper.audio_encode((left, right))
+        else:
+            print 'Unknown mode!'
+            processed_data = in_data
+        #-----------------------------------------------------------------------
         return processed_data, pyaudio.paContinue
 
     def open_stream(self):
@@ -161,24 +161,21 @@ class StegoScramblerSession:
                                      self.file_source.getnchannels(), self.file_source.getframerate()
             input_dev_idx = stego_device_info.detect_build_in_input_device_idx(self.p_audio)
             output_dev_idx = stego_device_info.detect_build_in_output_device_idx(self.p_audio)
-            enable_input = False
-            enable_output = True
+            enable_input, enable_output = False, True
         elif self.stream_mode == StreamMode.StreamFromBuildInInputToSoundFlower:
             print colorize("Opening stream...", COLORS.OKBLUE)
             # build-in input to sound flower
             format, channels, rate = FORMAT, CHANNELS, RATE
             input_dev_idx = stego_device_info.detect_build_in_input_device_idx(self.p_audio)
             output_dev_idx = stego_device_info.detect_sound_flower_device_idx(self.p_audio)
-            enable_input=True
-            enable_output=True
+            enable_input, enable_output = True, True
         elif self.stream_mode == StreamMode.StreamFromSoundFlowerToBuildInOutput:
             print colorize("Opening stream...", COLORS.OKGREEN)
             # sound flower to build-in output
             format, channels, rate = FORMAT, CHANNELS, RATE
             input_dev_idx = stego_device_info.detect_sound_flower_device_idx(self.p_audio)
             output_dev_idx = stego_device_info.detect_build_in_output_device_idx(self.p_audio)
-            enable_input=True
-            enable_output=True
+            enable_input, enable_output = True, True
         else:
             print colorize("Unsupported stream mode! [%i]" % self.stream_mode, COLORS.FAIL)
             raise ValueError("Unsupported stream mode! [%i]" % self.stream_mode)
@@ -214,6 +211,13 @@ class StegoScramblerSession:
                                             output_device_index=output_dev_idx,
                                             stream_callback=self.__recording_callback)
             self.stream.start_stream()
+
+            src_latency = 1000.0 * self.stream.get_input_latency()
+            buffer_latency = 1000.0 * settings.frame_size / RATE
+            dst_latency = 1000.0 * self.stream.get_output_latency()
+            total_latency = buffer_latency + dst_latency + src_latency
+            print colorize("Expected delay: %0.1f ms (src: %0.1f, buf: %0.1f, dst: %0.1f)" % (
+                    total_latency, src_latency, buffer_latency, dst_latency), COLORS.WARNING)
         else:
             print colorize("Unsupported audio configuration!", COLORS.FAIL)
             raise ValueError("Unsupported audio configuration!")
@@ -441,16 +445,18 @@ class InteractiveStegoScrambler(cmd.Cmd):
         :param msg_file_name: path to the text file with message
         :param key: key to encode message (unsigned integer)
         """
-        args = urlparse.parse_qs(line)
+        #args = urlparse.parse_qs(line)
 
-        try:
-            msg_file_name, key = args['f'][0], int(args['k'][0])
-            if msg_file_name.strip() == '' or key <= 0:
-                self.print_err(inspect.currentframe().f_code.co_name.replace('do_', ''))
-                return
-        except KeyError:
-            self.print_err(inspect.currentframe().f_code.co_name.replace('do_', ''))
-            return
+        #try:
+        #    msg_file_name, key = args['f'][0], int(args['k'][0])
+        #    if msg_file_name.strip() == '' or key <= 0:
+                #self.print_err(inspect.currentframe().f_code.co_name.replace('do_', ''))
+                #return
+        msg_file_name = 'data/msg.txt'
+        key = 7
+        #except KeyError:
+        #    self.print_err(inspect.currentframe().f_code.co_name.replace('do_', ''))
+        #    return
 
         self.session.hide(msg_file_name, key)
 
