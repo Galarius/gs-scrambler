@@ -5,7 +5,7 @@ __copyright__ = 'Copyright 2015, Ilya Shoshin'
 
 from q_matrix import *
 import stego_helper as sh
-import jonson as j
+import core
 import numpy as np
 import math
 
@@ -178,9 +178,7 @@ class StegoCore:
         :return:      processed or the original chunk
         """
         # calculate semi-period
-        jsn = j.PyJonson(chunk_source, len(chunk_source))
-        jsn.calculate()
-        semi_p = jsn.getSemiPeriod()
+        semi_p = core.calculate_semi_period_c(chunk_source, len(chunk_source))
 
         if semi_p == 0:
             return chunk_source, chunk_container            # wrong semi-period, return original data
@@ -214,9 +212,7 @@ class StegoCore:
         """
 
         # calculate semi-period
-        jsn = j.PyJonson(chunk_source, len(chunk_source))
-        jsn.calculate()
-        semi_p = jsn.getSemiPeriod()
+        semi_p = core.calculate_semi_period_c(chunk_source, len(chunk_source))
 
         if semi_p != 0:
 

@@ -10,8 +10,6 @@
 #include "core_memory.h"
 #include "core_types.h"
 
-using namespace core;
-
 /**
  *  Calculate semi-period for discrete function using Alter-Johnson formula:
  *     a(tau) = 1/(n-tau) * sum(t=1,t<n-tau, |f(t+tau) - f(t)|),

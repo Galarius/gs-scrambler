@@ -23,21 +23,21 @@ ext_modules = [
               libraries=["m"],
               extra_compile_args = ["-ffast-math"]),
     # ---------------------------------
-    # Jonson processing extension class
+    # Steganography core methods
     # ---------------------------------
-    # cython j.pyx -> j.cpp
-    # g++ -c j.cpp -> j.o
-    # g++ -c jonson_c.cpp -> jonson_c.o
-    # link jonson_c.o j.o -> jonson.so
-    Extension(name="jonson",
-              sources=["j.pyx", "jonson_c.cpp"],
+    # cython core_py_wrapper.pyx -> core_py_wrapper.cpp
+    # g++ -c core_py_wrapper.cpp -> core_py_wrapper.o
+    # g++ -c core.cpp -> core.o
+    # link core.o core_py_wrapper.o -> core_py_wrapper.so
+    Extension(name="core",
+              sources=["core_py_wrapper.pyx", "core.cpp"],
               # extra_objects=["jonson.o"],  # if you compile jonson_c.cpp separately
-              include_dirs = [numpy.get_include()],  # .../site-packages/numpy/core/include
+              include_dirs = [numpy.get_include()],
               language="c++",
               # libraries=
               # extra_compile_args = "...".split(),
               # extra_link_args = "...".split()
-              )
+              ),
 ]
 
 setup(
