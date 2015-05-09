@@ -5,3 +5,6 @@ data/
 *.pyc
 *.c
 *.so
+.DS_Store
+*.xcodeproj
+*.dylib

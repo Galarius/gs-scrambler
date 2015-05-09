@@ -140,7 +140,7 @@ class StegoScramblerSession:
             # decode frames
             left, right = stego_helper.audio_decode(in_data, CHANNELS)
             # print len(left), len(right)
-            # print left, right
+            print left, right
             # process frames
             left, right = self.core.process(left, right)
             # encode back
