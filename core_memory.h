@@ -21,17 +21,17 @@ inline void new_arr_primitive_s(Type **arrPtr, Integer64 size)
     if(!*arrPtr) {
         *arrPtr = new Type[size];
         if(!*arrPtr) { printf("allocating error: failed to allocate %lli bytes", size * sizeof(Type)); }
-    } else { printf("allocating error: 'ptr' shoud be euals to 0 initially"); }
+    } else { printf("allocating error: 'ptr' shoud be equals to 0 initially"); }
 }
 /*
  *	Safe delete[] for array of primitive elements
  */
 template <typename ArrType>
-inline void delete_arr_primitive_s(ArrType *arrPtr)
+inline void delete_arr_primitive_s(ArrType **arrPtr)
 {
-    if(arrPtr) {
-        delete[] arrPtr;
-        arrPtr = 0;
+    if(*arrPtr) {
+        delete[] *arrPtr;
+        *arrPtr = 0;
     }
 }
 #endif

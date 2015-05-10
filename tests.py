@@ -161,7 +161,17 @@ import stego_helper as sh
 #s_r = core.vec_2_str(v)
 #print s_r
 
-print core.b_2_d(core.d_2_b(32700))
+from extensions import elapsed_timer
+
+with elapsed_timer() as elapsed:
+    for i in range(1024):
+        core.b_2_d(core.d_2_b(32700))
+    print(elapsed())
+
+with elapsed_timer() as elapsed:
+    for i in range(1024):
+        sh.b_2_d(sh.d_2_b(32700, 16))
+    print(elapsed())
 
 
 

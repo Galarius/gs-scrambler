@@ -8,6 +8,7 @@ import stego_helper as sh
 import core
 import numpy as np
 import math
+from extensions import elapsed_timer
 
 from extensions import colorize, COLORS
 

@@ -12,6 +12,12 @@
 
 #define SIGN(x) ((x) == (0) ? (0) : ((x) > (0) ? (1) : (-1)))
 
+template <typename IntegerType>
+static inline IntegerType gabs(IntegerType j)
+{
+    return (j < 0 ? -j : j);
+}
+
 /*
  *	Converts char array into vector of type IntegerType.
  *  <src> - source string
@@ -29,9 +35,8 @@ void str2vec_s(char *const src, IntegerType **dest, Integer32 size)
     if(size > 0 && src && !(*dest))
     {
         new_arr_primitive_s<IntegerType>(dest, size);
-        for(Integer32  i = 0; i < size; ++i) {
+        for(Integer32  i = 0; i < size; ++i)
             (*dest)[i] = static_cast<IntegerType>(src[i]);
-        }
     } else {
         printf("ArgumentsError");
     }
@@ -75,8 +80,8 @@ Integer16 D2B(IntegerType x, IntegerType **binary)
         Integer16 sign = SIGN(x);
         for(Integer16 i = 0; i < sizeInBits; ++i)
         {
-            (*binary)[i] = abs(x) % 2;
-            x = floor(abs(x) / 2);
+            (*binary)[i] = gabs(x) % 2;
+            x = floor(gabs(x) / 2);
         }
         for(Integer16 i = 0; i < sizeInBits; ++i)
             (*binary)[i] *= sign;
@@ -99,11 +104,4 @@ void B2D(IntegerType *binary, IntegerType &x)
     }
 }
 //------------------------------------------------------------------------------------
-
-
-//template <typename IntegerType>
-//void message2matrix(const char *message, Integer32 length)
-//{
-//    
-//}
 

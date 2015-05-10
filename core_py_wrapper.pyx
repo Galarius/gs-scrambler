@@ -3,6 +3,10 @@ __author__ = 'galarius'
 import numpy as np
 cimport numpy as np
 
+# Numpy must be initialized. When using numpy from C or Cython you must
+# _always_ do that, or you will have segfaults
+np.import_array()
+
 #--------------------------------------------------------------------
 # non-template core methods
 #--------------------------------------------------------------------
@@ -23,10 +27,6 @@ def calculate_semi_period_c(np.ndarray[np.int16_t, ndim=1] arr, n):
     """
     return calculate_semi_period(<short int *> arr.data, n)
 
-# Numpy must be initialized. When using numpy from C or Cython you must
-# _always_ do that, or you will have segfaults
-np.import_array()
-
 #--------------------------------------------------------------------
 # template core methods
 #--------------------------------------------------------------------
@@ -42,7 +42,7 @@ def str_2_vec(source):
     """
     cdef short int *dest = NULL
     cdef int size = len(source)
-    # ptrhon str to char *: http://stackoverflow.com/a/5061862/2422367
+    # python string to char *: http://stackoverflow.com/a/5061862/2422367
     cdef str retval = PyString_FromStringAndSize(PyString_AsString(source), <Py_ssize_t>size)
     cdef char *text = PyString_AsString(retval)
     # call C func
@@ -51,7 +51,7 @@ def str_2_vec(source):
     cdef np.npy_intp shape[1]
     shape[0] = <np.npy_intp> size
     # Use the PyArray_SimpleNewFromData function from numpy to create a
-    # new Python object pointing to the existing data
+    # new Python object pointing to the existing data (without copying)
     # http://docs.scipy.org/doc/numpy/user/c-info.how-to-extend.html
     ndarray = np.PyArray_SimpleNewFromData(1, shape, np.NPY_INT16, <void *> dest)
     # Tell Python that it can deallocate the memory when the ndarray
@@ -84,7 +84,6 @@ def d_2_b(x):
     cdef short int *dest = NULL
     # call C func
     size = d2b_short(x, &dest)
-    # Create a C array to describe the shape of the ndarray
     cdef np.npy_intp shape[1]
     shape[0] = <np.npy_intp> size
     ndarray = np.PyArray_SimpleNewFromData(1, shape, np.NPY_INT16, <void *> dest)

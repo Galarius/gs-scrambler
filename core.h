@@ -63,6 +63,29 @@ void B2D(IntegerType *binary, IntegerType &x);
  *      semi_period = argmin(a(tau)),
  *      semi_period_min <= semi_period <= semi_period_max
  */
-Integer32 calculate_semi_period(Integer16* data, Integer32 n);
+Integer32 calculate_semi_period(const Integer16* const data, Integer32 n);
+
+/**
+ *  Integrate data from 'stream' to 'container' of size 'size' begining with 'begin' with step 'step'.
+ *
+ *  @param container container to modify
+ *  @param size      container size
+ *  @param begin     integration start pos
+ *  @param step      integration step
+ *  @param stream    message (encoded) to integrate
+ */
+void integrate(Integer16 **container, Integer32 size, Integer32 begin, Integer32 step, Integer16 *stream);
+
+/**
+ *  Recover data to 'stream' from 'container' of size 'size' begining with 'begin' with step 'step'.
+ *
+ *  @param container container to extract data from
+ *  @param size      container size
+ *  @param begin     deintegration start pos
+ *  @param step      deintegration step
+ *  @param stream    message (encoded) to deintegrate to
+ *  @return          message length
+ */
+Integer32 deintegrate(const Integer16 * const container, Integer32 size, Integer32 begin, Integer32 step, Integer16 **stream);
 
 #endif /* defined(__core__core__) */
