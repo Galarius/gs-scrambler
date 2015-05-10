@@ -41,7 +41,7 @@ void vec2str_s(IntegerType *src, char **dest, Integer32 size);
  *	Converts integer to binary array
  */
 template <typename IntegerType>
-void D2B(IntegerType x, IntegerType **binary);
+Integer16 D2B(IntegerType x, IntegerType **binary);
 /*
  *	Converts binary array to integer
  */

@@ -189,11 +189,11 @@ class StegoCore:
         step = int(length / float(semi_p))
         for i in range(semi_p, length, step):
             if len(self.message_to_proc_part) > 0:
-                bits = sh.d_2_b(chunk_container[i], StegoCore.BITS)
+                bits = core.d_2_b(chunk_container[i])
                 sign = 1 if chunk_container[i] >= 0 else -1
                 bits[0] = sign * self.message_to_proc_part[0]
                 self.message_to_proc_part = self.message_to_proc_part[1:]
-                temp[i] = sh.b_2_d(bits)
+                temp[i] = core.b_2_d(bits)
             else:
                 break
 
@@ -220,7 +220,7 @@ class StegoCore:
             length = len(chunk_container)
             step = int(length / float(semi_p))
             for i in range(semi_p, length, step):
-                bits = sh.d_2_b(chunk_container[i], StegoCore.BITS)
+                bits = core.d_2_b(chunk_container[i])
                 message_part.append(abs(bits[0]))
 
             # extend msg part array
@@ -254,11 +254,11 @@ class StegoCore:
         temp = [x for x in chunk_container]
         for i in range(len(chunk_container)):
             if len(self.sync_mark_encoded_array) > 0:
-                bits = sh.d_2_b(chunk_container[i], StegoCore.BITS)
+                bits = core.d_2_b(chunk_container[i])
                 sign = 1 if chunk_container[i] >= 0 else -1
                 bits[0] = sign * self.sync_mark_encoded_array[0]
                 self.sync_mark_encoded_array = self.sync_mark_encoded_array[1:]
-                temp[i] = sh.b_2_d(bits)
+                temp[i] = core.b_2_d(bits)
             else:
                 break
 
@@ -287,7 +287,7 @@ class StegoCore:
             self.sync_mark_temp_encoded_array = self.sync_mark_temp_encoded_array[len(chunk_container):]
 
         for i in range(len(chunk_container)):
-            bits = sh.d_2_b(chunk_container[i], StegoCore.BITS)
+            bits = core.d_2_b(chunk_container[i])
             self.sync_mark_temp_encoded_array.append(abs(bits[0]))
 
         pos, length = sh.contains(self.sync_mark_encoded_array.tolist(), self.sync_mark_temp_encoded_array)

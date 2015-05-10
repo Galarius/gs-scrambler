@@ -29,8 +29,11 @@ void str2vec_s(char *const src, IntegerType **dest, Integer32 size)
     if(size > 0 && src && !(*dest))
     {
         new_arr_primitive_s<IntegerType>(dest, size);
-        for(Integer32  i = 0; i < size; ++i)
+        for(Integer32  i = 0; i < size; ++i) {
             (*dest)[i] = static_cast<IntegerType>(src[i]);
+        }
+    } else {
+        printf("ArgumentsError");
     }
 }
 //------------------------------------------------------------------------------------
@@ -61,12 +64,13 @@ void vec2str_s(IntegerType *src, char **dest, Integer32 size)
  *	Converts decimal to binary array
  */
 template <typename IntegerType>
-void D2B(IntegerType x, IntegerType **binary)
+Integer16 D2B(IntegerType x, IntegerType **binary)
 {
+    Integer16 sizeInBits = 0;
     // Use little endian order (lsb is the first bit from left)
     if(!(*binary))
     {
-        Integer16 sizeInBits = sizeof(IntegerType) * 8;
+        sizeInBits = sizeof(IntegerType) * 8;
         new_arr_primitive_s<IntegerType>(binary, sizeInBits);
         Integer16 sign = SIGN(x);
         for(Integer16 i = 0; i < sizeInBits; ++i)
@@ -77,6 +81,7 @@ void D2B(IntegerType x, IntegerType **binary)
         for(Integer16 i = 0; i < sizeInBits; ++i)
             (*binary)[i] *= sign;
     }
+    return sizeInBits;
 }
 //------------------------------------------------------------------------------------
 /*
