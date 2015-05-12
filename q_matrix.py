@@ -3,6 +3,7 @@
 __author__ = 'Ilya Shoshin'
 __copyright__ = 'Copyright 2015, Ilya Shoshin'
 
+import numpy as np
 
 class QMatrix:
     """
@@ -14,7 +15,7 @@ class QMatrix:
         """
         self.p = p
         self.n = n
-        self.Q = []
+        self.Q = np.empty((self.p+1, self.p+1), dtype=np.int16)
         # create matrix
         self.create()
 
@@ -23,11 +24,9 @@ class QMatrix:
         Q-matrix creation method
         """
         for i in range(0, self.p+1):
-            mm = []
             for j in range(0, self.p+1):
                 k = self.n-self.p+i-j if i != 0 else self.n+1-j
-                mm.append(self.fib(k))
-            self.Q.append(mm)
+                self.Q[i][j] = self.fib(k)
 
     def det(self):
         """
@@ -74,7 +73,7 @@ class QMatrix:
         """
         p = len(M)-1
         Q = QMatrix(p, n)
-        E = QMatrix.mult(M, Q.Q)
+        E = M.dot(Q.Q)
         return E
 
     @staticmethod
@@ -87,7 +86,7 @@ class QMatrix:
         """
         p = len(E)-1
         Q = QMatrix(p, -n)
-        M = QMatrix.mult(E, Q.Q)
+        M = E.dot(Q.Q)
         return M
 
     def pretty_print(self):

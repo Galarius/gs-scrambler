@@ -930,6 +930,8 @@ static CYTHON_INLINE int __Pyx_PyInt_As_int(PyObject *);
 
 static CYTHON_INLINE PyObject* __Pyx_PyInt_From_int(int value);
 
+static CYTHON_INLINE Py_intptr_t __Pyx_PyInt_As_Py_intptr_t(PyObject *);
+
 static CYTHON_INLINE short __Pyx_PyInt_As_short(PyObject *);
 
 static CYTHON_INLINE PyObject* __Pyx_PyInt_From_short(short value);
@@ -1097,10 +1099,11 @@ static PyObject *__pyx_builtin_range;
 static PyObject *__pyx_builtin_RuntimeError;
 static PyObject *__pyx_pf_4core_calculate_semi_period_c(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_samples, PyObject *__pyx_v_n); /* proto */
 static PyObject *__pyx_pf_4core_2integrate_c(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_container, PyObject *__pyx_v_n, PyObject *__pyx_v_begin, PyObject *__pyx_v_step, PyArrayObject *__pyx_v_info); /* proto */
-static PyObject *__pyx_pf_4core_4str_2_vec(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_source); /* proto */
-static PyObject *__pyx_pf_4core_6vec_2_str(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_source); /* proto */
-static PyObject *__pyx_pf_4core_8d_2_b(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_x); /* proto */
-static PyObject *__pyx_pf_4core_10b_2_d(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_bits); /* proto */
+static PyObject *__pyx_pf_4core_4deintegrate_c(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_container, PyObject *__pyx_v_n, PyObject *__pyx_v_begin, PyObject *__pyx_v_step); /* proto */
+static PyObject *__pyx_pf_4core_6str_2_vec(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_source); /* proto */
+static PyObject *__pyx_pf_4core_8vec_2_str(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_source); /* proto */
+static PyObject *__pyx_pf_4core_10d_2_b(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_x); /* proto */
+static PyObject *__pyx_pf_4core_12b_2_d(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_bits); /* proto */
 static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, Py_buffer *__pyx_v_info, int __pyx_v_flags); /* proto */
 static void __pyx_pf_5numpy_7ndarray_2__releasebuffer__(PyArrayObject *__pyx_v_self, Py_buffer *__pyx_v_info); /* proto */
 static char __pyx_k_B[] = "B";
@@ -1148,6 +1151,7 @@ static char __pyx_k_source[] = "source";
 static char __pyx_k_ndarray[] = "ndarray";
 static char __pyx_k_samples[] = "samples";
 static char __pyx_k_galarius[] = "galarius";
+static char __pyx_k_info_ptr[] = "info_ptr";
 static char __pyx_k_pystring[] = "pystring";
 static char __pyx_k_container[] = "container";
 static char __pyx_k_str_2_vec[] = "str_2_vec";
@@ -1155,6 +1159,7 @@ static char __pyx_k_vec_2_str[] = "vec_2_str";
 static char __pyx_k_ValueError[] = "ValueError";
 static char __pyx_k_integrate_c[] = "integrate_c";
 static char __pyx_k_RuntimeError[] = "RuntimeError";
+static char __pyx_k_deintegrate_c[] = "deintegrate_c";
 static char __pyx_k_calculate_semi_period_c[] = "calculate_semi_period_c";
 static char __pyx_k_ndarray_is_not_C_contiguous[] = "ndarray is not C contiguous";
 static char __pyx_k_Users_galarius_Documents_Projec[] = "/Users/galarius/Documents/!Projects/Steganography/Python/stego_scrambler/core_py_wrapper.pyx";
@@ -1177,11 +1182,13 @@ static PyObject *__pyx_n_s_calculate_semi_period_c;
 static PyObject *__pyx_n_s_container;
 static PyObject *__pyx_n_s_core;
 static PyObject *__pyx_n_s_d_2_b;
+static PyObject *__pyx_n_s_deintegrate_c;
 static PyObject *__pyx_n_s_dest;
 static PyObject *__pyx_n_s_flags;
 static PyObject *__pyx_n_s_galarius;
 static PyObject *__pyx_n_s_import;
 static PyObject *__pyx_n_s_info;
+static PyObject *__pyx_n_s_info_ptr;
 static PyObject *__pyx_n_s_integrate_c;
 static PyObject *__pyx_n_s_l;
 static PyObject *__pyx_n_s_main;
@@ -1219,12 +1226,14 @@ static PyObject *__pyx_tuple__11;
 static PyObject *__pyx_tuple__13;
 static PyObject *__pyx_tuple__15;
 static PyObject *__pyx_tuple__17;
+static PyObject *__pyx_tuple__19;
 static PyObject *__pyx_codeobj__8;
 static PyObject *__pyx_codeobj__10;
 static PyObject *__pyx_codeobj__12;
 static PyObject *__pyx_codeobj__14;
 static PyObject *__pyx_codeobj__16;
 static PyObject *__pyx_codeobj__18;
+static PyObject *__pyx_codeobj__20;
 
 /* "core_py_wrapper.pyx":23
  * 
@@ -1568,7 +1577,7 @@ static PyObject *__pyx_pf_4core_2integrate_c(CYTHON_UNUSED PyObject *__pyx_self,
  *     info = info[l:]
  *     return container, info             # <<<<<<<<<<<<<<
  * 
- * 
+ * def deintegrate_c(np.ndarray[np.int16_t, ndim=1, mode="c"] container not None, n, begin, step):
  */
   __Pyx_XDECREF(__pyx_r);
   __pyx_t_4 = PyTuple_New(2); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 40; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -1613,7 +1622,241 @@ static PyObject *__pyx_pf_4core_2integrate_c(CYTHON_UNUSED PyObject *__pyx_self,
   return __pyx_r;
 }
 
-/* "core_py_wrapper.pyx":50
+/* "core_py_wrapper.pyx":42
+ *     return container, info
+ * 
+ * def deintegrate_c(np.ndarray[np.int16_t, ndim=1, mode="c"] container not None, n, begin, step):             # <<<<<<<<<<<<<<
+ *     cdef short int *info_ptr = NULL
+ *     cdef l = deintegrate(<short int *> container.data, n, begin, step, &info_ptr)
+ */
+
+/* Python wrapper */
+static PyObject *__pyx_pw_4core_5deintegrate_c(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyMethodDef __pyx_mdef_4core_5deintegrate_c = {"deintegrate_c", (PyCFunction)__pyx_pw_4core_5deintegrate_c, METH_VARARGS|METH_KEYWORDS, 0};
+static PyObject *__pyx_pw_4core_5deintegrate_c(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+  PyArrayObject *__pyx_v_container = 0;
+  PyObject *__pyx_v_n = 0;
+  PyObject *__pyx_v_begin = 0;
+  PyObject *__pyx_v_step = 0;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  PyObject *__pyx_r = 0;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("deintegrate_c (wrapper)", 0);
+  {
+    static PyObject **__pyx_pyargnames[] = {&__pyx_n_s_container,&__pyx_n_s_n,&__pyx_n_s_begin,&__pyx_n_s_step,0};
+    PyObject* values[4] = {0,0,0,0};
+    if (unlikely(__pyx_kwds)) {
+      Py_ssize_t kw_args;
+      const Py_ssize_t pos_args = PyTuple_GET_SIZE(__pyx_args);
+      switch (pos_args) {
+        case  4: values[3] = PyTuple_GET_ITEM(__pyx_args, 3);
+        case  3: values[2] = PyTuple_GET_ITEM(__pyx_args, 2);
+        case  2: values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
+        case  1: values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
+        case  0: break;
+        default: goto __pyx_L5_argtuple_error;
+      }
+      kw_args = PyDict_Size(__pyx_kwds);
+      switch (pos_args) {
+        case  0:
+        if (likely((values[0] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_container)) != 0)) kw_args--;
+        else goto __pyx_L5_argtuple_error;
+        case  1:
+        if (likely((values[1] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_n)) != 0)) kw_args--;
+        else {
+          __Pyx_RaiseArgtupleInvalid("deintegrate_c", 1, 4, 4, 1); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 42; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+        }
+        case  2:
+        if (likely((values[2] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_begin)) != 0)) kw_args--;
+        else {
+          __Pyx_RaiseArgtupleInvalid("deintegrate_c", 1, 4, 4, 2); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 42; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+        }
+        case  3:
+        if (likely((values[3] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_step)) != 0)) kw_args--;
+        else {
+          __Pyx_RaiseArgtupleInvalid("deintegrate_c", 1, 4, 4, 3); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 42; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+        }
+      }
+      if (unlikely(kw_args > 0)) {
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "deintegrate_c") < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 42; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+      }
+    } else if (PyTuple_GET_SIZE(__pyx_args) != 4) {
+      goto __pyx_L5_argtuple_error;
+    } else {
+      values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
+      values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
+      values[2] = PyTuple_GET_ITEM(__pyx_args, 2);
+      values[3] = PyTuple_GET_ITEM(__pyx_args, 3);
+    }
+    __pyx_v_container = ((PyArrayObject *)values[0]);
+    __pyx_v_n = values[1];
+    __pyx_v_begin = values[2];
+    __pyx_v_step = values[3];
+  }
+  goto __pyx_L4_argument_unpacking_done;
+  __pyx_L5_argtuple_error:;
+  __Pyx_RaiseArgtupleInvalid("deintegrate_c", 1, 4, 4, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 42; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+  __pyx_L3_error:;
+  __Pyx_AddTraceback("core.deintegrate_c", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_RefNannyFinishContext();
+  return NULL;
+  __pyx_L4_argument_unpacking_done:;
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_container), __pyx_ptype_5numpy_ndarray, 0, "container", 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 42; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_r = __pyx_pf_4core_4deintegrate_c(__pyx_self, __pyx_v_container, __pyx_v_n, __pyx_v_begin, __pyx_v_step);
+
+  /* function exit code */
+  goto __pyx_L0;
+  __pyx_L1_error:;
+  __pyx_r = NULL;
+  __pyx_L0:;
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+static PyObject *__pyx_pf_4core_4deintegrate_c(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_container, PyObject *__pyx_v_n, PyObject *__pyx_v_begin, PyObject *__pyx_v_step) {
+  short *__pyx_v_info_ptr;
+  PyObject *__pyx_v_l = 0;
+  npy_intp __pyx_v_shape[1];
+  PyObject *__pyx_v_ndarray = NULL;
+  __Pyx_LocalBuf_ND __pyx_pybuffernd_container;
+  __Pyx_Buffer __pyx_pybuffer_container;
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  int __pyx_t_1;
+  int __pyx_t_2;
+  int __pyx_t_3;
+  PyObject *__pyx_t_4 = NULL;
+  npy_intp __pyx_t_5;
+  PyObject *__pyx_t_6 = NULL;
+  PyObject *__pyx_t_7 = NULL;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  __Pyx_RefNannySetupContext("deintegrate_c", 0);
+  __pyx_pybuffer_container.pybuffer.buf = NULL;
+  __pyx_pybuffer_container.refcount = 0;
+  __pyx_pybuffernd_container.data = NULL;
+  __pyx_pybuffernd_container.rcbuffer = &__pyx_pybuffer_container;
+  {
+    __Pyx_BufFmt_StackElem __pyx_stack[1];
+    if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_container.rcbuffer->pybuffer, (PyObject*)__pyx_v_container, &__Pyx_TypeInfo_nn___pyx_t_5numpy_int16_t, PyBUF_FORMAT| PyBUF_C_CONTIGUOUS, 1, 0, __pyx_stack) == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 42; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  }
+  __pyx_pybuffernd_container.diminfo[0].strides = __pyx_pybuffernd_container.rcbuffer->pybuffer.strides[0]; __pyx_pybuffernd_container.diminfo[0].shape = __pyx_pybuffernd_container.rcbuffer->pybuffer.shape[0];
+
+  /* "core_py_wrapper.pyx":43
+ * 
+ * def deintegrate_c(np.ndarray[np.int16_t, ndim=1, mode="c"] container not None, n, begin, step):
+ *     cdef short int *info_ptr = NULL             # <<<<<<<<<<<<<<
+ *     cdef l = deintegrate(<short int *> container.data, n, begin, step, &info_ptr)
+ *     cdef np.npy_intp shape[1]
+ */
+  __pyx_v_info_ptr = NULL;
+
+  /* "core_py_wrapper.pyx":44
+ * def deintegrate_c(np.ndarray[np.int16_t, ndim=1, mode="c"] container not None, n, begin, step):
+ *     cdef short int *info_ptr = NULL
+ *     cdef l = deintegrate(<short int *> container.data, n, begin, step, &info_ptr)             # <<<<<<<<<<<<<<
+ *     cdef np.npy_intp shape[1]
+ *     shape[0] = <np.npy_intp> l
+ */
+  __pyx_t_1 = __Pyx_PyInt_As_int(__pyx_v_n); if (unlikely((__pyx_t_1 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 44; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = __Pyx_PyInt_As_int(__pyx_v_begin); if (unlikely((__pyx_t_2 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 44; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_3 = __Pyx_PyInt_As_int(__pyx_v_step); if (unlikely((__pyx_t_3 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 44; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_4 = __Pyx_PyInt_From_int(deintegrate(((short *)__pyx_v_container->data), __pyx_t_1, __pyx_t_2, __pyx_t_3, (&__pyx_v_info_ptr))); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 44; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_4);
+  __pyx_v_l = __pyx_t_4;
+  __pyx_t_4 = 0;
+
+  /* "core_py_wrapper.pyx":46
+ *     cdef l = deintegrate(<short int *> container.data, n, begin, step, &info_ptr)
+ *     cdef np.npy_intp shape[1]
+ *     shape[0] = <np.npy_intp> l             # <<<<<<<<<<<<<<
+ *     ndarray = np.PyArray_SimpleNewFromData(1, shape, np.NPY_INT16, <void *> info_ptr)
+ *     np.PyArray_UpdateFlags(ndarray, ndarray.flags.num | np.NPY_OWNDATA)
+ */
+  __pyx_t_5 = __Pyx_PyInt_As_Py_intptr_t(__pyx_v_l); if (unlikely((__pyx_t_5 == (npy_intp)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 46; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  (__pyx_v_shape[0]) = ((npy_intp)__pyx_t_5);
+
+  /* "core_py_wrapper.pyx":47
+ *     cdef np.npy_intp shape[1]
+ *     shape[0] = <np.npy_intp> l
+ *     ndarray = np.PyArray_SimpleNewFromData(1, shape, np.NPY_INT16, <void *> info_ptr)             # <<<<<<<<<<<<<<
+ *     np.PyArray_UpdateFlags(ndarray, ndarray.flags.num | np.NPY_OWNDATA)
+ *     return ndarray
+ */
+  __pyx_t_4 = PyArray_SimpleNewFromData(1, __pyx_v_shape, NPY_INT16, ((void *)__pyx_v_info_ptr)); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 47; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_4);
+  __pyx_v_ndarray = __pyx_t_4;
+  __pyx_t_4 = 0;
+
+  /* "core_py_wrapper.pyx":48
+ *     shape[0] = <np.npy_intp> l
+ *     ndarray = np.PyArray_SimpleNewFromData(1, shape, np.NPY_INT16, <void *> info_ptr)
+ *     np.PyArray_UpdateFlags(ndarray, ndarray.flags.num | np.NPY_OWNDATA)             # <<<<<<<<<<<<<<
+ *     return ndarray
+ * 
+ */
+  if (!(likely(((__pyx_v_ndarray) == Py_None) || likely(__Pyx_TypeTest(__pyx_v_ndarray, __pyx_ptype_5numpy_ndarray))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 48; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_ndarray, __pyx_n_s_flags); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 48; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_4);
+  __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_num); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 48; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_6);
+  __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+  __pyx_t_4 = __Pyx_PyInt_From_int(NPY_OWNDATA); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 48; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_4);
+  __pyx_t_7 = PyNumber_Or(__pyx_t_6, __pyx_t_4); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 48; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_7);
+  __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+  __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+  __pyx_t_3 = __Pyx_PyInt_As_int(__pyx_t_7); if (unlikely((__pyx_t_3 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 48; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+  PyArray_UpdateFlags(((PyArrayObject *)__pyx_v_ndarray), __pyx_t_3);
+
+  /* "core_py_wrapper.pyx":49
+ *     ndarray = np.PyArray_SimpleNewFromData(1, shape, np.NPY_INT16, <void *> info_ptr)
+ *     np.PyArray_UpdateFlags(ndarray, ndarray.flags.num | np.NPY_OWNDATA)
+ *     return ndarray             # <<<<<<<<<<<<<<
+ * 
+ * #--------------------------------------------------------------------
+ */
+  __Pyx_XDECREF(__pyx_r);
+  __Pyx_INCREF(__pyx_v_ndarray);
+  __pyx_r = __pyx_v_ndarray;
+  goto __pyx_L0;
+
+  /* "core_py_wrapper.pyx":42
+ *     return container, info
+ * 
+ * def deintegrate_c(np.ndarray[np.int16_t, ndim=1, mode="c"] container not None, n, begin, step):             # <<<<<<<<<<<<<<
+ *     cdef short int *info_ptr = NULL
+ *     cdef l = deintegrate(<short int *> container.data, n, begin, step, &info_ptr)
+ */
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_4);
+  __Pyx_XDECREF(__pyx_t_6);
+  __Pyx_XDECREF(__pyx_t_7);
+  { PyObject *__pyx_type, *__pyx_value, *__pyx_tb;
+    __Pyx_ErrFetch(&__pyx_type, &__pyx_value, &__pyx_tb);
+    __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_container.rcbuffer->pybuffer);
+  __Pyx_ErrRestore(__pyx_type, __pyx_value, __pyx_tb);}
+  __Pyx_AddTraceback("core.deintegrate_c", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = NULL;
+  goto __pyx_L2;
+  __pyx_L0:;
+  __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_container.rcbuffer->pybuffer);
+  __pyx_L2:;
+  __Pyx_XDECREF(__pyx_v_l);
+  __Pyx_XDECREF(__pyx_v_ndarray);
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "core_py_wrapper.pyx":58
  * from cpython.string cimport PyString_AsString, PyString_FromStringAndSize, PyString_FromString
  * 
  * def str_2_vec(source):             # <<<<<<<<<<<<<<
@@ -1622,21 +1865,21 @@ static PyObject *__pyx_pf_4core_2integrate_c(CYTHON_UNUSED PyObject *__pyx_self,
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_4core_5str_2_vec(PyObject *__pyx_self, PyObject *__pyx_v_source); /*proto*/
-static char __pyx_doc_4core_4str_2_vec[] = "\n    Convert string to vector of integers\n    :param source: string\n    :return:    np.array([int16, int16, int16, ...], dtype=np.int16)\n    ";
-static PyMethodDef __pyx_mdef_4core_5str_2_vec = {"str_2_vec", (PyCFunction)__pyx_pw_4core_5str_2_vec, METH_O, __pyx_doc_4core_4str_2_vec};
-static PyObject *__pyx_pw_4core_5str_2_vec(PyObject *__pyx_self, PyObject *__pyx_v_source) {
+static PyObject *__pyx_pw_4core_7str_2_vec(PyObject *__pyx_self, PyObject *__pyx_v_source); /*proto*/
+static char __pyx_doc_4core_6str_2_vec[] = "\n    Convert string to vector of integers\n    :param source: string\n    :return:    np.array([int16, int16, int16, ...], dtype=np.int16)\n    ";
+static PyMethodDef __pyx_mdef_4core_7str_2_vec = {"str_2_vec", (PyCFunction)__pyx_pw_4core_7str_2_vec, METH_O, __pyx_doc_4core_6str_2_vec};
+static PyObject *__pyx_pw_4core_7str_2_vec(PyObject *__pyx_self, PyObject *__pyx_v_source) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("str_2_vec (wrapper)", 0);
-  __pyx_r = __pyx_pf_4core_4str_2_vec(__pyx_self, ((PyObject *)__pyx_v_source));
+  __pyx_r = __pyx_pf_4core_6str_2_vec(__pyx_self, ((PyObject *)__pyx_v_source));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_4core_4str_2_vec(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_source) {
+static PyObject *__pyx_pf_4core_6str_2_vec(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_source) {
   short *__pyx_v_dest;
   int __pyx_v_size;
   PyObject *__pyx_v_retval = 0;
@@ -1656,7 +1899,7 @@ static PyObject *__pyx_pf_4core_4str_2_vec(CYTHON_UNUSED PyObject *__pyx_self, P
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("str_2_vec", 0);
 
-  /* "core_py_wrapper.pyx":56
+  /* "core_py_wrapper.pyx":64
  *     :return:    np.array([int16, int16, int16, ...], dtype=np.int16)
  *     """
  *     cdef short int *dest = NULL             # <<<<<<<<<<<<<<
@@ -1665,41 +1908,41 @@ static PyObject *__pyx_pf_4core_4str_2_vec(CYTHON_UNUSED PyObject *__pyx_self, P
  */
   __pyx_v_dest = NULL;
 
-  /* "core_py_wrapper.pyx":57
+  /* "core_py_wrapper.pyx":65
  *     """
  *     cdef short int *dest = NULL
  *     cdef int size = len(source)             # <<<<<<<<<<<<<<
  *     # python string to char *: http://stackoverflow.com/a/5061862/2422367
  *     cdef str retval = PyString_FromStringAndSize(PyString_AsString(source), <Py_ssize_t>size)
  */
-  __pyx_t_1 = PyObject_Length(__pyx_v_source); if (unlikely(__pyx_t_1 == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 57; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = PyObject_Length(__pyx_v_source); if (unlikely(__pyx_t_1 == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 65; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_v_size = __pyx_t_1;
 
-  /* "core_py_wrapper.pyx":59
+  /* "core_py_wrapper.pyx":67
  *     cdef int size = len(source)
  *     # python string to char *: http://stackoverflow.com/a/5061862/2422367
  *     cdef str retval = PyString_FromStringAndSize(PyString_AsString(source), <Py_ssize_t>size)             # <<<<<<<<<<<<<<
  *     cdef char *text = PyString_AsString(retval)
  *     # call C func
  */
-  __pyx_t_2 = PyString_AsString(__pyx_v_source); if (unlikely(__pyx_t_2 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 59; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_t_3 = PyString_FromStringAndSize(__pyx_t_2, ((Py_ssize_t)__pyx_v_size)); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 59; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = PyString_AsString(__pyx_v_source); if (unlikely(__pyx_t_2 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 67; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_3 = PyString_FromStringAndSize(__pyx_t_2, ((Py_ssize_t)__pyx_v_size)); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 67; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_3);
-  if (!(likely(PyString_CheckExact(__pyx_t_3))||((__pyx_t_3) == Py_None)||(PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "str", Py_TYPE(__pyx_t_3)->tp_name), 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 59; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (!(likely(PyString_CheckExact(__pyx_t_3))||((__pyx_t_3) == Py_None)||(PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "str", Py_TYPE(__pyx_t_3)->tp_name), 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 67; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_v_retval = ((PyObject*)__pyx_t_3);
   __pyx_t_3 = 0;
 
-  /* "core_py_wrapper.pyx":60
+  /* "core_py_wrapper.pyx":68
  *     # python string to char *: http://stackoverflow.com/a/5061862/2422367
  *     cdef str retval = PyString_FromStringAndSize(PyString_AsString(source), <Py_ssize_t>size)
  *     cdef char *text = PyString_AsString(retval)             # <<<<<<<<<<<<<<
  *     # call C func
  *     str2vec_short(text, &dest, size)
  */
-  __pyx_t_2 = PyString_AsString(__pyx_v_retval); if (unlikely(__pyx_t_2 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 60; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = PyString_AsString(__pyx_v_retval); if (unlikely(__pyx_t_2 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 68; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_v_text = __pyx_t_2;
 
-  /* "core_py_wrapper.pyx":62
+  /* "core_py_wrapper.pyx":70
  *     cdef char *text = PyString_AsString(retval)
  *     # call C func
  *     str2vec_short(text, &dest, size)             # <<<<<<<<<<<<<<
@@ -1708,7 +1951,7 @@ static PyObject *__pyx_pf_4core_4str_2_vec(CYTHON_UNUSED PyObject *__pyx_self, P
  */
   str2vec_s<short int>(__pyx_v_text, (&__pyx_v_dest), __pyx_v_size);
 
-  /* "core_py_wrapper.pyx":65
+  /* "core_py_wrapper.pyx":73
  *     # Create a C array to describe the shape of the ndarray
  *     cdef np.npy_intp shape[1]
  *     shape[0] = <np.npy_intp> size             # <<<<<<<<<<<<<<
@@ -1717,42 +1960,42 @@ static PyObject *__pyx_pf_4core_4str_2_vec(CYTHON_UNUSED PyObject *__pyx_self, P
  */
   (__pyx_v_shape[0]) = ((npy_intp)__pyx_v_size);
 
-  /* "core_py_wrapper.pyx":69
+  /* "core_py_wrapper.pyx":77
  *     # new Python object pointing to the existing data (without copying)
  *     # http://docs.scipy.org/doc/numpy/user/c-info.how-to-extend.html
  *     ndarray = np.PyArray_SimpleNewFromData(1, shape, np.NPY_INT16, <void *> dest)             # <<<<<<<<<<<<<<
  *     # Tell Python that it can deallocate the memory when the ndarray
  *     # object gets garbage collected
  */
-  __pyx_t_3 = PyArray_SimpleNewFromData(1, __pyx_v_shape, NPY_INT16, ((void *)__pyx_v_dest)); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 69; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_3 = PyArray_SimpleNewFromData(1, __pyx_v_shape, NPY_INT16, ((void *)__pyx_v_dest)); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 77; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_3);
   __pyx_v_ndarray = __pyx_t_3;
   __pyx_t_3 = 0;
 
-  /* "core_py_wrapper.pyx":74
+  /* "core_py_wrapper.pyx":82
  *     # As the OWNDATA flag of an array is read-only in Python, we need to
  *     # call the C function PyArray_UpdateFlags
  *     np.PyArray_UpdateFlags(ndarray, ndarray.flags.num | np.NPY_OWNDATA)             # <<<<<<<<<<<<<<
  *     return ndarray
  * 
  */
-  if (!(likely(((__pyx_v_ndarray) == Py_None) || likely(__Pyx_TypeTest(__pyx_v_ndarray, __pyx_ptype_5numpy_ndarray))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 74; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_ndarray, __pyx_n_s_flags); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 74; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (!(likely(((__pyx_v_ndarray) == Py_None) || likely(__Pyx_TypeTest(__pyx_v_ndarray, __pyx_ptype_5numpy_ndarray))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 82; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_ndarray, __pyx_n_s_flags); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 82; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_3);
-  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_num); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 74; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_num); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 82; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-  __pyx_t_3 = __Pyx_PyInt_From_int(NPY_OWNDATA); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 74; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_3 = __Pyx_PyInt_From_int(NPY_OWNDATA); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 82; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_3);
-  __pyx_t_5 = PyNumber_Or(__pyx_t_4, __pyx_t_3); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 74; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_5 = PyNumber_Or(__pyx_t_4, __pyx_t_3); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 82; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_5);
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-  __pyx_t_6 = __Pyx_PyInt_As_int(__pyx_t_5); if (unlikely((__pyx_t_6 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 74; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_6 = __Pyx_PyInt_As_int(__pyx_t_5); if (unlikely((__pyx_t_6 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 82; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
   PyArray_UpdateFlags(((PyArrayObject *)__pyx_v_ndarray), __pyx_t_6);
 
-  /* "core_py_wrapper.pyx":75
+  /* "core_py_wrapper.pyx":83
  *     # call the C function PyArray_UpdateFlags
  *     np.PyArray_UpdateFlags(ndarray, ndarray.flags.num | np.NPY_OWNDATA)
  *     return ndarray             # <<<<<<<<<<<<<<
@@ -1764,7 +2007,7 @@ static PyObject *__pyx_pf_4core_4str_2_vec(CYTHON_UNUSED PyObject *__pyx_self, P
   __pyx_r = __pyx_v_ndarray;
   goto __pyx_L0;
 
-  /* "core_py_wrapper.pyx":50
+  /* "core_py_wrapper.pyx":58
  * from cpython.string cimport PyString_AsString, PyString_FromStringAndSize, PyString_FromString
  * 
  * def str_2_vec(source):             # <<<<<<<<<<<<<<
@@ -1787,7 +2030,7 @@ static PyObject *__pyx_pf_4core_4str_2_vec(CYTHON_UNUSED PyObject *__pyx_self, P
   return __pyx_r;
 }
 
-/* "core_py_wrapper.pyx":77
+/* "core_py_wrapper.pyx":85
  *     return ndarray
  * 
  * def vec_2_str(np.ndarray[np.int16_t, ndim=1] source):             # <<<<<<<<<<<<<<
@@ -1796,18 +2039,18 @@ static PyObject *__pyx_pf_4core_4str_2_vec(CYTHON_UNUSED PyObject *__pyx_self, P
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_4core_7vec_2_str(PyObject *__pyx_self, PyObject *__pyx_v_source); /*proto*/
-static char __pyx_doc_4core_6vec_2_str[] = "\n    Convert vector of integers to string.\n    :param source: np.array([int16, int16, int16, ...], dtype=np.int16)\n    :return:       string\n    ";
-static PyMethodDef __pyx_mdef_4core_7vec_2_str = {"vec_2_str", (PyCFunction)__pyx_pw_4core_7vec_2_str, METH_O, __pyx_doc_4core_6vec_2_str};
-static PyObject *__pyx_pw_4core_7vec_2_str(PyObject *__pyx_self, PyObject *__pyx_v_source) {
+static PyObject *__pyx_pw_4core_9vec_2_str(PyObject *__pyx_self, PyObject *__pyx_v_source); /*proto*/
+static char __pyx_doc_4core_8vec_2_str[] = "\n    Convert vector of integers to string.\n    :param source: np.array([int16, int16, int16, ...], dtype=np.int16)\n    :return:       string\n    ";
+static PyMethodDef __pyx_mdef_4core_9vec_2_str = {"vec_2_str", (PyCFunction)__pyx_pw_4core_9vec_2_str, METH_O, __pyx_doc_4core_8vec_2_str};
+static PyObject *__pyx_pw_4core_9vec_2_str(PyObject *__pyx_self, PyObject *__pyx_v_source) {
   CYTHON_UNUSED int __pyx_lineno = 0;
   CYTHON_UNUSED const char *__pyx_filename = NULL;
   CYTHON_UNUSED int __pyx_clineno = 0;
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("vec_2_str (wrapper)", 0);
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_source), __pyx_ptype_5numpy_ndarray, 1, "source", 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 77; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_r = __pyx_pf_4core_6vec_2_str(__pyx_self, ((PyArrayObject *)__pyx_v_source));
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_source), __pyx_ptype_5numpy_ndarray, 1, "source", 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 85; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_r = __pyx_pf_4core_8vec_2_str(__pyx_self, ((PyArrayObject *)__pyx_v_source));
 
   /* function exit code */
   goto __pyx_L0;
@@ -1818,7 +2061,7 @@ static PyObject *__pyx_pw_4core_7vec_2_str(PyObject *__pyx_self, PyObject *__pyx
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_4core_6vec_2_str(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_source) {
+static PyObject *__pyx_pf_4core_8vec_2_str(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_source) {
   char *__pyx_v_dest;
   int __pyx_v_size;
   PyObject *__pyx_v_pystring = NULL;
@@ -1838,11 +2081,11 @@ static PyObject *__pyx_pf_4core_6vec_2_str(CYTHON_UNUSED PyObject *__pyx_self, P
   __pyx_pybuffernd_source.rcbuffer = &__pyx_pybuffer_source;
   {
     __Pyx_BufFmt_StackElem __pyx_stack[1];
-    if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_source.rcbuffer->pybuffer, (PyObject*)__pyx_v_source, &__Pyx_TypeInfo_nn___pyx_t_5numpy_int16_t, PyBUF_FORMAT| PyBUF_STRIDES, 1, 0, __pyx_stack) == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 77; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_source.rcbuffer->pybuffer, (PyObject*)__pyx_v_source, &__Pyx_TypeInfo_nn___pyx_t_5numpy_int16_t, PyBUF_FORMAT| PyBUF_STRIDES, 1, 0, __pyx_stack) == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 85; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
   __pyx_pybuffernd_source.diminfo[0].strides = __pyx_pybuffernd_source.rcbuffer->pybuffer.strides[0]; __pyx_pybuffernd_source.diminfo[0].shape = __pyx_pybuffernd_source.rcbuffer->pybuffer.shape[0];
 
-  /* "core_py_wrapper.pyx":83
+  /* "core_py_wrapper.pyx":91
  *     :return:       string
  *     """
  *     cdef char *dest = NULL             # <<<<<<<<<<<<<<
@@ -1851,17 +2094,17 @@ static PyObject *__pyx_pf_4core_6vec_2_str(CYTHON_UNUSED PyObject *__pyx_self, P
  */
   __pyx_v_dest = NULL;
 
-  /* "core_py_wrapper.pyx":84
+  /* "core_py_wrapper.pyx":92
  *     """
  *     cdef char *dest = NULL
  *     cdef int size = len(source)             # <<<<<<<<<<<<<<
  *     # call C func
  *     vec2str_short(<short int *> source.data, &dest, size)
  */
-  __pyx_t_1 = PyObject_Length(((PyObject *)__pyx_v_source)); if (unlikely(__pyx_t_1 == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 84; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = PyObject_Length(((PyObject *)__pyx_v_source)); if (unlikely(__pyx_t_1 == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 92; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_v_size = __pyx_t_1;
 
-  /* "core_py_wrapper.pyx":86
+  /* "core_py_wrapper.pyx":94
  *     cdef int size = len(source)
  *     # call C func
  *     vec2str_short(<short int *> source.data, &dest, size)             # <<<<<<<<<<<<<<
@@ -1870,19 +2113,19 @@ static PyObject *__pyx_pf_4core_6vec_2_str(CYTHON_UNUSED PyObject *__pyx_self, P
  */
   vec2str_s<short int>(((short *)__pyx_v_source->data), (&__pyx_v_dest), __pyx_v_size);
 
-  /* "core_py_wrapper.pyx":87
+  /* "core_py_wrapper.pyx":95
  *     # call C func
  *     vec2str_short(<short int *> source.data, &dest, size)
  *     pystring = PyString_FromString(dest);             # <<<<<<<<<<<<<<
  *     delete_char_arr(&dest)
  *     return pystring
  */
-  __pyx_t_2 = PyString_FromString(__pyx_v_dest); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 87; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = PyString_FromString(__pyx_v_dest); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 95; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
   __pyx_v_pystring = __pyx_t_2;
   __pyx_t_2 = 0;
 
-  /* "core_py_wrapper.pyx":88
+  /* "core_py_wrapper.pyx":96
  *     vec2str_short(<short int *> source.data, &dest, size)
  *     pystring = PyString_FromString(dest);
  *     delete_char_arr(&dest)             # <<<<<<<<<<<<<<
@@ -1891,7 +2134,7 @@ static PyObject *__pyx_pf_4core_6vec_2_str(CYTHON_UNUSED PyObject *__pyx_self, P
  */
   delete_arr_primitive_s<char>((&__pyx_v_dest));
 
-  /* "core_py_wrapper.pyx":89
+  /* "core_py_wrapper.pyx":97
  *     pystring = PyString_FromString(dest);
  *     delete_char_arr(&dest)
  *     return pystring             # <<<<<<<<<<<<<<
@@ -1903,7 +2146,7 @@ static PyObject *__pyx_pf_4core_6vec_2_str(CYTHON_UNUSED PyObject *__pyx_self, P
   __pyx_r = __pyx_v_pystring;
   goto __pyx_L0;
 
-  /* "core_py_wrapper.pyx":77
+  /* "core_py_wrapper.pyx":85
  *     return ndarray
  * 
  * def vec_2_str(np.ndarray[np.int16_t, ndim=1] source):             # <<<<<<<<<<<<<<
@@ -1930,7 +2173,7 @@ static PyObject *__pyx_pf_4core_6vec_2_str(CYTHON_UNUSED PyObject *__pyx_self, P
   return __pyx_r;
 }
 
-/* "core_py_wrapper.pyx":91
+/* "core_py_wrapper.pyx":99
  *     return pystring
  * 
  * def d_2_b(x):             # <<<<<<<<<<<<<<
@@ -1939,21 +2182,21 @@ static PyObject *__pyx_pf_4core_6vec_2_str(CYTHON_UNUSED PyObject *__pyx_self, P
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_4core_9d_2_b(PyObject *__pyx_self, PyObject *__pyx_v_x); /*proto*/
-static char __pyx_doc_4core_8d_2_b[] = "\n    Convert integer to byte list\n    :param x:    short integer\n    :return: e.g. np.array([0, 0, 1, ...], dtype=np.int16)\n    ";
-static PyMethodDef __pyx_mdef_4core_9d_2_b = {"d_2_b", (PyCFunction)__pyx_pw_4core_9d_2_b, METH_O, __pyx_doc_4core_8d_2_b};
-static PyObject *__pyx_pw_4core_9d_2_b(PyObject *__pyx_self, PyObject *__pyx_v_x) {
+static PyObject *__pyx_pw_4core_11d_2_b(PyObject *__pyx_self, PyObject *__pyx_v_x); /*proto*/
+static char __pyx_doc_4core_10d_2_b[] = "\n    Convert integer to byte list\n    :param x:    short integer\n    :return: e.g. np.array([0, 0, 1, ...], dtype=np.int16)\n    ";
+static PyMethodDef __pyx_mdef_4core_11d_2_b = {"d_2_b", (PyCFunction)__pyx_pw_4core_11d_2_b, METH_O, __pyx_doc_4core_10d_2_b};
+static PyObject *__pyx_pw_4core_11d_2_b(PyObject *__pyx_self, PyObject *__pyx_v_x) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("d_2_b (wrapper)", 0);
-  __pyx_r = __pyx_pf_4core_8d_2_b(__pyx_self, ((PyObject *)__pyx_v_x));
+  __pyx_r = __pyx_pf_4core_10d_2_b(__pyx_self, ((PyObject *)__pyx_v_x));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_4core_8d_2_b(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_x) {
+static PyObject *__pyx_pf_4core_10d_2_b(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_x) {
   short *__pyx_v_dest;
   short __pyx_v_size;
   npy_intp __pyx_v_shape[1];
@@ -1970,7 +2213,7 @@ static PyObject *__pyx_pf_4core_8d_2_b(CYTHON_UNUSED PyObject *__pyx_self, PyObj
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("d_2_b", 0);
 
-  /* "core_py_wrapper.pyx":97
+  /* "core_py_wrapper.pyx":105
  *     :return: e.g. np.array([0, 0, 1, ...], dtype=np.int16)
  *     """
  *     cdef short int *dest = NULL             # <<<<<<<<<<<<<<
@@ -1979,17 +2222,17 @@ static PyObject *__pyx_pf_4core_8d_2_b(CYTHON_UNUSED PyObject *__pyx_self, PyObj
  */
   __pyx_v_dest = NULL;
 
-  /* "core_py_wrapper.pyx":99
+  /* "core_py_wrapper.pyx":107
  *     cdef short int *dest = NULL
  *     # call C func
  *     size = d2b_short(x, &dest)             # <<<<<<<<<<<<<<
  *     cdef np.npy_intp shape[1]
  *     shape[0] = <np.npy_intp> size
  */
-  __pyx_t_1 = __Pyx_PyInt_As_short(__pyx_v_x); if (unlikely((__pyx_t_1 == (short)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 99; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __Pyx_PyInt_As_short(__pyx_v_x); if (unlikely((__pyx_t_1 == (short)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 107; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_v_size = D2B<short int>(__pyx_t_1, (&__pyx_v_dest));
 
-  /* "core_py_wrapper.pyx":101
+  /* "core_py_wrapper.pyx":109
  *     size = d2b_short(x, &dest)
  *     cdef np.npy_intp shape[1]
  *     shape[0] = <np.npy_intp> size             # <<<<<<<<<<<<<<
@@ -1998,42 +2241,42 @@ static PyObject *__pyx_pf_4core_8d_2_b(CYTHON_UNUSED PyObject *__pyx_self, PyObj
  */
   (__pyx_v_shape[0]) = ((npy_intp)__pyx_v_size);
 
-  /* "core_py_wrapper.pyx":102
+  /* "core_py_wrapper.pyx":110
  *     cdef np.npy_intp shape[1]
  *     shape[0] = <np.npy_intp> size
  *     ndarray = np.PyArray_SimpleNewFromData(1, shape, np.NPY_INT16, <void *> dest)             # <<<<<<<<<<<<<<
  *     np.PyArray_UpdateFlags(ndarray, ndarray.flags.num | np.NPY_OWNDATA)
  *     return ndarray
  */
-  __pyx_t_2 = PyArray_SimpleNewFromData(1, __pyx_v_shape, NPY_INT16, ((void *)__pyx_v_dest)); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 102; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = PyArray_SimpleNewFromData(1, __pyx_v_shape, NPY_INT16, ((void *)__pyx_v_dest)); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 110; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
   __pyx_v_ndarray = __pyx_t_2;
   __pyx_t_2 = 0;
 
-  /* "core_py_wrapper.pyx":103
+  /* "core_py_wrapper.pyx":111
  *     shape[0] = <np.npy_intp> size
  *     ndarray = np.PyArray_SimpleNewFromData(1, shape, np.NPY_INT16, <void *> dest)
  *     np.PyArray_UpdateFlags(ndarray, ndarray.flags.num | np.NPY_OWNDATA)             # <<<<<<<<<<<<<<
  *     return ndarray
  * 
  */
-  if (!(likely(((__pyx_v_ndarray) == Py_None) || likely(__Pyx_TypeTest(__pyx_v_ndarray, __pyx_ptype_5numpy_ndarray))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 103; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_ndarray, __pyx_n_s_flags); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 103; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (!(likely(((__pyx_v_ndarray) == Py_None) || likely(__Pyx_TypeTest(__pyx_v_ndarray, __pyx_ptype_5numpy_ndarray))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 111; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_ndarray, __pyx_n_s_flags); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 111; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_num); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 103; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_num); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 111; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_2 = __Pyx_PyInt_From_int(NPY_OWNDATA); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 103; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = __Pyx_PyInt_From_int(NPY_OWNDATA); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 111; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_4 = PyNumber_Or(__pyx_t_3, __pyx_t_2); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 103; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_4 = PyNumber_Or(__pyx_t_3, __pyx_t_2); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 111; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_5 = __Pyx_PyInt_As_int(__pyx_t_4); if (unlikely((__pyx_t_5 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 103; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_5 = __Pyx_PyInt_As_int(__pyx_t_4); if (unlikely((__pyx_t_5 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 111; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
   PyArray_UpdateFlags(((PyArrayObject *)__pyx_v_ndarray), __pyx_t_5);
 
-  /* "core_py_wrapper.pyx":104
+  /* "core_py_wrapper.pyx":112
  *     ndarray = np.PyArray_SimpleNewFromData(1, shape, np.NPY_INT16, <void *> dest)
  *     np.PyArray_UpdateFlags(ndarray, ndarray.flags.num | np.NPY_OWNDATA)
  *     return ndarray             # <<<<<<<<<<<<<<
@@ -2045,7 +2288,7 @@ static PyObject *__pyx_pf_4core_8d_2_b(CYTHON_UNUSED PyObject *__pyx_self, PyObj
   __pyx_r = __pyx_v_ndarray;
   goto __pyx_L0;
 
-  /* "core_py_wrapper.pyx":91
+  /* "core_py_wrapper.pyx":99
  *     return pystring
  * 
  * def d_2_b(x):             # <<<<<<<<<<<<<<
@@ -2067,7 +2310,7 @@ static PyObject *__pyx_pf_4core_8d_2_b(CYTHON_UNUSED PyObject *__pyx_self, PyObj
   return __pyx_r;
 }
 
-/* "core_py_wrapper.pyx":107
+/* "core_py_wrapper.pyx":115
  * 
  * 
  * def b_2_d(np.ndarray[np.int16_t, ndim=1] bits):             # <<<<<<<<<<<<<<
@@ -2076,18 +2319,18 @@ static PyObject *__pyx_pf_4core_8d_2_b(CYTHON_UNUSED PyObject *__pyx_self, PyObj
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_4core_11b_2_d(PyObject *__pyx_self, PyObject *__pyx_v_bits); /*proto*/
-static char __pyx_doc_4core_10b_2_d[] = "\n    Convert byte array to integer\n    :param x:   np.array([0, 0, 1, ...], dtype=np.int16)\n    :return:    integer\n    ";
-static PyMethodDef __pyx_mdef_4core_11b_2_d = {"b_2_d", (PyCFunction)__pyx_pw_4core_11b_2_d, METH_O, __pyx_doc_4core_10b_2_d};
-static PyObject *__pyx_pw_4core_11b_2_d(PyObject *__pyx_self, PyObject *__pyx_v_bits) {
+static PyObject *__pyx_pw_4core_13b_2_d(PyObject *__pyx_self, PyObject *__pyx_v_bits); /*proto*/
+static char __pyx_doc_4core_12b_2_d[] = "\n    Convert byte array to integer\n    :param x:   np.array([0, 0, 1, ...], dtype=np.int16)\n    :return:    integer\n    ";
+static PyMethodDef __pyx_mdef_4core_13b_2_d = {"b_2_d", (PyCFunction)__pyx_pw_4core_13b_2_d, METH_O, __pyx_doc_4core_12b_2_d};
+static PyObject *__pyx_pw_4core_13b_2_d(PyObject *__pyx_self, PyObject *__pyx_v_bits) {
   CYTHON_UNUSED int __pyx_lineno = 0;
   CYTHON_UNUSED const char *__pyx_filename = NULL;
   CYTHON_UNUSED int __pyx_clineno = 0;
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("b_2_d (wrapper)", 0);
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_bits), __pyx_ptype_5numpy_ndarray, 1, "bits", 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 107; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_r = __pyx_pf_4core_10b_2_d(__pyx_self, ((PyArrayObject *)__pyx_v_bits));
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_bits), __pyx_ptype_5numpy_ndarray, 1, "bits", 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 115; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_r = __pyx_pf_4core_12b_2_d(__pyx_self, ((PyArrayObject *)__pyx_v_bits));
 
   /* function exit code */
   goto __pyx_L0;
@@ -2098,7 +2341,7 @@ static PyObject *__pyx_pw_4core_11b_2_d(PyObject *__pyx_self, PyObject *__pyx_v_
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_4core_10b_2_d(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_bits) {
+static PyObject *__pyx_pf_4core_12b_2_d(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_bits) {
   short __pyx_v_x;
   __Pyx_LocalBuf_ND __pyx_pybuffernd_bits;
   __Pyx_Buffer __pyx_pybuffer_bits;
@@ -2115,11 +2358,11 @@ static PyObject *__pyx_pf_4core_10b_2_d(CYTHON_UNUSED PyObject *__pyx_self, PyAr
   __pyx_pybuffernd_bits.rcbuffer = &__pyx_pybuffer_bits;
   {
     __Pyx_BufFmt_StackElem __pyx_stack[1];
-    if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_bits.rcbuffer->pybuffer, (PyObject*)__pyx_v_bits, &__Pyx_TypeInfo_nn___pyx_t_5numpy_int16_t, PyBUF_FORMAT| PyBUF_STRIDES, 1, 0, __pyx_stack) == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 107; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_bits.rcbuffer->pybuffer, (PyObject*)__pyx_v_bits, &__Pyx_TypeInfo_nn___pyx_t_5numpy_int16_t, PyBUF_FORMAT| PyBUF_STRIDES, 1, 0, __pyx_stack) == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 115; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
   __pyx_pybuffernd_bits.diminfo[0].strides = __pyx_pybuffernd_bits.rcbuffer->pybuffer.strides[0]; __pyx_pybuffernd_bits.diminfo[0].shape = __pyx_pybuffernd_bits.rcbuffer->pybuffer.shape[0];
 
-  /* "core_py_wrapper.pyx":114
+  /* "core_py_wrapper.pyx":122
  *     """
  *     cdef short int x
  *     b2d_short(<short int *> bits.data, x)             # <<<<<<<<<<<<<<
@@ -2127,19 +2370,19 @@ static PyObject *__pyx_pf_4core_10b_2_d(CYTHON_UNUSED PyObject *__pyx_self, PyAr
  */
   B2D<short int>(((short *)__pyx_v_bits->data), __pyx_v_x);
 
-  /* "core_py_wrapper.pyx":115
+  /* "core_py_wrapper.pyx":123
  *     cdef short int x
  *     b2d_short(<short int *> bits.data, x)
  *     return x             # <<<<<<<<<<<<<<
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __Pyx_PyInt_From_short(__pyx_v_x); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 115; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __Pyx_PyInt_From_short(__pyx_v_x); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 123; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "core_py_wrapper.pyx":107
+  /* "core_py_wrapper.pyx":115
  * 
  * 
  * def b_2_d(np.ndarray[np.int16_t, ndim=1] bits):             # <<<<<<<<<<<<<<
@@ -4204,11 +4447,13 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_container, __pyx_k_container, sizeof(__pyx_k_container), 0, 0, 1, 1},
   {&__pyx_n_s_core, __pyx_k_core, sizeof(__pyx_k_core), 0, 0, 1, 1},
   {&__pyx_n_s_d_2_b, __pyx_k_d_2_b, sizeof(__pyx_k_d_2_b), 0, 0, 1, 1},
+  {&__pyx_n_s_deintegrate_c, __pyx_k_deintegrate_c, sizeof(__pyx_k_deintegrate_c), 0, 0, 1, 1},
   {&__pyx_n_s_dest, __pyx_k_dest, sizeof(__pyx_k_dest), 0, 0, 1, 1},
   {&__pyx_n_s_flags, __pyx_k_flags, sizeof(__pyx_k_flags), 0, 0, 1, 1},
   {&__pyx_n_s_galarius, __pyx_k_galarius, sizeof(__pyx_k_galarius), 0, 0, 1, 1},
   {&__pyx_n_s_import, __pyx_k_import, sizeof(__pyx_k_import), 0, 0, 1, 1},
   {&__pyx_n_s_info, __pyx_k_info, sizeof(__pyx_k_info), 0, 0, 1, 1},
+  {&__pyx_n_s_info_ptr, __pyx_k_info_ptr, sizeof(__pyx_k_info_ptr), 0, 0, 1, 1},
   {&__pyx_n_s_integrate_c, __pyx_k_integrate_c, sizeof(__pyx_k_integrate_c), 0, 0, 1, 1},
   {&__pyx_n_s_l, __pyx_k_l, sizeof(__pyx_k_l), 0, 0, 1, 1},
   {&__pyx_n_s_main, __pyx_k_main, sizeof(__pyx_k_main), 0, 0, 1, 1},
@@ -4339,53 +4584,65 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GIVEREF(__pyx_tuple__9);
   __pyx_codeobj__10 = (PyObject*)__Pyx_PyCode_New(5, 0, 7, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__9, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_Users_galarius_Documents_Projec, __pyx_n_s_integrate_c, 36, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__10)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 36; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "core_py_wrapper.pyx":50
+  /* "core_py_wrapper.pyx":42
+ *     return container, info
+ * 
+ * def deintegrate_c(np.ndarray[np.int16_t, ndim=1, mode="c"] container not None, n, begin, step):             # <<<<<<<<<<<<<<
+ *     cdef short int *info_ptr = NULL
+ *     cdef l = deintegrate(<short int *> container.data, n, begin, step, &info_ptr)
+ */
+  __pyx_tuple__11 = PyTuple_Pack(8, __pyx_n_s_container, __pyx_n_s_n, __pyx_n_s_begin, __pyx_n_s_step, __pyx_n_s_info_ptr, __pyx_n_s_l, __pyx_n_s_shape, __pyx_n_s_ndarray); if (unlikely(!__pyx_tuple__11)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 42; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_tuple__11);
+  __Pyx_GIVEREF(__pyx_tuple__11);
+  __pyx_codeobj__12 = (PyObject*)__Pyx_PyCode_New(4, 0, 8, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__11, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_Users_galarius_Documents_Projec, __pyx_n_s_deintegrate_c, 42, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__12)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 42; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+
+  /* "core_py_wrapper.pyx":58
  * from cpython.string cimport PyString_AsString, PyString_FromStringAndSize, PyString_FromString
  * 
  * def str_2_vec(source):             # <<<<<<<<<<<<<<
  *     """
  *     Convert string to vector of integers
  */
-  __pyx_tuple__11 = PyTuple_Pack(7, __pyx_n_s_source, __pyx_n_s_dest, __pyx_n_s_size, __pyx_n_s_retval, __pyx_n_s_text, __pyx_n_s_shape, __pyx_n_s_ndarray); if (unlikely(!__pyx_tuple__11)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 50; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_tuple__11);
-  __Pyx_GIVEREF(__pyx_tuple__11);
-  __pyx_codeobj__12 = (PyObject*)__Pyx_PyCode_New(1, 0, 7, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__11, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_Users_galarius_Documents_Projec, __pyx_n_s_str_2_vec, 50, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__12)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 50; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_tuple__13 = PyTuple_Pack(7, __pyx_n_s_source, __pyx_n_s_dest, __pyx_n_s_size, __pyx_n_s_retval, __pyx_n_s_text, __pyx_n_s_shape, __pyx_n_s_ndarray); if (unlikely(!__pyx_tuple__13)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 58; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_tuple__13);
+  __Pyx_GIVEREF(__pyx_tuple__13);
+  __pyx_codeobj__14 = (PyObject*)__Pyx_PyCode_New(1, 0, 7, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__13, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_Users_galarius_Documents_Projec, __pyx_n_s_str_2_vec, 58, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__14)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 58; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "core_py_wrapper.pyx":77
+  /* "core_py_wrapper.pyx":85
  *     return ndarray
  * 
  * def vec_2_str(np.ndarray[np.int16_t, ndim=1] source):             # <<<<<<<<<<<<<<
  *     """
  *     Convert vector of integers to string.
  */
-  __pyx_tuple__13 = PyTuple_Pack(4, __pyx_n_s_source, __pyx_n_s_dest, __pyx_n_s_size, __pyx_n_s_pystring); if (unlikely(!__pyx_tuple__13)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 77; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_tuple__13);
-  __Pyx_GIVEREF(__pyx_tuple__13);
-  __pyx_codeobj__14 = (PyObject*)__Pyx_PyCode_New(1, 0, 4, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__13, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_Users_galarius_Documents_Projec, __pyx_n_s_vec_2_str, 77, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__14)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 77; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_tuple__15 = PyTuple_Pack(4, __pyx_n_s_source, __pyx_n_s_dest, __pyx_n_s_size, __pyx_n_s_pystring); if (unlikely(!__pyx_tuple__15)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 85; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_tuple__15);
+  __Pyx_GIVEREF(__pyx_tuple__15);
+  __pyx_codeobj__16 = (PyObject*)__Pyx_PyCode_New(1, 0, 4, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__15, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_Users_galarius_Documents_Projec, __pyx_n_s_vec_2_str, 85, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__16)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 85; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "core_py_wrapper.pyx":91
+  /* "core_py_wrapper.pyx":99
  *     return pystring
  * 
  * def d_2_b(x):             # <<<<<<<<<<<<<<
  *     """
  *     Convert integer to byte list
  */
-  __pyx_tuple__15 = PyTuple_Pack(5, __pyx_n_s_x, __pyx_n_s_dest, __pyx_n_s_size, __pyx_n_s_shape, __pyx_n_s_ndarray); if (unlikely(!__pyx_tuple__15)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 91; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_tuple__15);
-  __Pyx_GIVEREF(__pyx_tuple__15);
-  __pyx_codeobj__16 = (PyObject*)__Pyx_PyCode_New(1, 0, 5, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__15, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_Users_galarius_Documents_Projec, __pyx_n_s_d_2_b, 91, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__16)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 91; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_tuple__17 = PyTuple_Pack(5, __pyx_n_s_x, __pyx_n_s_dest, __pyx_n_s_size, __pyx_n_s_shape, __pyx_n_s_ndarray); if (unlikely(!__pyx_tuple__17)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 99; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_tuple__17);
+  __Pyx_GIVEREF(__pyx_tuple__17);
+  __pyx_codeobj__18 = (PyObject*)__Pyx_PyCode_New(1, 0, 5, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__17, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_Users_galarius_Documents_Projec, __pyx_n_s_d_2_b, 99, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__18)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 99; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "core_py_wrapper.pyx":107
+  /* "core_py_wrapper.pyx":115
  * 
  * 
  * def b_2_d(np.ndarray[np.int16_t, ndim=1] bits):             # <<<<<<<<<<<<<<
  *     """
  *     Convert byte array to integer
  */
-  __pyx_tuple__17 = PyTuple_Pack(2, __pyx_n_s_bits, __pyx_n_s_x); if (unlikely(!__pyx_tuple__17)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 107; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_tuple__17);
-  __Pyx_GIVEREF(__pyx_tuple__17);
-  __pyx_codeobj__18 = (PyObject*)__Pyx_PyCode_New(1, 0, 2, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__17, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_Users_galarius_Documents_Projec, __pyx_n_s_b_2_d, 107, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__18)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 107; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_tuple__19 = PyTuple_Pack(2, __pyx_n_s_bits, __pyx_n_s_x); if (unlikely(!__pyx_tuple__19)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 115; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_tuple__19);
+  __Pyx_GIVEREF(__pyx_tuple__19);
+  __pyx_codeobj__20 = (PyObject*)__Pyx_PyCode_New(1, 0, 2, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__19, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_Users_galarius_Documents_Projec, __pyx_n_s_b_2_d, 115, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__20)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 115; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_RefNannyFinishContext();
   return 0;
   __pyx_L1_error:;
@@ -4551,52 +4808,64 @@ PyMODINIT_FUNC PyInit_core(void)
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_integrate_c, __pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 36; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "core_py_wrapper.pyx":50
+  /* "core_py_wrapper.pyx":42
+ *     return container, info
+ * 
+ * def deintegrate_c(np.ndarray[np.int16_t, ndim=1, mode="c"] container not None, n, begin, step):             # <<<<<<<<<<<<<<
+ *     cdef short int *info_ptr = NULL
+ *     cdef l = deintegrate(<short int *> container.data, n, begin, step, &info_ptr)
+ */
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_4core_5deintegrate_c, NULL, __pyx_n_s_core); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 42; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_1);
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_deintegrate_c, __pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 42; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+
+  /* "core_py_wrapper.pyx":58
  * from cpython.string cimport PyString_AsString, PyString_FromStringAndSize, PyString_FromString
  * 
  * def str_2_vec(source):             # <<<<<<<<<<<<<<
  *     """
  *     Convert string to vector of integers
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_4core_5str_2_vec, NULL, __pyx_n_s_core); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 50; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_4core_7str_2_vec, NULL, __pyx_n_s_core); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 58; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_str_2_vec, __pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 50; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_str_2_vec, __pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 58; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "core_py_wrapper.pyx":77
+  /* "core_py_wrapper.pyx":85
  *     return ndarray
  * 
  * def vec_2_str(np.ndarray[np.int16_t, ndim=1] source):             # <<<<<<<<<<<<<<
  *     """
  *     Convert vector of integers to string.
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_4core_7vec_2_str, NULL, __pyx_n_s_core); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 77; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_4core_9vec_2_str, NULL, __pyx_n_s_core); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 85; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_vec_2_str, __pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 77; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_vec_2_str, __pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 85; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "core_py_wrapper.pyx":91
+  /* "core_py_wrapper.pyx":99
  *     return pystring
  * 
  * def d_2_b(x):             # <<<<<<<<<<<<<<
  *     """
  *     Convert integer to byte list
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_4core_9d_2_b, NULL, __pyx_n_s_core); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 91; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_4core_11d_2_b, NULL, __pyx_n_s_core); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 99; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_d_2_b, __pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 91; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_d_2_b, __pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 99; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "core_py_wrapper.pyx":107
+  /* "core_py_wrapper.pyx":115
  * 
  * 
  * def b_2_d(np.ndarray[np.int16_t, ndim=1] bits):             # <<<<<<<<<<<<<<
  *     """
  *     Convert byte array to integer
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_4core_11b_2_d, NULL, __pyx_n_s_core); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 107; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_4core_13b_2_d, NULL, __pyx_n_s_core); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 115; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_b_2_d, __pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 107; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_b_2_d, __pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 115; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
   /* "core_py_wrapper.pyx":1
@@ -6112,6 +6381,101 @@ static CYTHON_INLINE PyObject* __Pyx_PyInt_From_int(int value) {
         return _PyLong_FromByteArray(bytes, sizeof(int),
                                      little, !is_unsigned);
     }
+}
+
+static CYTHON_INLINE Py_intptr_t __Pyx_PyInt_As_Py_intptr_t(PyObject *x) {
+    const Py_intptr_t neg_one = (Py_intptr_t) -1, const_zero = 0;
+    const int is_unsigned = neg_one > const_zero;
+#if PY_MAJOR_VERSION < 3
+    if (likely(PyInt_Check(x))) {
+        if (sizeof(Py_intptr_t) < sizeof(long)) {
+            __PYX_VERIFY_RETURN_INT(Py_intptr_t, long, PyInt_AS_LONG(x))
+        } else {
+            long val = PyInt_AS_LONG(x);
+            if (is_unsigned && unlikely(val < 0)) {
+                goto raise_neg_overflow;
+            }
+            return (Py_intptr_t) val;
+        }
+    } else
+#endif
+    if (likely(PyLong_Check(x))) {
+        if (is_unsigned) {
+#if CYTHON_COMPILING_IN_CPYTHON && PY_MAJOR_VERSION >= 3
+ #if CYTHON_USE_PYLONG_INTERNALS
+            switch (Py_SIZE(x)) {
+                case  0: return 0;
+                case  1: __PYX_VERIFY_RETURN_INT(Py_intptr_t, digit, ((PyLongObject*)x)->ob_digit[0]);
+            }
+ #endif
+#endif
+            if (unlikely(Py_SIZE(x) < 0)) {
+                goto raise_neg_overflow;
+            }
+            if (sizeof(Py_intptr_t) <= sizeof(unsigned long)) {
+                __PYX_VERIFY_RETURN_INT(Py_intptr_t, unsigned long, PyLong_AsUnsignedLong(x))
+            } else if (sizeof(Py_intptr_t) <= sizeof(unsigned long long)) {
+                __PYX_VERIFY_RETURN_INT(Py_intptr_t, unsigned long long, PyLong_AsUnsignedLongLong(x))
+            }
+        } else {
+#if CYTHON_COMPILING_IN_CPYTHON && PY_MAJOR_VERSION >= 3
+ #if CYTHON_USE_PYLONG_INTERNALS
+            switch (Py_SIZE(x)) {
+                case  0: return 0;
+                case  1: __PYX_VERIFY_RETURN_INT(Py_intptr_t,  digit, +(((PyLongObject*)x)->ob_digit[0]));
+                case -1: __PYX_VERIFY_RETURN_INT(Py_intptr_t, sdigit, -(sdigit) ((PyLongObject*)x)->ob_digit[0]);
+            }
+ #endif
+#endif
+            if (sizeof(Py_intptr_t) <= sizeof(long)) {
+                __PYX_VERIFY_RETURN_INT(Py_intptr_t, long, PyLong_AsLong(x))
+            } else if (sizeof(Py_intptr_t) <= sizeof(long long)) {
+                __PYX_VERIFY_RETURN_INT(Py_intptr_t, long long, PyLong_AsLongLong(x))
+            }
+        }
+        {
+#if CYTHON_COMPILING_IN_PYPY && !defined(_PyLong_AsByteArray)
+            PyErr_SetString(PyExc_RuntimeError,
+                            "_PyLong_AsByteArray() not available in PyPy, cannot convert large numbers");
+#else
+            Py_intptr_t val;
+            PyObject *v = __Pyx_PyNumber_Int(x);
+ #if PY_MAJOR_VERSION < 3
+            if (likely(v) && !PyLong_Check(v)) {
+                PyObject *tmp = v;
+                v = PyNumber_Long(tmp);
+                Py_DECREF(tmp);
+            }
+ #endif
+            if (likely(v)) {
+                int one = 1; int is_little = (int)*(unsigned char *)&one;
+                unsigned char *bytes = (unsigned char *)&val;
+                int ret = _PyLong_AsByteArray((PyLongObject *)v,
+                                              bytes, sizeof(val),
+                                              is_little, !is_unsigned);
+                Py_DECREF(v);
+                if (likely(!ret))
+                    return val;
+            }
+#endif
+            return (Py_intptr_t) -1;
+        }
+    } else {
+        Py_intptr_t val;
+        PyObject *tmp = __Pyx_PyNumber_Int(x);
+        if (!tmp) return (Py_intptr_t) -1;
+        val = __Pyx_PyInt_As_Py_intptr_t(tmp);
+        Py_DECREF(tmp);
+        return val;
+    }
+raise_overflow:
+    PyErr_SetString(PyExc_OverflowError,
+        "value too large to convert to Py_intptr_t");
+    return (Py_intptr_t) -1;
+raise_neg_overflow:
+    PyErr_SetString(PyExc_OverflowError,
+        "can't convert negative value to Py_intptr_t");
+    return (Py_intptr_t) -1;
 }
 
 static CYTHON_INLINE short __Pyx_PyInt_As_short(PyObject *x) {

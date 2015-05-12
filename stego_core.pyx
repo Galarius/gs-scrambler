@@ -137,9 +137,9 @@ class StegoCore:
             if mediate_length <= 0:
                 raise AttributeError('Necessary argument not specified!')
 
-        if self.message_to_proc_part > mediate_length:
+        if len(self.message_to_proc_part) > mediate_length:
             self.message_to_proc_part = self.message_to_proc_part[:mediate_length]
-        elif self.message_to_proc_part < mediate_length:
+        elif len(self.message_to_proc_part) < mediate_length:
             raise RuntimeError("Couldn't extract message with provided argument.")
 
         s = int(math.ceil(math.sqrt(len(self.message_to_proc_part) / StegoCore.BITS)))
@@ -148,8 +148,10 @@ class StegoCore:
         except ValueError:
             print colorize("Wrong session key. Can't extract message.", COLORS.FAIL)
             return ''
-        msg_matrix_encoded_bits = msg_matrix_encoded_array.tolist()
-        msg_matrix_encoded = sh.bits_matrix_to_int_matrix(msg_matrix_encoded_bits)
+
+        print self.message_to_proc_part.tolist()
+
+        msg_matrix_encoded = sh.bits_matrix_to_int_matrix(msg_matrix_encoded_array)
         msg_matrix = QMatrix.decode_matrix_message(msg_matrix_encoded, key)
         msg = sh.matrix_to_message(msg_matrix)
         return msg
@@ -164,11 +166,14 @@ class StegoCore:
         # 2) Encode with q-matrix
         msg_matrix_encoded = QMatrix.encode_matrix_message(msg_matrix, key)
         # 3) Convert to bits
-        msg_matrix_encoded_bits = sh.int_matrix_to_bits_matrix(msg_matrix_encoded)
-        # 4) Convert to numpy nested arrays
-        msg_matrix_encoded_array = np.array(msg_matrix_encoded_bits, dtype=FORMAT)
-        # 5) Convert 2D array to 1D array
-        self.message_to_proc_part = msg_matrix_encoded_array.ravel()
+        msg_matrix_encoded_array = sh.int_matrix_to_bits_matrix(msg_matrix_encoded)
+        # 4) Convert 2D array to 1D array
+        half_linearize = msg_matrix_encoded_array.ravel()
+        # 5) linearize completely
+        self.message_to_proc_part = np.empty(0, dtype=np.int16)
+        for seq in half_linearize:
+            self.message_to_proc_part = np.append(self.message_to_proc_part, seq)
+        # print self.message_to_proc_part.tolist()
         # 6) Save array length to recover message later
         return len(self.message_to_proc_part)
 
@@ -195,21 +200,14 @@ class StegoCore:
         Recover message part from container
         :param chunk: container
         """
-
         # calculate semi-period
         semi_p = core.calculate_semi_period_c(chunk_source, len(chunk_source))
-
         if semi_p != 0:
-
-            message_part = []
-            length = len(chunk_container)
-            step = int(length / float(semi_p))
-            for i in range(semi_p, length, step):
-                bits = core.d_2_b(chunk_container[i])
-                message_part.append(abs(bits[0]))
-
+            size = len(chunk_container)
+            step = int(size / float(semi_p))
+            message_part = core.deintegrate_c(chunk_container, size, semi_p, step)
             # extend msg part array
-            self.message_to_proc_part.extend(message_part)
+            self.message_to_proc_part = np.append(self.message_to_proc_part, message_part) if len(self.message_to_proc_part) > 0 else message_part
 
     #--------------------------------------------------------------
     # Synchronization
@@ -224,13 +222,20 @@ class StegoCore:
         # 2) Encode with q-matrix
         sync_marker_matrix_encoded = QMatrix.encode_matrix_message(sync_marker_matrix, StegoCore.SYNC_KEY)
         # 3) Convert to bits
-        sync_marker_matrix_encoded_bits = sh.int_matrix_to_bits_matrix(sync_marker_matrix_encoded)
-        # 4) Convert to numpy nested arrays
-        sync_marker_matrix_encoded_array = np.array(sync_marker_matrix_encoded_bits, dtype=FORMAT)
-        # 5) Convert 2D array to 1D array
-        self.sync_mark_encoded_array = sync_marker_matrix_encoded_array.ravel()
+        sync_marker_matrix_encoded_array = sh.int_matrix_to_bits_matrix(sync_marker_matrix_encoded)
+        # 4) Convert 2D array to 1D array
+        half_linearize = sync_marker_matrix_encoded_array.ravel()
+        # 5) linearize completely
+        self.sync_mark_encoded_array = np.empty(0, dtype=np.int16)
+        for seq in half_linearize:
+            self.sync_mark_encoded_array = np.append(self.sync_mark_encoded_array, seq)
 
     def __synchronization_put(self, chunk_container):
+        """
+        Update samples with synchronization mark
+        :param chunk_container: samples
+        :return:                modified samples
+        """
         import time
         if self.sync_mark == '' or self.synchronized:
             print colorize("No sync marker.", COLORS.FAIL)
@@ -248,7 +253,11 @@ class StegoCore:
         return container_processed
 
     def __synchronization_detect(self, chunk_container):
-
+        """
+        Try to detect synchronization mark in samples
+        :param chunk_container: samples
+        :return:
+        """
         if self.sync_mark == '':
             print "Mark is empty"
             return False

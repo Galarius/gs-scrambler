@@ -6,56 +6,10 @@ __copyright__ = 'Copyright 2015, Ilya Shoshin'
 
 import math
 
-from math import floor
-from numpy import sign
-import struct
 import numpy as np
 import collections
 import pyaudio
-
-def str_2_vec(str):
-    """
-    Convert string to vector of integers
-    :param str: string
-    :return:    [int, int, int, ...]
-    """
-    return [ord(i) for i in str]
-
-
-def vec_2_str(vec):
-    """
-    Convert vector of integers to string.
-    :param vec: [int, int, int, ...]
-    :return:    string
-    """
-    return ''.join([(chr(i) if 0 <= i < 256 else '') for i in vec])
-
-
-def d_2_b(x, size=8):
-    """
-    Convert decimal to byte list
-    :param x:    decimal
-    :param size: the size of byte list
-    :return: e.g. [0, 0, 1, ...]
-    """
-    s = sign(x)
-    v = size * [None]
-    for i in range(0, size):
-        v[i] = abs(x) % 2
-        x = int(floor(abs(x) / 2.0))
-    return [s * x for x in v]
-
-
-def b_2_d(x):
-    """
-    Convert byte list to decimal
-    :param x:   byte list
-    :return:    decimal
-    """
-    s = 0
-    for i in range(0, len(x)):
-        s += x[i] * 2 ** i
-    return s
+import core
 
 
 def message_to_matrix(message):
@@ -65,52 +19,45 @@ def message_to_matrix(message):
     :param message: message to transform
     :return: matrix
     """
-    msg_vec = str_2_vec(message)
+    msg_vec = core.str_2_vec(message)
     size = int(math.ceil(math.sqrt(len(msg_vec))))
-    M = []
-    for i in range(0, size + 1):
-        m = []
-        for j in range(0, size + 1):
-            idx = j + size * i
-            m.append(msg_vec[idx] if idx < len(msg_vec) else 0)
-        M.append(m)
-    return M
+    matr = np.zeros((size, size), dtype=np.int16)
+    for i in range(size):
+        for j in range(size):
+            k = j + size * i
+            if k < len(msg_vec):
+                matr[i][j] = msg_vec[k]
+            else:
+                break
+    return matr
 
 
-def matrix_to_message(M):
+def matrix_to_message(m):
     """
     Transform matrix to message.
     :param M: matrix to transform
     :return: message
     """
-    msg_vec = []
-    size = int(len(M))
-    for i in range(0, size - 1):
-        for j in range(0, size - 1):
-            msg_vec.append(M[i][j]) if not M[i][j] == 0 else None
-    msg = vec_2_str(msg_vec)
+    msg_vec = m.ravel()
+    msg = core.vec_2_str(msg_vec)
     return msg
 
 
-def int_matrix_to_bits_matrix(M):
-    M_bits = []
-    size = int(len(M))
+def int_matrix_to_bits_matrix(m):
+    size = int(len(m))
+    m_bits = np.zeros((size, size), dtype=list)
     for i in range(0, size):
-        m = []
         for j in range(0, size):
-            m.append(d_2_b(M[i][j], 16))
-        M_bits.append(m)
-    return M_bits
+            m_bits[i][j] = core.d_2_b(m[i][j])
+    return m_bits
 
-def bits_matrix_to_int_matrix(M_bits):
-    M = []
-    size = int(len(M_bits))
+def bits_matrix_to_int_matrix(m_bits):
+    size = int(len(m_bits))
+    m = np.zeros((size, size), dtype=np.int16)
     for i in range(0, size):
-        m = []
         for j in range(0, size):
-            m.append(b_2_d(M_bits[i][j]))
-        M.append(m)
-    return M
+            m[i][j] = core.b_2_d(m_bits[i][j])
+    return m
 
 def py_audio_format_to_num_py(fmt):
     if fmt == pyaudio.paInt16:

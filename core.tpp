@@ -62,6 +62,8 @@ void vec2str_s(IntegerType *src, char **dest, Integer32 size)
         for(Integer32  i = 0; i < size; ++i)
             (*dest)[i] = static_cast<char>(src[i]);
         (*dest)[size] = '\0';
+    } else {
+        printf("ArgumentsError");
     }
 }
 //------------------------------------------------------------------------------------

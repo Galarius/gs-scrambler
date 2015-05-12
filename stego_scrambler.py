@@ -91,19 +91,27 @@ class StegoScramblerSession:
         else:
             print colorize("Unsupported stream mode! [%i]" % self.stream_mode, COLORS.FAIL)
 
+    @staticmethod
+    def is_power2(num):
+        "if a number is a power of two"
+        return num and not num & (num - 1)
+
     def __recording_callback(self, in_data, frame_count, time_info, status):
         #-----------------------------------------------------------------------
         if self.stream_mode == StreamMode.StreamFromFileToFile:
             # file to file
             # read frames
             in_data = self.file_source.readframes(frame_count)
-            # decode frames
-            left, right = stego_helper.audio_decode(in_data, self.file_source.getnchannels())
-            # process frames
-            left, right = self.core.process(left, right)
-            # encode back
-            processed_data = stego_helper.audio_encode((left, right))
-            # write ro file
+            if StegoScramblerSession.is_power2(len(in_data)):
+                # decode frames
+                left, right = stego_helper.audio_decode(in_data, self.file_source.getnchannels())
+                # process frames
+                left, right = self.core.process(left, right)
+                # encode back
+                processed_data = stego_helper.audio_encode((left, right))
+            else:
+                processed_data = in_data
+            # write to file
             if self.stego_mode == StegoMode.Hide:
                 self.output_wave_file.writeframes(processed_data)
         #-----------------------------------------------------------------------

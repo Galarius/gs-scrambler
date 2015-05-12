@@ -39,6 +39,14 @@ def integrate_c(np.ndarray[np.int16_t, ndim=1, mode="c"] container not None, n, 
     info = info[l:]
     return container, info
 
+def deintegrate_c(np.ndarray[np.int16_t, ndim=1, mode="c"] container not None, n, begin, step):
+    cdef short int *info_ptr = NULL
+    cdef l = deintegrate(<short int *> container.data, n, begin, step, &info_ptr)
+    cdef np.npy_intp shape[1]
+    shape[0] = <np.npy_intp> l
+    ndarray = np.PyArray_SimpleNewFromData(1, shape, np.NPY_INT16, <void *> info_ptr)
+    np.PyArray_UpdateFlags(ndarray, ndarray.flags.num | np.NPY_OWNDATA)
+    return ndarray
 
 #--------------------------------------------------------------------
 # template core methods
