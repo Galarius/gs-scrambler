@@ -61,52 +61,56 @@ Integer32 calculate_semi_period(const Integer16* const data, Integer32 n)
 }
 
 /**
- *  Integrate data from 'stream' to 'container' of size 'size' begining with 'begin' with step 'step'.
+ *  Integrate data from 'info' to 'container' of size 'size' begining with 'begin' with step 'step'.
  *
  *  @param container container to modify
  *  @param size      container size
  *  @param begin     integration start pos
  *  @param step      integration step
- *  @param stream    message (encoded) to integrate
+ *  @param info      message (encoded) to integrate
+ *  @return          the amount of data that was integrated
  */
-void integrate(Integer16 **container, Integer32 size, Integer32 begin, Integer32 step, Integer16 *stream)
+Integer32 integrate(Integer16 **container, Integer32 size, Integer32 begin, Integer32 step, Integer16 * const info)
 {
     if(!step) {
         printf("ArgumentError");
-        return;
+        return 0;
     }
+    Integer16 *info_ptr = info;
+    Integer32 counter = 0;
     for(Integer32 i = begin; i < size; i += step) {
-        if(!stream)
+        if(!info)
             break;
         Integer16 *bits = 0;
         D2B((*container)[i], &bits);
         Integer16 sign = container[i] >= 0 ? 1 : -1;
-        bits[0] = sign * (*stream);
-        ++stream;
+        bits[0] = sign * (*info_ptr);
+        ++info_ptr; ++counter;
         B2D(bits, (*container)[i]);
         delete_arr_primitive_s(&bits);
     }
+    return counter;
 }
 
 /**
- *  Recover data to 'stream' from 'container' of size 'size' begining with 'begin' with step 'step'.
+ *  Recover data to 'info' from 'container' of size 'size' begining with 'begin' with step 'step'.
  *
  *  @param container container to extract data from
  *  @param size      container size
  *  @param begin     deintegration start pos
  *  @param step      deintegration step
- *  @param stream    message (encoded) to deintegrate to
+ *  @param info      message (encoded) to deintegrate to
  *  @return          message length
  */
-Integer32 deintegrate(const Integer16 * const container, Integer32 size, Integer32 begin, Integer32 step, Integer16 **stream)
+Integer32 deintegrate(const Integer16 * const container, Integer32 size, Integer32 begin, Integer32 step, Integer16 **info)
 {
     if(!step) {
         printf("ArgumentError");
         return 0;
     }
     Integer32 l = (int)(ceil((size-begin) / step));
-    new_arr_primitive_s(stream, l);
-    Integer16 *ptr = *stream;
+    new_arr_primitive_s(info, l);
+    Integer16 *ptr = *info;
     for(Integer32 i = begin; i < size; i += step) {
         Integer16 *bits = 0;
         D2B(container[i], &bits);

@@ -73,8 +73,9 @@ Integer32 calculate_semi_period(const Integer16* const data, Integer32 n);
  *  @param begin     integration start pos
  *  @param step      integration step
  *  @param stream    message (encoded) to integrate
+ *  @return          the amount of data that was integrated
  */
-void integrate(Integer16 **container, Integer32 size, Integer32 begin, Integer32 step, Integer16 *stream);
+Integer32 integrate(Integer16 **container, Integer32 size, Integer32 begin, Integer32 step, Integer16 *stream);
 
 /**
  *  Recover data to 'stream' from 'container' of size 'size' begining with 'begin' with step 'step'.

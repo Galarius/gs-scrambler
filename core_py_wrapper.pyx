@@ -1,5 +1,8 @@
+#!python
+#cython: wraparound=False, boundscheck=False
 __author__ = 'galarius'
 
+import cython
 import numpy as np
 cimport numpy as np
 
@@ -13,8 +16,11 @@ np.import_array()
 
 cdef extern from "core.h":
     int calculate_semi_period(short int* data, int n);
+    int integrate(short int **container, int size, int begin, int step, short int *info);
+    int deintegrate(const short int *container, int size, int begin, int step, short int **info);
 
-def calculate_semi_period_c(np.ndarray[np.int16_t, ndim=1] arr, n):
+
+def calculate_semi_period_c(np.ndarray[np.int16_t, ndim=1, mode="c"] samples not None, n):
     """
     Calculate semi-period for discrete function using Alter-Johnson formula:
        a(tau) = 1/(n-tau) * sum(t=1,t<n-tau, |f(t+tau) - f(t)|),
@@ -25,7 +31,14 @@ def calculate_semi_period_c(np.ndarray[np.int16_t, ndim=1] arr, n):
         semi_period = argmin(a(tau)),
         semi_period_min <= semi_period <= semi_period_max
     """
-    return calculate_semi_period(<short int *> arr.data, n)
+    return calculate_semi_period(<short int *> samples.data, n)
+
+def integrate_c(np.ndarray[np.int16_t, ndim=1, mode="c"] container not None, n, begin, step, np.ndarray[np.int16_t, ndim=1, mode="c"] info not None):
+    cdef short int *ptr = <short int *> container.data
+    cdef l = integrate(&ptr, n, begin, step, <short int *> info.data)
+    info = info[l:]
+    return container, info
+
 
 #--------------------------------------------------------------------
 # template core methods
@@ -72,7 +85,7 @@ def vec_2_str(np.ndarray[np.int16_t, ndim=1] source):
     # call C func
     vec2str_short(<short int *> source.data, &dest, size)
     pystring = PyString_FromString(dest);
-    delete_char_arr(dest)
+    delete_char_arr(&dest)
     return pystring
 
 def d_2_b(x):
