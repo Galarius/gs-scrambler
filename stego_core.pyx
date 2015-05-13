@@ -3,6 +3,8 @@
 __author__ = 'Ilya Shoshin'
 __copyright__ = 'Copyright 2015, Ilya Shoshin'
 
+# ToDo correct step calculation
+
 from q_matrix import *
 import stego_helper as sh
 import core
@@ -47,13 +49,13 @@ class StegoCore:
         """
 
         self.stego_mode = stego_mode    # encode or decode
-        self.message_to_proc_part = []  # the part of message that left to be integrated
+        self.message_to_proc_part = np.empty(0, dtype=np.int16)    # the part of message that left to be integrated
         self.skip_frames = 0            # how many frames shoud be skipped
         self.mediate_length = 0         # length of message to recover (length of bits array)
         # synchronization
         self.sync_mark = ''                 # synchronization mark
-        self.sync_mark_encoded_array = []   # synchronization mark encoded
-        self.sync_mark_temp_encoded_array = []   # list that may contain sync mark
+        self.sync_mark_encoded_array = np.empty(0, dtype=np.int16)   # synchronization mark encoded
+        self.sync_mark_temp_encoded_array = []  # list that may contain sync mark
         self.synchronized = False           # is synchronization performed
         if stego_mode == StegoMode.Hide:
             if StegoCore.SKIP_FRAMES_KEY in kwargs:
@@ -149,8 +151,6 @@ class StegoCore:
             print colorize("Wrong session key. Can't extract message.", COLORS.FAIL)
             return ''
 
-        print self.message_to_proc_part.tolist()
-
         msg_matrix_encoded = sh.bits_matrix_to_int_matrix(msg_matrix_encoded_array)
         msg_matrix = QMatrix.decode_matrix_message(msg_matrix_encoded, key)
         msg = sh.matrix_to_message(msg_matrix)
@@ -207,7 +207,7 @@ class StegoCore:
             step = int(size / float(semi_p))
             message_part = core.deintegrate_c(chunk_container, size, semi_p, step)
             # extend msg part array
-            self.message_to_proc_part = np.append(self.message_to_proc_part, message_part) if len(self.message_to_proc_part) > 0 else message_part
+            self.message_to_proc_part = np.append(self.message_to_proc_part, message_part)
 
     #--------------------------------------------------------------
     # Synchronization

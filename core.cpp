@@ -108,10 +108,10 @@ Integer32 deintegrate(const Integer16 * const container, Integer32 size, Integer
         printf("ArgumentError");
         return 0;
     }
-    Integer32 l = (int)(ceil((size-begin) / step));
-    new_arr_primitive_s(info, l);
+    new_arr_primitive_s(info, (int)(ceil((size-begin) / step)));
+    Integer32 l = 0;
     Integer16 *ptr = *info;
-    for(Integer32 i = begin; i < size; i += step) {
+    for(Integer32 i = begin; i < size; i += step, ++l) {
         Integer16 *bits = 0;
         D2B(container[i], &bits);
         *ptr = gabs(bits[0]);
