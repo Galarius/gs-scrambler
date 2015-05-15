@@ -5,6 +5,7 @@ __author__ = 'galarius'
 import cython
 import numpy as np
 cimport numpy as np
+from libcpp cimport bool
 
 # Numpy must be initialized. When using numpy from C or Cython you must
 # _always_ do that, or you will have segfaults
@@ -47,6 +48,20 @@ def deintegrate_c(np.ndarray[np.int16_t, ndim=1, mode="c"] container not None, n
     ndarray = np.PyArray_SimpleNewFromData(1, shape, np.NPY_INT16, <void *> info_ptr)
     np.PyArray_UpdateFlags(ndarray, ndarray.flags.num | np.NPY_OWNDATA)
     return ndarray
+
+cdef extern from "core.h":
+    cdef cppclass Detector:
+        Detector(const short int *, int, int) except +
+        bool detect(const short int *, int)
+
+cdef class PyDetector:
+    cdef Detector *thisptr      # hold a C++ instance which we're wrapping
+    def __cinit__(self, np.ndarray[np.int16_t, ndim=1, mode="c"] mark not None, int size, int bufferSize):
+        self.thisptr = new Detector(<short int *> mark.data, size, bufferSize)
+    def __dealloc__(self):
+        del self.thisptr
+    def detect(self, np.ndarray[np.int16_t, ndim=1, mode="c"] container not None, size):
+        return self.thisptr.detect(<short int *> container.data, size)
 
 #--------------------------------------------------------------------
 # template core methods

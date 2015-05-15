@@ -61,20 +61,17 @@ class StegoCore:
             if StegoCore.SKIP_FRAMES_KEY in kwargs:
                 # set number of frames to skip
                 self.skip_frames = kwargs[StegoCore.SKIP_FRAMES_KEY]
-            if StegoCore.SYNC_MARK_KEY in kwargs:
-                self.sync_mark = kwargs[StegoCore.SYNC_MARK_KEY]
-                self.__synchronization_prepare()
-            else:
-                self.synchronized = True
         else:
             if StegoCore.SKIP_FRAMES_KEY in kwargs:
                 # set number of frames to skip
                 self.skip_frames = kwargs[StegoCore.SKIP_FRAMES_KEY]
-            if StegoCore.SYNC_MARK_KEY in kwargs:
-                self.sync_mark = kwargs[StegoCore.SYNC_MARK_KEY]
-                self.__synchronization_prepare()
-            else:
-                self.synchronized = True
+
+        if StegoCore.SYNC_MARK_KEY in kwargs:
+            self.sync_mark = kwargs[StegoCore.SYNC_MARK_KEY]
+            self.__synchronization_prepare()
+            self.detector = core.PyDetector(self.sync_mark_encoded_array, len(self.sync_mark_encoded_array), 1024 * 3)
+        else:
+            self.synchronized = True
 
     def hide(self, message, key):
         """
@@ -102,11 +99,6 @@ class StegoCore:
         :param chunk: chunk to be used as container to perform integration or recovering
         :return: processed chunk or the original chunk
         """
-
-        # rms = self.rms(chunk_container.tolist())
-        # if rms > 0:
-        #     decibel = 20 * math.log10(rms)
-        #     print decibel
 
         #if not self.skip_frames:                                           # if no frames left to skip
         if self.stego_mode == StegoMode.Hide:                               # if hiding
@@ -262,15 +254,7 @@ class StegoCore:
             print "Mark is empty"
             return False
 
-        if len(self.sync_mark_temp_encoded_array) >= 3 * len(chunk_container):
-            self.sync_mark_temp_encoded_array = self.sync_mark_temp_encoded_array[len(chunk_container):]
-
-        for i in range(len(chunk_container)):
-            bits = core.d_2_b(chunk_container[i])
-            self.sync_mark_temp_encoded_array.append(abs(bits[0]))
-
-        pos, length = sh.contains(self.sync_mark_encoded_array.tolist(), self.sync_mark_temp_encoded_array)
-        self.synchronized = pos >= 0 and length > 0
+        self.synchronized = self.detector.detect(chunk_container, len(chunk_container))
 
         if self.synchronized:
             print colorize("Synchronization completed.", COLORS.OKGREEN)

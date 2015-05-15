@@ -24,22 +24,22 @@ void tests()
     char src[] = "ABCDEFJHIGKLMNOPQRSTUVWXYZabsdefghijklmnopqrstuvwxyz";
     int size = (int)strlen(src);
     short int *dest = 0;
-    str2vec_s(src, &dest, size);
+    strToIntegerArray(src, &dest, size);
     printArray(dest, size);
     // test vec_2_str
     char *src_back = 0;
-    vec2str_s(dest, &src_back, size);
+    integerArrayToStr(dest, &src_back, size);
     printArray(src_back, size);
     delete_arr_primitive_s(&dest);
     delete_arr_primitive_s(&src_back);
     // test D2B
     int16_t i = 32700;
     int16_t *binary = 0;
-    int16_t s = D2B(i, &binary);
+    int16_t s = integerToBits(i, &binary);
     printArray(binary, s);
     // test B2D
     int16_t x;
-    B2D(binary, x);
+    bitsToInteger(binary, x);
     printf("%i", x);
     std::cout<<std::endl;
     delete_arr_primitive_s(&binary);
@@ -51,17 +51,31 @@ void tests()
     for(int i = 0; i < 1024; ++i)
         container_dynamic[i] = container[i];
     Integer32 semi_period = calculate_semi_period(container, 1024);
-    Integer32 step = Integer32(1024 / float(semi_period));
+    Integer32 step = Integer32(1024.0f / semi_period);
     Integer16 *stream = 0;
-    new_arr_primitive_s(&stream, 15);
-    for(int i = 0; i < 15; ++i)
+    new_arr_primitive_s(&stream, 105);
+    for(int i = 0; i < 105; ++i)
         stream[i] = i % 2 > 0 ? 1 : 0;
-    printArray(stream, 15);
+    printArray(stream, 105);
     integrate(&container_dynamic, 1024, semi_period, step, stream);
     delete_arr_primitive_s(&stream);
     Integer32 l = deintegrate(container_dynamic, 1024, semi_period, step, &stream);
     printArray(stream, l);
     delete_arr_primitive_s(&container_dynamic);
+    // test contains
+    Integer16 *small = 0;
+    Integer32 small_size = 10;
+    new_arr_primitive_s(&small, small_size);
+    for(int i = 0; i < small_size; ++i)
+        small[i] = i;
+    Integer16 *big = 0;
+    Integer32 big_size = 30;
+    new_arr_primitive_s(&big, big_size);
+    for(int i = -15; i < 15; ++i)
+        big[i+15] = i;
+    Integer32 p = 0;
+    bool res = contains(small, small_size, big, big_size, p);
+    std::cout << res << std::endl;
 }
 
 int main(int argc, const char * argv[]) {
