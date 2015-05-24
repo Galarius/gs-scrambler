@@ -31,9 +31,10 @@ ext_modules = [
     # link core.o core_py_wrapper.o -> core_py_wrapper.so
     Extension(name="core",
               sources=["core_py_wrapper.pyx", "core.cpp"],
-              # extra_objects=["jonson.o"],  # if you compile jonson_c.cpp separately
               include_dirs = [numpy.get_include()],
               language="c++",
+              extra_compile_args=["-std=c++11", "-Wno-unused-function"],
+              # extra_objects=["..."],  # if  compile sources separately
               # libraries=
               # extra_compile_args = "...".split(),
               # extra_link_args = "...".split()

@@ -1,8 +1,8 @@
 OBJS = test.o core.o
 CC = g++
 DEBUG = -g
-CFLAGS = -Wall -c $(DEBUG)
-LFLAGS = -Wall $(DEBUG)
+CFLAGS = -std=c++11 -Wall -c $(DEBUG)
+LFLAGS = -std=c++11 -Wall $(DEBUG)
 
 core_test: $(OBJS)
 	$(CC) $(LFLAGS) $(OBJS) -o core_test

@@ -99,19 +99,23 @@ def float_2_pcm(sig, dtype='int16'):
         raise TypeError("'dtype' must be signed integer type")
     return (sig * np.iinfo(dtype).max).astype(dtype)
 
-def audio_decode(in_data, channels):
-    result = np.fromstring(in_data, dtype=np.float32)
-    result = float_2_pcm(result, np.int16)
+def audio_decode(in_data, channels, dtype=np.float32):
+    result = np.fromstring(in_data, dtype=dtype)
+    if dtype == np.float32:
+        result = float_2_pcm(result, np.int16)
     chunk_length = len(result) / channels
     output = np.reshape(result, (chunk_length, channels))
     l, r = np.copy(output[:, 0]), np.copy(output[:, 1])
     return l, r
 
-def audio_encode(samples):
-    l = pcm_2_float(samples[0], np.float32)
-    r = pcm_2_float(samples[1], np.float32)
+def audio_encode(samples, dtype=np.float32):
+    if dtype == np.float32:
+        l = pcm_2_float(samples[0], np.float32)
+        r = pcm_2_float(samples[1], np.float32)
+    else:
+        l, r, = samples
     interleaved = np.array([l, r]).flatten('F')
-    out_data = interleaved.astype(np.float32).tostring()
+    out_data = interleaved.astype(dtype).tostring()
     return out_data
 
 

@@ -7,9 +7,6 @@
 //
 //  Implementation file for template functions.
 
-#include "core_memory.h"
-#include <math.h>
-
 #define SIGN(x) ((x) == (0) ? (0) : ((x) > (0) ? (1) : (-1)))
 
 /**
@@ -84,7 +81,7 @@ void integerArrayToStr(IntegerType *src, char **dest, Integer32 size)
  *  @return size of binary array
  */
 template <typename IntegerType>
-Integer16 integerToBits(IntegerType x, IntegerType **binary)
+Integer16 integerToBits(IntegerType x, Binary **binary)
 {
     if((*binary))
     {
@@ -93,7 +90,7 @@ Integer16 integerToBits(IntegerType x, IntegerType **binary)
     }
     
     Integer16 sizeInBits = sizeof(IntegerType) * 8;
-    new_arr_primitive_s<IntegerType>(binary, sizeInBits);
+    new_arr_primitive_s(binary, sizeInBits);
     Integer16 sign = SIGN(x);
     for(Integer16 i = 0; i < sizeInBits; ++i)
     {
@@ -116,7 +113,7 @@ Integer16 integerToBits(IntegerType x, IntegerType **binary)
  *  @param x      out parameter - result
  */
 template <typename IntegerType>
-void bitsToInteger(IntegerType *binary, IntegerType &x)
+void bitsToInteger(Binary *binary, IntegerType &x)
 {
     if(!binary)
     {
@@ -174,3 +171,21 @@ bool contains(const IntegerType* small, Integer32 size_small, IntegerType *big, 
     return matches;
 }
 //------------------------------------------------------------------------------------
+/**
+ *  Calculates dynamic step from array of bits.
+ *  res = k * sum(src)
+ *
+ *  @param src   array of bits
+ *  @param size  size of array
+ *  @param k     step modificator
+ *
+ *  @return step
+ */
+template <typename IntegerType>
+inline Integer32 dynamicStep(IntegerType *src, Integer32 size, Integer32 k)
+{
+    Integer32 res = 0;
+    for(Integer32 i = 0; i < size; ++i)
+        res += src[i];
+    return k * res;
+}

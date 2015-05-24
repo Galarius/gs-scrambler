@@ -7,8 +7,10 @@
 //
 
 #include <iostream>
-#include "core.h"
-#include "core_memory.h"
+#include "gsc_helper.h"
+#include "profiler.h"
+
+using namespace gsc;
 
 template <typename T>
 void printArray(T *arr, int size)
@@ -34,7 +36,7 @@ void tests()
     delete_arr_primitive_s(&src_back);
     // test D2B
     int16_t i = 32700;
-    int16_t *binary = 0;
+    Binary *binary = 0;
     int16_t s = integerToBits(i, &binary);
     printArray(binary, s);
     // test B2D
@@ -52,7 +54,7 @@ void tests()
         container_dynamic[i] = container[i];
     Integer32 semi_period = calculate_semi_period(container, 1024);
     Integer32 step = Integer32(1024.0f / semi_period);
-    Integer16 *stream = 0;
+    Binary *stream = 0;
     new_arr_primitive_s(&stream, 105);
     for(int i = 0; i < 105; ++i)
         stream[i] = i % 2 > 0 ? 1 : 0;
@@ -76,6 +78,16 @@ void tests()
     Integer32 p = 0;
     bool res = contains(small, small_size, big, big_size, p);
     std::cout << res << std::endl;
+    printf("Test semi_period calculation\n");
+    container_dynamic = 0;
+    new_arr_primitive_s(&container_dynamic, 1024);
+    for(int i = 0; i < 1024; ++i)
+        container_dynamic[i] = container[i];
+    CLOCK_START
+    semi_period = calculate_semi_period(container, 1024);
+    printf("%f sec\n", ELAPSED_TIME);
+    printf("%i \n", semi_period);
+    delete_arr_primitive_s(&container_dynamic);
 }
 
 int main(int argc, const char * argv[]) {

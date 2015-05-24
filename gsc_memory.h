@@ -9,8 +9,10 @@
 #ifndef __core__memory__
 #define __core__memory__
 
-#include "core_types.h"
+#include "gsc_types.h"
 #include <stdio.h>
+
+namespace gsc {
 
 /*
  *	Safe new[] for array of primitive elements
@@ -34,4 +36,7 @@ inline void delete_arr_primitive_s(ArrType **arrPtr)
         *arrPtr = 0;
     }
 }
+    
+}
+
 #endif

@@ -9,8 +9,14 @@
 #ifndef __core__core__
 #define __core__core__
 
-#include "core_types.h"
+#include "gsc_types.h"
+#include "gsc_memory.h"
+#include <math.h>
 
+/**
+ *  Template functions
+ */
+namespace gsc {
 /**
  *  Converts char array into array of type IntegerType.
  *
@@ -51,7 +57,7 @@ void integerArrayToStr(IntegerType *src, char **dest, Integer32 size);
  *  @return size of binary array
  */
 template <typename IntegerType>
-Integer16 integerToBits(IntegerType x, IntegerType **binary);
+Integer16 integerToBits(IntegerType x, Binary **binary);
 /**
  *  Converts binary array to integer.
  *
@@ -62,7 +68,7 @@ Integer16 integerToBits(IntegerType x, IntegerType **binary);
  *  @param x      out parameter - result
  */
 template <typename IntegerType>
-void bitsToInteger(IntegerType *binary, IntegerType &x);
+void bitsToInteger(Binary *binary, IntegerType &x);
 
 /**
  *  Check if big array contains small one
@@ -76,11 +82,28 @@ void bitsToInteger(IntegerType *binary, IntegerType &x);
  *  @return operation result -> bool
  */
 template <typename IntegerType>
-extern bool contains(const IntegerType* small, Integer32 size_small, IntegerType *big, Integer32 size_big, Integer32 &out_pos);
-
+bool contains(const IntegerType* small, Integer32 size_small, IntegerType *big, Integer32 size_big, Integer32 &out_pos);
+/**
+ *  Calculates dynamic step from array of bits.
+ *  res = k * sum(src)
+ *
+ *  @param src   array of bits
+ *  @param size  size of array
+ *  @param k     step modificator
+ *
+ *  @return step
+ */
+template <typename IntegerType>
+inline Integer32 dynamicStep(IntegerType *src, Integer32 size, Integer32 k);
+    
 /* Include implementation for template functions */
-#include "core.tpp"
+#include "gsc_helper.tpp"    
+}
 
+/**
+ *  Non-template functions
+ */
+namespace gsc {
 /**
  *  Calculate semi-period for discrete function using Alter-Johnson formula:
  *     a(tau) = 1/(n-tau) * sum(t=1,t<n-tau, |f(t+tau) - f(t)|),
@@ -96,61 +119,43 @@ extern bool contains(const IntegerType* small, Integer32 size_small, IntegerType
 Integer32 calculate_semi_period(const Integer16* const data, Integer32 n);
 
 /**
- *  Integrate data from 'stream' to 'container' of size 'size' begining with 'begin' with step 'step'.
+ *  Calculate semi-period for discrete function using Alter-Johnson formula:
+ *     a(tau) = 1/(n-tau) * sum(t=1,t<n-tau, |f(t+tau) - f(t)|),
+ *  n - total number of samples,
+ *
+ *  @param data values of discrete function
+ *  @param n    number of samples
+ *  @param out_data processed values
+ *
+ *  @return semi_period
+ *      semi_period = argmin(a(tau)),
+ *      semi_period_min <= semi_period <= semi_period_max
+ */
+Integer32 calculate_semi_period(const Integer16* const data, Integer32 n, float **out_data);
+
+/**
+ *  Integrate data from 'info' to 'container' of size 'size' begining with 'begin' with step 'step'.
  *
  *  @param container container to modify
  *  @param size      container size
  *  @param begin     integration start pos
  *  @param step      integration step
- *  @param stream    message (encoded) to integrate
+ *  @param info      message (encoded) to integrate
  *  @return          the amount of data that was integrated
  */
-Integer32 integrate(Integer16 **container, Integer32 size, Integer32 begin, Integer32 step, Integer16 *stream);
+Integer32 integrate(Integer16 **container, Integer32 size, Integer32 begin, Integer32 step, Binary * const info);
 
 /**
- *  Recover data to 'stream' from 'container' of size 'size' begining with 'begin' with step 'step'.
+ *  Recover data to 'info' from 'container' of size 'size' begining with 'begin' with step 'step'.
  *
  *  @param container container to extract data from
  *  @param size      container size
  *  @param begin     deintegration start pos
  *  @param step      deintegration step
- *  @param stream    message (encoded) to deintegrate to
+ *  @param info      message (encoded) to deintegrate to
  *  @return          message length
  */
-Integer32 deintegrate(const Integer16 * const container, Integer32 size, Integer32 begin, Integer32 step, Integer16 **stream);
-
-//----------------------------------------------------------------
-// Detector
-//----------------------------------------------------------------
-
-/**
- *  Detect synchronization marker in container of bits
- */
-class Detector
-{
-public:
-    /**
-     *  @param mark int16 array of bits
-     *  @param size array size
-     *  @param buffer_size size of accumulation container
-     */
-    Detector(const Integer16 * const mark, Integer32 size, Integer32 bufferSize);
-    /**
-     *  detector method
-     *
-     *  @param container container to scan
-     *  @param size      size of the container
-     *
-     *  @return scan result
-     */
-    bool detect(const Integer16 * const container, Integer32 size);
-    ~Detector();
-private:
-    Integer16 *m_mark;
-    Integer32 m_mark_size;
-    Integer16 *m_accumulation_container;
-    Integer32 m_accumulation_container_size;
-    Integer32 m_accumulation_container_fill_size;
-};
+Integer32 deintegrate(const Integer16 * const container, Integer32 size, Integer32 begin, Integer32 step, Binary **info);
+}
 
 #endif /* defined(__core__core__) */

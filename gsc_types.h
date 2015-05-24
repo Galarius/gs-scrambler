@@ -15,8 +15,13 @@
 
 #include <cstdint>
 
+namespace gsc {
+
 typedef int64_t Integer64;
 typedef int32_t Integer32;
 typedef int16_t Integer16;
+typedef bool    Binary;
+    
+}
 
 #endif

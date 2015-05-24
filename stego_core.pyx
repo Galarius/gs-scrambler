@@ -69,7 +69,7 @@ class StegoCore:
         if StegoCore.SYNC_MARK_KEY in kwargs:
             self.sync_mark = kwargs[StegoCore.SYNC_MARK_KEY]
             self.__synchronization_prepare()
-            self.detector = core.PyDetector(self.sync_mark_encoded_array, len(self.sync_mark_encoded_array), 1024 * 3)
+            self.detector = core.PyDetector(self.sync_mark_encoded_array, len(self.sync_mark_encoded_array), 1024)
         else:
             self.synchronized = True
 
@@ -99,23 +99,22 @@ class StegoCore:
         :param chunk: chunk to be used as container to perform integration or recovering
         :return: processed chunk or the original chunk
         """
-
-        #if not self.skip_frames:                                           # if no frames left to skip
-        if self.stego_mode == StegoMode.Hide:                               # if hiding
-            # hide
-            if self.synchronized:
-                if len(self.message_to_proc_part) > 0:                          # if there is smth to hide
-                    return self.__hide(chunk_source, chunk_container)           # hide msg and return processed chunk
+        if not self.skip_frames:                                           # if no frames left to skip
+            if self.stego_mode == StegoMode.Hide:                               # if hiding
+                # hide
+                if self.synchronized:
+                    if len(self.message_to_proc_part) > 0:                          # if there is smth to hide
+                        return self.__hide(chunk_source, chunk_container)           # hide msg and return processed chunk
+                else:
+                    return self.__synchronization_put(chunk_source), chunk_container
             else:
-                return self.__synchronization_put(chunk_source), chunk_container
+                # recover
+                if self.synchronized:
+                    self.__recover(chunk_source, chunk_container)                   # recover msg part from a chunk
+                else:
+                    self.__synchronization_detect(chunk_source)
         else:
-            # recover
-            if self.synchronized:
-                self.__recover(chunk_source, chunk_container)                   # recover msg part from a chunk
-            else:
-                self.__synchronization_detect(chunk_source)
-        #else:
-        #    self.skip_frames -= 1
+            self.skip_frames -= 1
 
         return chunk_source, chunk_container                                         # return original chunk
 
@@ -135,6 +134,8 @@ class StegoCore:
             self.message_to_proc_part = self.message_to_proc_part[:mediate_length]
         elif len(self.message_to_proc_part) < mediate_length:
             raise RuntimeError("Couldn't extract message with provided argument.")
+
+        # print self.message_to_proc_part.tolist()
 
         s = int(math.ceil(math.sqrt(len(self.message_to_proc_part) / StegoCore.BITS)))
         try:
@@ -176,13 +177,16 @@ class StegoCore:
         :return:      processed or the original chunk
         """
         # calculate semi-period
-        semi_p = core.calculate_semi_period_c(chunk_source, len(chunk_source))
-        if semi_p == 0:
-            return chunk_source, chunk_container  # wrong semi-period, return original data
+        #semi_p = core.calculate_semi_period_c(chunk_source, len(chunk_source))
+        #if semi_p == -1:
+        #    return chunk_source, chunk_container  # wrong semi-period, return original data
+        #print semi_p
         # perform integration function from cpp code on current chunk with calculated unique step
+        semi_p = 0
         size = len(chunk_container)
-        step = int(size / float(semi_p))
+        step = 1#int(size / float(semi_p))
         container_processed, self.message_to_proc_part = core.integrate_c(chunk_container, size, semi_p, step, self.message_to_proc_part)
+        #container_processed, self.message_to_proc_part = core.integrate_c(chunk_container, size, 0, 1, self.message_to_proc_part)
         if not len(self.message_to_proc_part):
             print colorize("Message integrated.", COLORS.OKBLUE)
         return chunk_source, container_processed
@@ -193,13 +197,16 @@ class StegoCore:
         :param chunk: container
         """
         # calculate semi-period
-        semi_p = core.calculate_semi_period_c(chunk_source, len(chunk_source))
-        if semi_p != 0:
-            size = len(chunk_container)
-            step = int(size / float(semi_p))
-            message_part = core.deintegrate_c(chunk_container, size, semi_p, step)
-            # extend msg part array
-            self.message_to_proc_part = np.append(self.message_to_proc_part, message_part)
+        #semi_p = core.calculate_semi_period_c(chunk_source, len(chunk_source))
+        #if semi_p != -1:
+        #    print semi_p
+        semi_p = 0
+        size = len(chunk_container)
+        step = 1#int(size / float(semi_p))
+        message_part = core.deintegrate_c(chunk_container, size, semi_p, step)
+        #message_part = core.deintegrate_c(chunk_container, size, 0, 1)
+        # extend msg part array
+        self.message_to_proc_part = np.append(self.message_to_proc_part, message_part)
 
     #--------------------------------------------------------------
     # Synchronization

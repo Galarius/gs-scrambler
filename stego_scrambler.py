@@ -104,11 +104,11 @@ class StegoScramblerSession:
             in_data = self.file_source.readframes(frame_count)
             if StegoScramblerSession.is_power2(len(in_data)):
                 # decode frames
-                left, right = stego_helper.audio_decode(in_data, self.file_source.getnchannels())
+                left, right = stego_helper.audio_decode(in_data, self.file_source.getnchannels(), np.int16)
                 # process frames
                 left, right = self.core.process(left, right)
                 # encode back
-                processed_data = stego_helper.audio_encode((left, right))
+                processed_data = stego_helper.audio_encode((left, right), np.int16)
             else:
                 processed_data = in_data
             # write to file
@@ -127,34 +127,33 @@ class StegoScramblerSession:
                 #processed_data = stego_helper.audio_encode((left, right), np_format)
                 #return processed_data, pyaudio.paContinue
                 return in_data, pyaudio.paContinue
-            with elapsed_timer() as elapsed:
-                # decode frames
-                left, right = stego_helper.audio_decode(in_data, CHANNELS)
-                # process frames
-                left, right = self.core.process(left, right)
-                # print left, right
-                if not len(self.core.message_to_proc_part):
-                    self.enable_processing = False
-                # print n_left.tolist(), n_right[0]
-                # encode back
-                processed_data = stego_helper.audio_encode((left, right))
-                print(elapsed())
+            #with elapsed_timer() as elapsed:
+            # decode frames
+            left, right = stego_helper.audio_decode(in_data, CHANNELS)
+            # process frames
+            left, right = self.core.process(left, right)
+            #right = np.array([i for i in range(1024)], dtype=np.int16)
+            #print right
+            if not len(self.core.message_to_proc_part):
+                self.enable_processing = False
+            # encode back
+            processed_data = stego_helper.audio_encode((left, right))
+            #print(elapsed())
 
         #-----------------------------------------------------------------------
         elif self.stream_mode == StreamMode.StreamFromSoundFlowerToBuildInOutput:
             # sound flower to build-in output
             if not self.enable_processing:
                 return in_data, pyaudio.paContinue
-            with elapsed_timer() as elapsed:
-                # decode frames
-                left, right = stego_helper.audio_decode(in_data, CHANNELS)
-                # print len(left), len(right)
-                print left, right
-                # process frames
-                left, right = self.core.process(left, right)
-                # encode back
-                processed_data = stego_helper.audio_encode((left, right))
-                print(elapsed())
+            # with elapsed_timer() as elapsed:
+            # decode frames
+            left, right = stego_helper.audio_decode(in_data, CHANNELS)
+            #print right
+            # process frames
+            left, right = self.core.process(left, right)
+            # encode back
+            processed_data = stego_helper.audio_encode((left, right))
+                # print(elapsed())
         else:
             print 'Unknown mode!'
             processed_data = in_data
@@ -196,17 +195,15 @@ class StegoScramblerSession:
         print colorize("Output device: %i" % output_dev_idx, COLORS.WARNING)
         print colorize("Format: {0}, Channels: {1}, Rate: {2}, Frame size: {3}".format(format, channels, rate,
                                                                                 settings.frame_size), COLORS.WARNING)
-
         # standard L-R stereo
         channel_map = (0, 1)
-
         try:
             stream_info = pyaudio.PaMacCoreStreamInfo(
                 flags=pyaudio.PaMacCoreStreamInfo.paMacCorePlayNice,  # default
                 channel_map=channel_map)
         except AttributeError:
             print colorize("Sorry, couldn't find PaMacCoreStreamInfo. Make sure that "
-                  "you're running on Mac OS X.", COLORS.FAIL)
+                  "you're running on OS X.", COLORS.FAIL)
             sys.exit(-1)
 
         if stego_device_info.validate_audio_setup(self.p_audio, format, channels, rate, input_dev_idx):
@@ -223,7 +220,7 @@ class StegoScramblerSession:
             self.stream.start_stream()
 
             src_latency = 1000.0 * self.stream.get_input_latency()
-            buffer_latency = 1000.0 * settings.frame_size / RATE
+            buffer_latency = 1000.0 * settings.frame_size / rate
             dst_latency = 1000.0 * self.stream.get_output_latency()
             total_latency = buffer_latency + dst_latency + src_latency
             print colorize("Expected delay: %0.1f ms (src: %0.1f, buf: %0.1f, dst: %0.1f)" % (
@@ -431,9 +428,9 @@ class InteractiveStegoScrambler(cmd.Cmd):
         args = urlparse.parse_qs(line)
         mode = int(args['m'][0]) if len(args.keys()) > 0 else 0
 
-        if not (mode == StreamMode.StreamFromBuildInInputToSoundFlower or \
+        if not (mode == StreamMode.StreamFromBuildInInputToSoundFlower or
                 mode == StreamMode.StreamFromSoundFlowerToBuildInOutput):
-            self.print_err(inspect.currentframe().f_code.co_name.replace('do_',''))
+            self.print_err(inspect.currentframe().f_code.co_name.replace('do_', ''))
             return
 
         # load settings
@@ -488,14 +485,19 @@ class InteractiveStegoScrambler(cmd.Cmd):
         :param msg_file_name: name of the file to save message to
         """
         args = urlparse.parse_qs(line)
-        try:
-            session_key, user_key, msg_file_name = int(args['s'][0]), int(args['k'][0]), args['f'][0]
-            if msg_file_name.strip() == '' or user_key <= 0 or session_key <= 0:
-                self.print_err(inspect.currentframe().f_code.co_name.replace('do_', ''))
-                return
-        except KeyError:
-            self.print_err(inspect.currentframe().f_code.co_name.replace('do_', ''))
-            return
+        # try:
+        #     session_key, user_key, msg_file_name = int(args['s'][0]), int(args['k'][0]), args['f'][0]
+        #     if msg_file_name.strip() == '' or user_key <= 0 or session_key <= 0:
+        #         self.print_err(inspect.currentframe().f_code.co_name.replace('do_', ''))
+        #         return
+        # except KeyError:
+        #     self.print_err(inspect.currentframe().f_code.co_name.replace('do_', ''))
+        #     return
+
+        msg_file_name = 'data/msg_r.txt'
+        user_key = 7
+        session_key = 3600
+
         self.session.recover(session_key, user_key, msg_file_name)
 
     def do_disconnect(self, line):
