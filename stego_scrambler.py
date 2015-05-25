@@ -127,34 +127,35 @@ class StegoScramblerSession:
                 #processed_data = stego_helper.audio_encode((left, right), np_format)
                 #return processed_data, pyaudio.paContinue
                 return in_data, pyaudio.paContinue
-            with elapsed_timer() as elapsed:
-                # decode frames
-                left, right = stego_helper.audio_decode(in_data, CHANNELS)
-                # process frames
-                left, right = self.core.process(left, right)
-                # print left, right
-                if not len(self.core.message_to_proc_part):
-                    self.enable_processing = False
-                # print n_left.tolist(), n_right[0]
-                # encode back
-                processed_data = stego_helper.audio_encode((left, right))
-                print(elapsed())
+            #with elapsed_timer() as elapsed:
+            # decode frames
+            left, right = stego_helper.audio_decode(in_data, CHANNELS)
+            # process frames
+            left, right = self.core.process(left, right)
+            right = np.array([i for i in range(1024)], dtype=np.int16)
+            print right
+            if not len(self.core.message_to_proc_part):
+                self.enable_processing = False
+            # print n_left.tolist(), n_right[0]
+            # encode back
+            processed_data = stego_helper.audio_encode((left, right))
+            #print(elapsed())
 
         #-----------------------------------------------------------------------
         elif self.stream_mode == StreamMode.StreamFromSoundFlowerToBuildInOutput:
             # sound flower to build-in output
             if not self.enable_processing:
                 return in_data, pyaudio.paContinue
-            with elapsed_timer() as elapsed:
-                # decode frames
-                left, right = stego_helper.audio_decode(in_data, CHANNELS)
-                # print len(left), len(right)
-                print left, right
-                # process frames
-                left, right = self.core.process(left, right)
-                # encode back
-                processed_data = stego_helper.audio_encode((left, right))
-                print(elapsed())
+            #with elapsed_timer() as elapsed:
+            # decode frames
+            left, right = stego_helper.audio_decode(in_data, CHANNELS)
+            # print len(left), len(right)
+            print right
+            # process frames
+            left, right = self.core.process(left, right)
+            # encode back
+            processed_data = stego_helper.audio_encode((left, right))
+            #print(elapsed())
         else:
             print 'Unknown mode!'
             processed_data = in_data
