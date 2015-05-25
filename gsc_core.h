@@ -10,6 +10,7 @@
 #define __core__gsc_core__
 
 #include "gsc_icore.h"
+#include "gsc_sync.h"
 
 namespace gsc {
     
@@ -19,7 +20,13 @@ namespace gsc {
 class Core : public ICore
 {
 public:
-    explicit Core();
+    /**
+     *  @param mark array of bits
+     *  @param size mark array size
+     *  @param frameSize the size of frame buffer
+     *  @param scanBufferMaxSize the size for acummulative buffer used for sync marker detection, normally 3 * frameSize.
+     */
+    Core(const Binary * const mark, Integer32 size, Integer32 frameSize, Integer32 scanBufferMaxSize);
     virtual ~Core();
     /**
      *  Hide 'info' inside 'container'.
@@ -38,6 +45,17 @@ public:
      *  @param info      buffer to store info in
      */
     virtual void recover(const Integer16 * const container, Integer32 c_size, Binary **info);
+    
+private:
+    Core()                       = delete;
+    Core(Core const&)            = delete;
+    void operator=(Core const&)  = delete;
+    
+protected:
+    Binary *m_frameBuffer;            // accumulative buffer
+    Integer32 m_frameSizeMax;         // max size of frame buffer
+    Integer32 m_frameSize;            // current size of frame buffer
+    Sync *m_synchronizer;
 };
     
 }

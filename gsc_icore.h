@@ -41,10 +41,16 @@ public:
 };
 
 /**
- *  Creates the instance
- *  @return ICore instance
+ *  Creates the instance of core class.
+ *
+ *  @param mark array of bits
+ *  @param size mark array size
+ *  @param frameSize the size of frame buffer
+ *  @param scanBufferMaxSize the size for acummulative buffer used for sync marker detection, normally 3 * frameSize.
+ *
+ *  @return ICore instance initialized with Core
  */
-extern ICore *createCoreInstance();
+extern ICore *createCoreInstance(const Binary * const mark, Integer32 size, Integer32 frameSize, Integer32 scanBufferMaxSize);
     
 }
 

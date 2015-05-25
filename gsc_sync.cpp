@@ -10,7 +10,7 @@
 #include "gsc_helper.h"
 
 #include <stdio.h>
-#include <algorithm>    // std::copy
+#include <algorithm>    // std::copy, memset
 
 namespace gsc {
 
@@ -41,11 +41,12 @@ Sync::~Sync()
  *
  *  @param container container to hide marker in
  *  @param size      size of the contaner
+ *  @param outContainerPtr current position in container where tha last bit was inserted
  *
  *  @return true if marker fully integrated inside the container and
  *          false if more data required to insert what was left from marker
  */
-bool Sync::put(Integer16 **container, Integer32 size)
+bool Sync::put(Integer16 **container, Integer32 size, Integer16 *outContainerPtr)
 {
     if(m_synchronized)
     {
@@ -53,8 +54,10 @@ bool Sync::put(Integer16 **container, Integer32 size)
         reset();
     }
     
-    Integer32 l = integrate(container, size, 0, 1, m_pointer);
+    const int step = 1;
+    Integer32 l = integrate(container, size, 0, step, m_pointer);
     m_pointer += l;
+    outContainerPtr = *container + l * step;
     bool result = l >= m_markSize;
     if(result)
         m_synchronized = true;
@@ -111,6 +114,11 @@ void Sync::reset()
     memset(m_accBuffer, 0, m_accBufferMaxSize);
     m_pointer = m_mark;
     m_synchronized = false;
+}
+    
+bool Sync::isSynchronized() const
+{
+    return m_synchronized;
 }
     
 }

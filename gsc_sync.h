@@ -33,11 +33,12 @@ public:
      *
      *  @param container container to hide marker in
      *  @param size      size of the contaner
+     *  @param outContainerPtr current position in container where tha last bit was inserted
      *
-     *  @return true if marker fully integrated inside the container and 
+     *  @return true if marker fully integrated inside the container and
      *          false if more data required to insert what was left from marker
      */
-    bool put(Integer16 **container, Integer32 size);
+    bool put(Integer16 **container, Integer32 size, Integer16 *outContainerPtr);
     /**
      *  Try to detect marker inside container.
      *
@@ -52,6 +53,9 @@ public:
      */
     void reset();
     
+public:
+    bool isSynchronized() const;
+    
 private:
     Sync()                       = delete;
     Sync(Sync const&)            = delete;
@@ -60,10 +64,10 @@ private:
     
 private:
     Binary *m_mark;           // synchronization marker
-    Integer32 m_markSize;   // synchronization marker size
+    Integer32 m_markSize;     // synchronization marker size
     Binary *m_pointer;        // current position in marker
     
-    Binary *m_accBuffer;              // synchronization accumulative buffer
+    Binary *m_accBuffer;            // synchronization accumulative buffer
     Integer32 m_accBufferMaxSize;   // synchronization accumulative buffer maximum size
     Integer32 m_accBufferSize;      // synchronization accumulative buffer current size
     
