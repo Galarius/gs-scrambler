@@ -28,6 +28,12 @@ typedef struct BinaryBufferAcc {
     Integer32 bufferSize;           // accumulative buffer current size
 } BinaryBufferAcc;
     
+typedef struct ShortBufferAcc {
+    Integer16 *buffer;                 // accumulative buffer
+    Integer32 bufferMaxSize;        // accumulative buffer maximum size
+    Integer32 bufferSize;           // accumulative buffer current size
+} ShortBufferAcc;
+    
 }
 
 #endif

@@ -316,26 +316,26 @@ def main(opts):
     message_length = -1
     recover_info_file_name = RECOVER_INFO_DEFAULT_FILE_NAME
     # --------------------------------------
-    print colorize("Debug mode.", COLORS.WARNING)
-    # --------------------------------------
-    #hide = True
-    hide = False
-    # --------------------------------------
-    if hide:
-        # --------------------------------------
-        input_container_file_name = "wav/input.wav"
-        message_file_name = "data/msg.txt"
-        output_container_file_name = "wav/output.wav"
-        key = 7
-        recover_info_file_name = "data/recover_info.txt"
-        # --------------------------------------
-    else:
-        # --------------------------------------
-        input_container_file_name = "wav/output.wav"
-        message_file_name = "data/msg_recovered.txt"
-        key = 7
-        recover_info_file_name = "data/recover_info.txt"
-        # --------------------------------------
+    # print colorize("Debug mode.", COLORS.WARNING)
+    # # --------------------------------------
+    # hide = True
+    # #hide = False
+    # # --------------------------------------
+    # if hide:
+    #     # --------------------------------------
+    #     input_container_file_name = "wav/input.wav"
+    #     message_file_name = "data/msg.txt"
+    #     output_container_file_name = "wav/output.wav"
+    #     key = 7
+    #     recover_info_file_name = "data/recover_info.txt"
+    #     # --------------------------------------
+    # else:
+    #     # --------------------------------------
+    #     input_container_file_name = "wav/output.wav"
+    #     message_file_name = "data/msg_recovered.txt"
+    #     key = 7
+    #     recover_info_file_name = "data/recover_info.txt"
+    #     # --------------------------------------
     # --------------------------------------
     for opt, arg in opts:
         if opt == '-h':
@@ -547,9 +547,9 @@ if __name__ == "__main__":
         sys.exit(2)
 
     if not len(opts):
-        print colorize("Debug mode.", COLORS.WARNING)
-        main(opts)
-        pass
+        # print colorize("Debug mode.", COLORS.WARNING)
+        # main(opts)
+        # pass
         print_usage()
         sys.exit(1)
 

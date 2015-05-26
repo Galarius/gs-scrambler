@@ -21,10 +21,11 @@ namespace gsc {
  *  @param bufferMaxSize size of accumulative buffer
  */
 Sync::Sync(const Binary * const mark, Integer32 size, Integer32 bufferMaxSize) {
-    
+    m_mark.buffer = 0;
     m_mark.bufferMaxSize = size;
     m_mark.bufferSize = size;
     new_arr_primitive_s(&m_mark.buffer, m_mark.bufferMaxSize);
+    m_accBuffer.buffer = 0;
     m_accBuffer.bufferMaxSize = bufferMaxSize;
     m_accBuffer.bufferSize = 0;
     new_arr_primitive_s(&m_accBuffer.buffer, m_accBuffer.bufferMaxSize);

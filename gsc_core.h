@@ -58,7 +58,8 @@ private:
     void operator=(Core const&)  = delete;
     
 protected:
-    BinaryBufferAcc m_frame;
+    ShortBufferAcc m_frame;    // container buffer
+    ShortBufferAcc m_seed;     // seed container buffer (to calculate unique step)
     Sync *m_synchronizer;
 };
     

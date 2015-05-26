@@ -37,10 +37,16 @@ ICore *createCoreInstance(const Binary * const mark, Integer32 size, Integer32 f
  */
 Core::Core(const Binary * const mark, Integer32 size, Integer32 frameSize, Integer32 scanBufferMaxSize) :
         ICore(), m_synchronizer(0) {
+    m_frame.buffer = 0;
     m_frame.bufferMaxSize = frameSize;
     m_frame.bufferSize = 0;
     new_arr_primitive_s(&m_frame.buffer, m_frame.bufferMaxSize);
     memset(m_frame.buffer, 0, m_frame.bufferMaxSize);
+    m_seed.buffer = 0;
+    m_seed.bufferMaxSize = frameSize;
+    m_seed.bufferSize = 0;
+    new_arr_primitive_s(&m_seed.buffer, m_seed.bufferMaxSize);
+    memset(m_seed.buffer, 0, m_seed.bufferMaxSize);
     m_synchronizer = new Sync(mark, size, scanBufferMaxSize);
 }
 
@@ -87,6 +93,12 @@ Integer32 Core::hide(const Integer16 * const seed, Integer32 s_size, Integer16 *
  */
 Integer32 Core::recover(const Integer16 * const seed, Integer32 s_size, const Integer16 * const container, Integer32 c_size, Binary **info)
 {
+    if(s_size != c_size)
+    {
+        printf("[gsc_core error]: s_size != c_size. Not supported yet.");
+        return 0;
+    }
+    
     Integer32 recovered = 0;
     if (m_synchronizer->isSynchronized()) {
         // synchronized
@@ -95,21 +107,26 @@ Integer32 Core::recover(const Integer16 * const seed, Integer32 s_size, const In
             // skip m_frameSize samples
             c_idx = -m_frame.bufferSize;
             m_frame.bufferSize = 0;
+            m_seed.bufferSize = 0;
         } else if (m_frame.bufferSize >= m_frame.bufferMaxSize) {
             m_frame.bufferSize = 0;
+            m_seed.bufferSize = 0;
         }
         for(Integer32 i = m_frame.bufferSize; i < m_frame.bufferMaxSize && c_idx < c_size; ++i, ++c_idx) {
             m_frame.buffer[i] = container[c_idx];
             ++m_frame.bufferSize;
+            m_seed.buffer[i]  = seed[c_idx];
+            ++m_seed.bufferSize;
         }
         
         if(m_frame.bufferSize == m_frame.bufferMaxSize)
         {
-            Integer32 semi_p = calculate_semi_period(seed, s_size);
+            Integer32 semi_p = calculate_semi_period(m_seed.buffer, m_seed.bufferSize);
             if(semi_p != -1) {
-                recovered = deintegrate(container, c_size, semi_p, 1, info);
+                recovered = deintegrate(m_frame.buffer, m_frame.bufferSize, semi_p, 1, info);
             }
             m_frame.bufferSize = 0;
+            m_seed.bufferSize = 0;
         }
     } else {
         Integer32 end_idx;
@@ -127,12 +144,15 @@ Integer32 Core::recover(const Integer16 * const seed, Integer32 s_size, const In
                 {
                     m_frame.buffer[i] = container[c_idx];
                     ++m_frame.bufferSize;
+                    m_seed.buffer[i] = seed[c_idx];
+                    ++m_seed.bufferSize;
                     --substruct_size;
                 }
             } else {
                 Integer32 c_idx = end_idx;
                 for(int i = 0; i < substruct_size && c_idx < c_size; ++i, ++c_idx) {
                     --m_frame.bufferSize;
+                    --m_seed.bufferSize;
                 }
             }
         }
