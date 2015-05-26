@@ -11,6 +11,7 @@
 
 #include "gsc_types.h"
 
+
 namespace gsc {
     
 /**
@@ -64,14 +65,9 @@ private:
 
     
 private:
-    Binary *m_mark;                 // synchronization marker
-    Integer32 m_markSize;           // synchronization marker size
+    BinaryBufferAcc m_mark;         // synchronization marker
+    BinaryBufferAcc m_accBuffer;    // synchronization accumulative buffer
     Binary *m_pointer;              // current position in marker
-    Integer32 m_markSizeCurrent;    // current synchronization marker size
-    
-    Binary *m_accBuffer;            // synchronization accumulative buffer
-    Integer32 m_accBufferMaxSize;   // synchronization accumulative buffer maximum size
-    Integer32 m_accBufferSize;      // synchronization accumulative buffer current size
     
     bool m_synchronized;
 };

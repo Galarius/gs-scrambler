@@ -71,7 +71,9 @@ Integer32 calculate_semi_period(const Integer16* const data, Integer32 n, float 
         if(data_processed[p] < data_processed[semi_period] && data_processed[p])
             semi_period = p;
     }
-    
+
+    printf("semi_period: %i\n", semi_period);
+
     return data_processed[semi_period] != 0 ? semi_period : -1;
 }
 

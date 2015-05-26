@@ -58,9 +58,7 @@ private:
     void operator=(Core const&)  = delete;
     
 protected:
-    Binary *m_frameBuffer;            // accumulative buffer
-    Integer32 m_frameSizeMax;         // max size of frame buffer
-    Integer32 m_frameSize;            // current size of frame buffer
+    BinaryBufferAcc m_frame;
     Sync *m_synchronizer;
 };
     

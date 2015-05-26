@@ -20,21 +20,24 @@ namespace gsc {
  *  @param size array size
  *  @param bufferMaxSize size of accumulative buffer
  */
-Sync::Sync(const Binary * const mark, Integer32 size, Integer32 bufferMaxSize)
-    : m_mark(0), m_markSize(size), m_markSizeCurrent(size), m_accBuffer(0), m_accBufferMaxSize(bufferMaxSize), m_accBufferSize(0) {
-        
-    new_arr_primitive_s(&m_mark, m_markSize);
-    new_arr_primitive_s(&m_accBuffer, m_accBufferMaxSize);
-    memset(m_accBuffer, 0, m_accBufferMaxSize);
-    std::copy(mark, mark + m_markSize, m_mark);
-    m_pointer = m_mark;
+Sync::Sync(const Binary * const mark, Integer32 size, Integer32 bufferMaxSize) {
+    
+    m_mark.bufferMaxSize = size;
+    m_mark.bufferSize = size;
+    new_arr_primitive_s(&m_mark.buffer, m_mark.bufferMaxSize);
+    m_accBuffer.bufferMaxSize = bufferMaxSize;
+    m_accBuffer.bufferSize = 0;
+    new_arr_primitive_s(&m_accBuffer.buffer, m_accBuffer.bufferMaxSize);
+    memset(m_accBuffer.buffer, 0, m_accBuffer.bufferMaxSize);
+    std::copy(mark, mark + size, m_mark.buffer);
+    m_pointer = m_mark.buffer;
     m_synchronized = false;
 }
 
 Sync::~Sync()
 {
-    delete_arr_primitive_s(&m_mark);
-    delete_arr_primitive_s(&m_accBuffer);
+    delete_arr_primitive_s(&m_mark.buffer);
+    delete_arr_primitive_s(&m_accBuffer.buffer);
 }
 
     
@@ -56,14 +59,14 @@ bool Sync::put(Integer16 **container, Integer32 size)
     }
     
     const int step = 1;
-    Integer32 l = integrate(container, size, 0, step, m_pointer, m_markSizeCurrent);
+    Integer32 l = integrate(container, size, 0, step, m_pointer, m_mark.bufferSize);
     m_pointer += l;
-    bool result = l >= m_markSizeCurrent;
+    bool result = l >= m_mark.bufferSize;
     if(result) {
         m_synchronized = true;
         printf("\033[95m[gsc_core]\033[0m: \033[93m synchronized \033[0m\n");
     } else {
-        m_markSizeCurrent -= l;    // new marker size
+        m_mark.bufferSize -= l;    // new marker size
     }
     return result;
 }
@@ -86,28 +89,28 @@ bool Sync::scan(const Integer16 *const container, Integer32 size, Integer32 &end
     }
     
     Integer32 idx;
-    if(m_accBufferSize >= m_accBufferMaxSize) {
-        m_accBufferSize = idx = 0;
+    if(m_accBuffer.bufferSize >= m_accBuffer.bufferMaxSize) {
+        m_accBuffer.bufferSize = idx = 0;
     } else {
-        idx = m_accBufferSize;
+        idx = m_accBuffer.bufferSize;
     }
     Integer32 j = idx;
     for(Integer32 i = 0; i < size; ++i, ++j)
     {
         Binary *bits = 0;
         integerToBits(container[i], &bits);
-        m_accBuffer[j] = tmp_abs(bits[0]);
+        m_accBuffer.buffer[j] = tmp_abs(bits[0]);
         delete_arr_primitive_s(&bits);
-        ++m_accBufferSize;
+        ++m_accBuffer.bufferSize;
     }
     
     Integer32 pos;
-    bool result = contains(m_mark, m_markSize, m_accBuffer, m_accBufferSize, pos);
+    bool result = contains(m_mark.buffer, m_mark.bufferMaxSize, m_accBuffer.buffer, m_accBuffer.bufferSize, pos);
     
     // index of the last integrated bit that was recovered from the original (not accumulative) container
     if(result) {
         m_synchronized = true;
-        endIdx = pos + m_markSize - idx;
+        endIdx = pos + m_mark.bufferMaxSize - idx;
         printf("\033[95m[gsc_core]\033[0m: \033[93m synchronized \033[0m\n");
     }
     
@@ -119,9 +122,9 @@ bool Sync::scan(const Integer16 *const container, Integer32 size, Integer32 &end
  */
 void Sync::reset()
 {
-    memset(m_accBuffer, 0, m_accBufferMaxSize);
-    m_pointer = m_mark;
-    m_markSizeCurrent = m_markSize;
+    memset(m_accBuffer.buffer, 0, m_accBuffer.bufferMaxSize);
+    m_pointer = m_mark.buffer;
+    m_mark.bufferSize = m_mark.bufferMaxSize;
     m_synchronized = false;
 }
     
@@ -132,7 +135,7 @@ bool Sync::isSynchronized() const
     
 Integer32 Sync::markerSize() const
 {
-    return m_markSize;
+    return m_mark.bufferMaxSize;
 }
     
 }

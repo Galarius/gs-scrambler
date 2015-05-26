@@ -104,6 +104,7 @@ inline Integer32 dynamicStep(IntegerType *src, Integer32 size, Integer32 k);
  *  Non-template functions
  */
 namespace gsc {
+    
 /**
  *  Calculate semi-period for discrete function using Alter-Johnson formula:
  *     a(tau) = 1/(n-tau) * sum(t=1,t<n-tau, |f(t+tau) - f(t)|),

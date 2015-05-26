@@ -36,14 +36,16 @@ ICore *createCoreInstance(const Binary * const mark, Integer32 size, Integer32 f
  *  @param scanBufferMaxSize the size for acummulative buffer used for sync marker detection, normally 3 * frameSize.
  */
 Core::Core(const Binary * const mark, Integer32 size, Integer32 frameSize, Integer32 scanBufferMaxSize) :
-        ICore(), m_frameBuffer(0), m_frameSizeMax(frameSize), m_frameSize(0), m_synchronizer(0) {
-    new_arr_primitive_s(&m_frameBuffer, m_frameSizeMax);
-    memset(m_frameBuffer, 0, m_frameSizeMax);
+        ICore(), m_synchronizer(0) {
+    m_frame.bufferMaxSize = frameSize;
+    m_frame.bufferSize = 0;
+    new_arr_primitive_s(&m_frame.buffer, m_frame.bufferMaxSize);
+    memset(m_frame.buffer, 0, m_frame.bufferMaxSize);
     m_synchronizer = new Sync(mark, size, scanBufferMaxSize);
 }
 
 Core::~Core() {
-    delete_arr_primitive_s(&m_frameBuffer);
+    delete_arr_primitive_s(&m_frame.buffer);
     delete m_synchronizer;
 }
 /*----------------------------------------------------------------------------*/
@@ -63,7 +65,7 @@ Integer32 Core::hide(const Integer16 * const seed, Integer32 s_size, Integer16 *
     Integer32 integrated = 0;
     if (m_synchronizer->isSynchronized()) {
         // synchronized, continue inserting info
-        Integer32 semi_p = calculate_semi_period(*container, c_size);
+        Integer32 semi_p = calculate_semi_period(seed, s_size);
         if(semi_p != -1) {
             integrated = integrate(container, c_size, semi_p, 1, info, i_size);
         }
@@ -89,25 +91,25 @@ Integer32 Core::recover(const Integer16 * const seed, Integer32 s_size, const In
     if (m_synchronizer->isSynchronized()) {
         // synchronized
         Integer32 c_idx = 0;                 // start index in container to start accumulation from
-        if(m_frameSize < 0) {
+        if(m_frame.bufferSize < 0) {
             // skip m_frameSize samples
-            c_idx = -m_frameSize;
-            m_frameSize = 0;
-        } else if (m_frameSize >= m_frameSizeMax) {
-            m_frameSize = 0;
+            c_idx = -m_frame.bufferSize;
+            m_frame.bufferSize = 0;
+        } else if (m_frame.bufferSize >= m_frame.bufferMaxSize) {
+            m_frame.bufferSize = 0;
         }
-        for(Integer32 i = m_frameSize; i < m_frameSizeMax && c_idx < c_size; ++i, ++c_idx) {
-            m_frameBuffer[i] = container[c_idx];
-            ++m_frameSize;
+        for(Integer32 i = m_frame.bufferSize; i < m_frame.bufferMaxSize && c_idx < c_size; ++i, ++c_idx) {
+            m_frame.buffer[i] = container[c_idx];
+            ++m_frame.bufferSize;
         }
         
-        if(m_frameSize == m_frameSizeMax)
+        if(m_frame.bufferSize == m_frame.bufferMaxSize)
         {
-            Integer32 semi_p = calculate_semi_period(container, c_size);
+            Integer32 semi_p = calculate_semi_period(seed, s_size);
             if(semi_p != -1) {
                 recovered = deintegrate(container, c_size, semi_p, 1, info);
             }
-            m_frameSize = 0;
+            m_frame.bufferSize = 0;
         }
     } else {
         Integer32 end_idx;
@@ -123,14 +125,14 @@ Integer32 Core::recover(const Integer16 * const seed, Integer32 s_size, const In
                 // accumulate the part of frame buffer
                 for(int i = 0; i < substruct_size && c_idx < c_size; ++i, ++c_idx)
                 {
-                    m_frameBuffer[i] = container[c_idx];
-                    ++m_frameSize;
+                    m_frame.buffer[i] = container[c_idx];
+                    ++m_frame.bufferSize;
                     --substruct_size;
                 }
             } else {
                 Integer32 c_idx = end_idx;
                 for(int i = 0; i < substruct_size && c_idx < c_size; ++i, ++c_idx) {
-                    --m_frameSize;
+                    --m_frame.bufferSize;
                 }
             }
         }

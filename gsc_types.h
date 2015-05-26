@@ -22,6 +22,12 @@ typedef int32_t Integer32;
 typedef int16_t Integer16;
 typedef bool    Binary;
     
+typedef struct BinaryBufferAcc {
+    Binary *buffer;                 // accumulative buffer
+    Integer32 bufferMaxSize;        // accumulative buffer maximum size
+    Integer32 bufferSize;           // accumulative buffer current size
+} BinaryBufferAcc;
+    
 }
 
 #endif
