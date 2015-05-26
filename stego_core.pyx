@@ -7,7 +7,7 @@ __copyright__ = 'Copyright 2015, Ilya Shoshin'
 
 from q_matrix import *
 import stego_helper as sh
-import core
+import gsc_core
 import numpy as np
 import math
 from extensions import elapsed_timer
@@ -49,14 +49,13 @@ class StegoCore:
         """
 
         self.stego_mode = stego_mode    # encode or decode
-        self.message_to_proc_part = np.empty(0, dtype=np.int16)    # the part of message that left to be integrated
+        self.message_to_proc_part = np.empty(0, cast=True, dtype=np.uint8)    # the part of message that left to be integrated
         self.skip_frames = 0            # how many frames shoud be skipped
         self.mediate_length = 0         # length of message to recover (length of bits array)
         # synchronization
         self.sync_mark = ''                 # synchronization mark
-        self.sync_mark_encoded_array = np.empty(0, dtype=np.int16)   # synchronization mark encoded
+        self.sync_mark_encoded_array = np.empty(0, cast = True, dtype=np.uint8)   # synchronization mark encoded
         self.sync_mark_temp_encoded_array = []  # list that may contain sync mark
-        self.synchronized = False           # is synchronization performed
         if stego_mode == StegoMode.Hide:
             if StegoCore.SKIP_FRAMES_KEY in kwargs:
                 # set number of frames to skip
@@ -69,9 +68,9 @@ class StegoCore:
         if StegoCore.SYNC_MARK_KEY in kwargs:
             self.sync_mark = kwargs[StegoCore.SYNC_MARK_KEY]
             self.__synchronization_prepare()
-            self.detector = core.PyDetector(self.sync_mark_encoded_array, len(self.sync_mark_encoded_array), 1024)
+            self.gsc = gsc_core.PyCore(self.sync_mark_encoded_array, 1024, 3 * 1024)
         else:
-            self.synchronized = True
+            print colorize("Error: no sync mark provided", COLORS.FAIL)
 
     def hide(self, message, key):
         """
@@ -81,7 +80,6 @@ class StegoCore:
         :return:        additional key to extract message
         """
         # Encode msg and make some preprocessing staff, get msg bits array
-        self.synchronized = False
         return self.__prepare_message(message, key)
 
     def recover(self, session_key, user_key):
@@ -102,17 +100,11 @@ class StegoCore:
         if not self.skip_frames:                                           # if no frames left to skip
             if self.stego_mode == StegoMode.Hide:                               # if hiding
                 # hide
-                if self.synchronized:
-                    if len(self.message_to_proc_part) > 0:                          # if there is smth to hide
-                        return self.__hide(chunk_source, chunk_container)           # hide msg and return processed chunk
-                else:
-                    return self.__synchronization_put(chunk_source), chunk_container
+                if len(self.message_to_proc_part) > 0:                          # if there is smth to hide
+                    return self.__hide(chunk_source, chunk_container)           # hide msg and return processed chunk
             else:
                 # recover
-                if self.synchronized:
-                    self.__recover(chunk_source, chunk_container)                   # recover msg part from a chunk
-                else:
-                    self.__synchronization_detect(chunk_source)
+                self.__recover(chunk_source, chunk_container)                   # recover msg part from a chunk
         else:
             self.skip_frames -= 1
 
@@ -163,7 +155,7 @@ class StegoCore:
         # 4) Convert 2D array to 1D array
         half_linearize = msg_matrix_encoded_array.ravel()
         # 5) linearize completely
-        self.message_to_proc_part = np.empty(0, dtype=np.int16)
+        self.message_to_proc_part = np.empty(0, cast=True, dtype=np.uint8)
         for seq in half_linearize:
             self.message_to_proc_part = np.append(self.message_to_proc_part, seq)
         # print self.message_to_proc_part.tolist()
@@ -176,17 +168,7 @@ class StegoCore:
         :param chunk: chunk to be used as container
         :return:      processed or the original chunk
         """
-        # calculate semi-period
-        #semi_p = core.calculate_semi_period_c(chunk_source, len(chunk_source))
-        #if semi_p == -1:
-        #    return chunk_source, chunk_container  # wrong semi-period, return original data
-        #print semi_p
-        # perform integration function from cpp code on current chunk with calculated unique step
-        semi_p = 0
-        size = len(chunk_container)
-        step = 1#int(size / float(semi_p))
-        container_processed, self.message_to_proc_part = core.integrate_c(chunk_container, size, semi_p, step, self.message_to_proc_part)
-        #container_processed, self.message_to_proc_part = core.integrate_c(chunk_container, size, 0, 1, self.message_to_proc_part)
+        container_processed, self.message_to_proc_part = gsc.hide(chunk_source, chunk_container, self.message_to_proc_part)
         if not len(self.message_to_proc_part):
             print colorize("Message integrated.", COLORS.OKBLUE)
         return chunk_source, container_processed
@@ -196,15 +178,7 @@ class StegoCore:
         Recover message part from container
         :param chunk: container
         """
-        # calculate semi-period
-        #semi_p = core.calculate_semi_period_c(chunk_source, len(chunk_source))
-        #if semi_p != -1:
-        #    print semi_p
-        semi_p = 0
-        size = len(chunk_container)
-        step = 1#int(size / float(semi_p))
-        message_part = core.deintegrate_c(chunk_container, size, semi_p, step)
-        #message_part = core.deintegrate_c(chunk_container, size, 0, 1)
+        message_part = gsc.recover(chunk_source, chunk_container)
         # extend msg part array
         self.message_to_proc_part = np.append(self.message_to_proc_part, message_part)
 
@@ -225,45 +199,6 @@ class StegoCore:
         # 4) Convert 2D array to 1D array
         half_linearize = sync_marker_matrix_encoded_array.ravel()
         # 5) linearize completely
-        self.sync_mark_encoded_array = np.empty(0, dtype=np.int16)
+        self.sync_mark_encoded_array = np.empty(0, cast=True, dtype=np.uint8)
         for seq in half_linearize:
             self.sync_mark_encoded_array = np.append(self.sync_mark_encoded_array, seq)
-
-    def __synchronization_put(self, chunk_container):
-        """
-        Update samples with synchronization mark
-        :param chunk_container: samples
-        :return:                modified samples
-        """
-        import time
-        if self.sync_mark == '' or self.synchronized:
-            print colorize("No sync marker.", COLORS.FAIL)
-            return chunk_container
-
-        size = len(chunk_container)
-        container_processed, self.sync_mark_encoded_array = core.integrate_c(chunk_container, size, 0, 1, self.sync_mark_encoded_array)
-
-        if not len(self.sync_mark_encoded_array):
-            print colorize("Synchronization mark inserted.", COLORS.OKBLUE)
-        else:
-            print colorize("Not enough space to integrate sync marker.", COLORS.FAIL)
-
-        self.synchronized = True
-        return container_processed
-
-    def __synchronization_detect(self, chunk_container):
-        """
-        Try to detect synchronization mark in samples
-        :param chunk_container: samples
-        :return:
-        """
-        if self.sync_mark == '':
-            print "Mark is empty"
-            return False
-
-        self.synchronized = self.detector.detect(chunk_container, len(chunk_container))
-
-        if self.synchronized:
-            print colorize("Synchronization completed.", COLORS.OKGREEN)
-            del self.sync_mark_temp_encoded_array[:]
-        return self.synchronized

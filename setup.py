@@ -29,15 +29,21 @@ ext_modules = [
     # g++ -c core_py_wrapper.cpp -> core_py_wrapper.o
     # g++ -c core.cpp -> core.o
     # link core.o core_py_wrapper.o -> core_py_wrapper.so
-    Extension(name="core",
-              sources=["core_py_wrapper.pyx", "core.cpp"],
+    # Extension(name="core",
+    #           sources=["core_py_wrapper.pyx", "core.cpp"],
+    #           include_dirs = [numpy.get_include()],
+    #           language="c++",
+    #           extra_compile_args=["-std=c++11", "-Wno-unused-function"],
+    #           # extra_objects=["..."],  # if  compile sources separately
+    #           # libraries=
+    #           # extra_compile_args = "...".split(),
+    #           # extra_link_args = "...".split()
+    #           ),
+    Extension(name="gsc_core",
+              sources=["gsc_core_py_wrapper.pyx", "gsc_core.cpp", "gsc_helper.cpp", "gsc_sync.cpp"],
               include_dirs = [numpy.get_include()],
               language="c++",
               extra_compile_args=["-std=c++11", "-Wno-unused-function"],
-              # extra_objects=["..."],  # if  compile sources separately
-              # libraries=
-              # extra_compile_args = "...".split(),
-              # extra_link_args = "...".split()
               ),
 ]
 

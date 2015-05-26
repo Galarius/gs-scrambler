@@ -9,7 +9,7 @@ import math
 import numpy as np
 import collections
 import pyaudio
-import core
+import gsc_core
 
 
 def message_to_matrix(message):
@@ -19,7 +19,7 @@ def message_to_matrix(message):
     :param message: message to transform
     :return: matrix
     """
-    msg_vec = core.str_2_vec(message)
+    msg_vec = gsc_core.str_to_vec(message)
     size = int(math.ceil(math.sqrt(len(msg_vec))))
     matr = np.zeros((size, size), dtype=np.int16)
     for i in range(size):
@@ -39,7 +39,7 @@ def matrix_to_message(m):
     :return: message
     """
     msg_vec = m.ravel()
-    msg = core.vec_2_str(msg_vec)
+    msg = gsc_core.vec_to_str(msg_vec)
     return msg
 
 
@@ -48,7 +48,7 @@ def int_matrix_to_bits_matrix(m):
     m_bits = np.zeros((size, size), dtype=list)
     for i in range(0, size):
         for j in range(0, size):
-            m_bits[i][j] = core.d_2_b(m[i][j])
+            m_bits[i][j] = gsc_core.integer_to_bin_arr(m[i][j])
     return m_bits
 
 def bits_matrix_to_int_matrix(m_bits):
@@ -56,7 +56,7 @@ def bits_matrix_to_int_matrix(m_bits):
     m = np.zeros((size, size), dtype=np.int16)
     for i in range(0, size):
         for j in range(0, size):
-            m[i][j] = core.b_2_d(m_bits[i][j])
+            m[i][j] = gsc_core.bin_arr_to_integer(m_bits[i][j])
     return m
 
 def py_audio_format_to_num_py(fmt):
@@ -117,24 +117,6 @@ def audio_encode(samples, dtype=np.float32):
     interleaved = np.array([l, r]).flatten('F')
     out_data = interleaved.astype(dtype).tostring()
     return out_data
-
-
-def contains(small, big):
-    for i in xrange(len(big)-len(small)+1):
-        for j in xrange(len(small)):
-            if big[i+j] != small[j]:
-                break
-        else:   # for else
-            return i, i + len(small)
-    return -1, 0
-
-def rms(data):
-    count = len(data)
-    sum_squares = 0.0
-    for sample in data:
-        n = sample * (1.0/32768)
-        sum_squares += n*n
-    return math.sqrt( sum_squares / count )
 
 def compare(x, y):
     return collections.Counter(x) == collections.Counter(y)
