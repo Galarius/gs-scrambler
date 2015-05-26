@@ -8,6 +8,7 @@
 
 #include "gsc_core.h"
 #include "gsc_helper.h"
+#include <stdio.h>
 
 #include <algorithm>    // std::copy, memset
 
@@ -64,7 +65,7 @@ Integer32 Core::hide(const Integer16 * const seed, Integer32 s_size, Integer16 *
         // synchronized, continue inserting info
         Integer32 semi_p = calculate_semi_period(seed, s_size);
         if(semi_p != -1) {
-            integrated = integrate(container, c_size, 0, semi_p, info, i_size);
+            integrated = integrate(container, c_size, semi_p, 1, info, i_size);
         }
     } else {
         // insert sync mark
@@ -92,8 +93,11 @@ Integer32 Core::recover(const Integer16 * const seed, Integer32 s_size, const In
             // skip m_frameSize samples
             c_idx = -m_frameSize;
             m_frameSize = 0;
+        } else if (m_frameSize >= m_frameSizeMax) {
+            m_frameSize = 0;
         }
-        for(int i = 0; i < m_frameSizeMax && c_idx < c_size; ++i, ++c_idx) {
+        // printf("[recover] m_frameSize: %i; c_idx: %i;\n", m_frameSize, c_idx);
+        for(Integer32 i = m_frameSize; i < m_frameSizeMax && c_idx < c_size; ++i, ++c_idx) {
             m_frameBuffer[i] = container[c_idx];
             ++m_frameSize;
         }
@@ -102,20 +106,22 @@ Integer32 Core::recover(const Integer16 * const seed, Integer32 s_size, const In
         {
             Integer32 semi_p = calculate_semi_period(seed, s_size);
             if(semi_p != -1) {
-                recovered = deintegrate(container, c_size, 0, semi_p, info);
+                recovered = deintegrate(container, c_size, semi_p, 1, info);
             }
+            m_frameSize = 0;
         }
     } else {
-        Integer32 idx;
-        if(m_synchronizer->scan(container, c_size, idx)) {
+        printf("syncing...\n");
+        Integer32 end_idx;
+        if(m_synchronizer->scan(container, c_size, end_idx)) {
             Integer32 marker_size = m_synchronizer->markerSize();   // size of sync marker
             // expected free space after sync marker and before secret info
-            Integer32 expect_size_left = c_size >= marker_size ? c_size - marker_size : c_size - c_size % marker_size;
-            Integer32 real_size_left = c_size - idx;                // real free space after sync marker and before secret info
+            Integer32 expect_size_left = c_size >= marker_size ? c_size - marker_size : c_size - marker_size % c_size;
+            Integer32 real_size_left = c_size - end_idx;                // real free space after sync marker and before secret info
             Integer32 substruct_size = real_size_left - expect_size_left;
             if(substruct_size >= 0)
             {
-                Integer32 c_idx = idx + real_size_left;                 // start index in container to start accumulation from
+                Integer32 c_idx = end_idx + real_size_left;                 // start index in container to start accumulation from
                 // accumulate the part of frame buffer
                 for(int i = 0; i < substruct_size && c_idx < c_size; ++i, ++c_idx)
                 {
@@ -124,7 +130,7 @@ Integer32 Core::recover(const Integer16 * const seed, Integer32 s_size, const In
                     --substruct_size;
                 }
             } else {
-                Integer32 c_idx = idx;
+                Integer32 c_idx = end_idx;
                 for(int i = 0; i < substruct_size && c_idx < c_size; ++i, ++c_idx) {
                     --m_frameSize;
                 }

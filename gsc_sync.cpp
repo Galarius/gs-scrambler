@@ -28,6 +28,7 @@ Sync::Sync(const Binary * const mark, Integer32 size, Integer32 bufferMaxSize)
     memset(m_accBuffer, 0, m_accBufferMaxSize);
     std::copy(mark, mark + m_markSize, m_mark);
     m_pointer = m_mark;
+    m_synchronized = false;
 }
 
 Sync::~Sync()
@@ -60,6 +61,7 @@ bool Sync::put(Integer16 **container, Integer32 size)
     bool result = l >= m_markSizeCurrent;
     if(result) {
         m_synchronized = true;
+        printf("\033[95m[gsc_core]\033[0m: \033[93m synchronized \033[0m\n");
     } else {
         m_markSizeCurrent -= l;    // new marker size
     }
@@ -84,18 +86,17 @@ bool Sync::scan(const Integer16 *const container, Integer32 size, Integer32 &end
     }
     
     Integer32 idx;
-    
     if(m_accBufferSize >= m_accBufferMaxSize) {
         m_accBufferSize = idx = 0;
     } else {
         idx = m_accBufferSize;
     }
-    
-    for(Integer32 i = 0; i < size; ++i, ++idx)
+    Integer32 j = idx;
+    for(Integer32 i = 0; i < size; ++i, ++j)
     {
         Binary *bits = 0;
         integerToBits(container[i], &bits);
-        m_accBuffer[idx] = tmp_abs(bits[0]);
+        m_accBuffer[j] = tmp_abs(bits[0]);
         delete_arr_primitive_s(&bits);
         ++m_accBufferSize;
     }
@@ -104,10 +105,10 @@ bool Sync::scan(const Integer16 *const container, Integer32 size, Integer32 &end
     bool result = contains(m_mark, m_markSize, m_accBuffer, m_accBufferSize, pos);
     
     // index of the last integrated bit that was recovered from the original (not accumulative) container
-    Integer32 last_idx = 0;
     if(result) {
         m_synchronized = true;
-        last_idx = pos + m_markSize - idx;
+        endIdx = pos + m_markSize - idx;
+        printf("\033[95m[gsc_core]\033[0m: \033[93m synchronized \033[0m\n");
     }
     
     return result;

@@ -26,8 +26,7 @@ cdef class PyCore:
     cdef ICore *thisptr      # hold a C++ instance which we're wrapping
     def __cinit__(self, np.ndarray[np.uint8_t, cast=True, ndim=1, mode="c"] mark not None, frame_size, scan_buffer_max_size):
         cdef int size = mark.size
-        cdef bool *bptr
-        bptr = <bool*> &mark[0]
+        cdef bool *bptr = <bool*> &mark[0]
         self.thisptr = createCoreInstance(bptr, size, frame_size, scan_buffer_max_size)
 
     def __dealloc__(self):
@@ -47,7 +46,7 @@ cdef class PyCore:
         return container, info
 
     def recover(self, np.ndarray[np.int16_t, ndim=1, mode="c"] seed not None,
-                   np.ndarray[np.int16_t, ndim=1, mode="c"] container not None):
+                      np.ndarray[np.int16_t, ndim=1, mode="c"] container not None):
         cdef short int *s_ptr = <short int *> &seed[0]
         cdef int s_size = seed.size
         cdef short int *c_ptr = <short int *> &container[0]

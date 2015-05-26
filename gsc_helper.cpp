@@ -9,15 +9,8 @@
 #include "gsc_helper.h"
 
 #include <cstdlib>
-#include <thread>
-#include <mutex>
 
 namespace gsc {
-
-/**
- *  Protect resource from multithreaded access
- */
-static std::mutex locker;
 
 /**
  *  Calculate semi-period for discrete function using Alter-Johnson formula:
@@ -40,32 +33,6 @@ Integer32 calculate_semi_period(const Integer16* const data, Integer32 n)
 }
 
 /**
- *  Thread jonson core function to process data
- *
- *  @param start          start idx
- *  @param end            end idx
- *  @param data           original data
- *  @param n              data size
- *  @param data_processed processed data
- */
-static void thread_jonson_core(Integer32 start, Integer32 end, const Integer16* const data, Integer32 n, float *data_processed)
-{
-    std::lock_guard<std::mutex> lg(locker);
-    // compute sum
-    // loops inverted for efficiency
-    for(Integer32 t = 0; t < n; ++t) {
-        for(Integer32 tau = start; tau < end; ++tau) {
-            if(t >= n - tau)
-                break;
-            data_processed[tau] += abs(data[t + tau] - data[t]);
-        }
-    }
-    // normalize
-    for(Integer32 tau = start; tau < end; ++tau)
-        data_processed[tau] /= (n - tau);
-};
-
-/**
  *  Calculate semi-period for discrete function using Alter-Johnson formula:
  *     a(tau) = 1/(n-tau) * sum(t=1,t<n-tau, |f(t+tau) - f(t)|),
  *  n - total number of samples,
@@ -80,40 +47,35 @@ static void thread_jonson_core(Integer32 start, Integer32 end, const Integer16* 
  */
 Integer32 calculate_semi_period(const Integer16* const data, Integer32 n, float **out_data)
 {
-    // get number of cores
-    Integer32 cores = std::thread::hardware_concurrency();
-    std::thread *threads = new std::thread[cores];
+    for(Integer32 i = 0; i < n; ++i)
+        printf("%i ", data[i]);
+    printf("\n");
+    
     float *data_processed = *out_data;
     new_arr_primitive_s<float>(&data_processed, n);
     
-    // process per core
-    Integer32 w = n / cores;
-    Integer32 extra = n % cores;
-    Integer32 beg = 0;
-    Integer32 end = 0;
-    for (Integer32 i = 0; i < cores; ++i) {
-        beg = i * w;
-        end = beg + w;
-        if(i == cores-1)
-            end += extra;
-        threads[i] = std::thread(thread_jonson_core, beg, end, data, n, data_processed);
+    Integer32 sum = 0;
+    Integer32 k = 0;
+    for(Integer32 tau = 0; tau < n; ++tau) {
+        sum = 0;
+        for(Integer32 t = 0; t < n - tau; ++t) {
+            sum += (Integer32)fabs(data[t + tau] - data[t]);
+        }
+        if((n - tau)) {
+            data_processed[k++] = (1.0f / (n - tau) * sum);
+        }
     }
     
     // prepare to calculate semi-period from calculated data
     Integer32 l = static_cast<Integer32>(floorf(0.1f * n));        // 10 % from len
     Integer32 semi_period = l;
     
-    // join threads
-    for (Integer32 i = 0; i < cores; ++i)
-        threads[i].join();
-    
-    delete []threads;
-    
     // find min without first and last l elements
     for(Integer32 p = l+1; p < n - l; ++p) {
         if(data_processed[p] < data_processed[semi_period] && data_processed[p])
             semi_period = p;
     }
+    
     return data_processed[semi_period] != 0 ? semi_period : -1;
 }
 
