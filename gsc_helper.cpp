@@ -47,10 +47,6 @@ Integer32 calculate_semi_period(const Integer16* const data, Integer32 n)
  */
 Integer32 calculate_semi_period(const Integer16* const data, Integer32 n, float **out_data)
 {
-    for(Integer32 i = 0; i < n; ++i)
-        printf("%i ", data[i]);
-    printf("\n");
-    
     float *data_processed = *out_data;
     new_arr_primitive_s<float>(&data_processed, n);
     

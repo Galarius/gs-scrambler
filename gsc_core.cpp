@@ -63,7 +63,7 @@ Integer32 Core::hide(const Integer16 * const seed, Integer32 s_size, Integer16 *
     Integer32 integrated = 0;
     if (m_synchronizer->isSynchronized()) {
         // synchronized, continue inserting info
-        Integer32 semi_p = calculate_semi_period(seed, s_size);
+        Integer32 semi_p = calculate_semi_period(*container, c_size);
         if(semi_p != -1) {
             integrated = integrate(container, c_size, semi_p, 1, info, i_size);
         }
@@ -96,7 +96,6 @@ Integer32 Core::recover(const Integer16 * const seed, Integer32 s_size, const In
         } else if (m_frameSize >= m_frameSizeMax) {
             m_frameSize = 0;
         }
-        // printf("[recover] m_frameSize: %i; c_idx: %i;\n", m_frameSize, c_idx);
         for(Integer32 i = m_frameSize; i < m_frameSizeMax && c_idx < c_size; ++i, ++c_idx) {
             m_frameBuffer[i] = container[c_idx];
             ++m_frameSize;
@@ -104,14 +103,13 @@ Integer32 Core::recover(const Integer16 * const seed, Integer32 s_size, const In
         
         if(m_frameSize == m_frameSizeMax)
         {
-            Integer32 semi_p = calculate_semi_period(seed, s_size);
+            Integer32 semi_p = calculate_semi_period(container, c_size);
             if(semi_p != -1) {
                 recovered = deintegrate(container, c_size, semi_p, 1, info);
             }
             m_frameSize = 0;
         }
     } else {
-        printf("syncing...\n");
         Integer32 end_idx;
         if(m_synchronizer->scan(container, c_size, end_idx)) {
             Integer32 marker_size = m_synchronizer->markerSize();   // size of sync marker
