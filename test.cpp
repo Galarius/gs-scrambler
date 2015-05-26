@@ -9,6 +9,7 @@
 #include <iostream>
 #include "gsc_helper.h"
 #include "profiler.h"
+#include "gsc_icore.h"
 
 using namespace gsc;
 
@@ -59,7 +60,7 @@ void tests()
     for(int i = 0; i < 105; ++i)
         stream[i] = i % 2 > 0 ? 1 : 0;
     printArray(stream, 105);
-    integrate(&container_dynamic, 1024, semi_period, step, stream);
+    integrate(&container_dynamic, 1024, semi_period, step, stream, 105);
     delete_arr_primitive_s(&stream);
     Integer32 l = deintegrate(container_dynamic, 1024, semi_period, step, &stream);
     printArray(stream, l);
@@ -88,6 +89,31 @@ void tests()
     printf("%f sec\n", ELAPSED_TIME);
     printf("%i \n", semi_period);
     delete_arr_primitive_s(&container_dynamic);
+    //--------------------------
+    printf("Test core class\n");
+    Binary mark[10] {0, 1, 0, 0, 1, 0, 1, 0, 1, 0};
+    Binary msg[7] {0, 1, 0, 0, 1, 0, 1};
+    ICore *core = createCoreInstance(mark, 10, 1024, 3 * 1024);
+    container_dynamic = 0;
+    Integer16 *seed_dynamic = 0;
+    new_arr_primitive_s(&container_dynamic, 1024);
+    new_arr_primitive_s(&seed_dynamic, 1024);
+    for(int i = 0; i < 1024; ++i) {
+        container_dynamic[i] = container[i];
+        seed_dynamic[i] = container[i];
+    }
+    //--------------------------
+    core->hide(seed_dynamic, 1024, &container_dynamic, 1024, msg, 7);
+    core->hide(seed_dynamic, 1024, &container_dynamic, 1024, msg, 7);
+    //--------------------------
+    Binary *msg_r = 0;
+    //--------------------------
+    Integer32 lmsg_r_len = core->recover(seed_dynamic, 1024, container_dynamic, 1024, &msg_r);
+    //--------------------------
+    delete_arr_primitive_s(&container_dynamic);
+    delete_arr_primitive_s(&seed_dynamic);
+    delete_arr_primitive_s(&msg_r);
+    delete core;
 }
 
 int main(int argc, const char * argv[]) {

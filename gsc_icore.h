@@ -24,20 +24,30 @@ public:
     /**
      *  Hide 'info' inside 'container'.
      *
+     *  @param seed      data source to calculate step for info integration
+     *  @param s_size    size of the seed array
      *  @param container container to integrate data to
      *  @param c_size    size of the container
      *  @param info      bits sequence (1,0,1,0,...) to hide
      *  @param i_size    size of the info
+     *  @return          the amount of data that was integrated
      */
-    virtual void hide(Integer16 **container, Integer32 c_size, const Binary * const info, Integer32 i_size) = 0;
+    virtual Integer32 hide(const Integer16 * const seed, Integer32 s_size, Integer16 **container, Integer32 c_size, const Binary * const info, Integer32 i_size) = 0;
     /**
      *  Recover 'info' from the container
      *
+     *  @param seed      data source to calculate step for info recovering
+     *  @param s_size    size of the seed array
      *  @param container container to recover 'info' from
      *  @param c_size    size of the container
      *  @param info      buffer to store info in
+     *  @return          message length
      */
-    virtual void recover(const Integer16 * const container, Integer32 c_size, Binary **info) = 0;
+    virtual Integer32 recover(const Integer16 * const seed, Integer32 s_size, const Integer16 * const container, Integer32 c_size, Binary **info) = 0;
+    
+private:
+    ICore(ICore const&)           = delete;
+    void operator=(ICore const&)  = delete;
 };
 
 /**

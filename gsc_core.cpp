@@ -49,37 +49,89 @@ Core::~Core() {
 /**
  *  Hide 'info' inside 'container'.
  *
+ *  @param seed      data source to calculate step for info integration
+ *  @param s_size    size of the seed array
  *  @param container container to integrate data to
  *  @param c_size    size of the container
  *  @param info      bits sequence (1,0,1,0,...) to hide
  *  @param i_size    size of the info
+ *  @return          the amount of data that was integrated
  */
-void Core::hide(Integer16 **container, Integer32 c_size, const Binary * const info, Integer32 i_size)
+Integer32 Core::hide(const Integer16 * const seed, Integer32 s_size, Integer16 **container, Integer32 c_size, const Binary * const info, Integer32 i_size)
 {
-    if (!m_synchronizer->isSynchronized()) {
-        // insert sync mark firstly
-        Integer16 *c_ptr;
-        if(m_synchronizer->put(container, c_size, c_ptr) && c_ptr != *container + c_size)
-        {
-            // if marker was fully integrated and there are some space in the container, accumulate it
-            std::copy(c_ptr, *container+c_size, m_frameBuffer);
-            m_frameSize = (Integer32)(*container+c_size - c_ptr);
+    Integer32 integrated = 0;
+    if (m_synchronizer->isSynchronized()) {
+        // synchronized, continue inserting info
+        Integer32 semi_p = calculate_semi_period(seed, s_size);
+        if(semi_p != -1) {
+            integrated = integrate(container, c_size, 0, semi_p, info, i_size);
         }
     } else {
-        // synchronized, continue inserting info
-        
+        // insert sync mark
+        m_synchronizer->put(container, c_size);
     }
+    return integrated;
 }
 /**
  *  Recover 'info' from the container
  *
+ *  @param seed      data source to calculate step for info recovering
+ *  @param s_size    size of the seed array
  *  @param container container to recover 'info' from
  *  @param c_size    size of the container
  *  @param info      buffer to store info in
+ *  @return          message length
  */
-void Core::recover(const Integer16 * const container, Integer32 c_size, Binary **info)
+Integer32 Core::recover(const Integer16 * const seed, Integer32 s_size, const Integer16 * const container, Integer32 c_size, Binary **info)
 {
-    
+    Integer32 recovered = 0;
+    if (m_synchronizer->isSynchronized()) {
+        // synchronized
+        Integer32 c_idx = 0;                 // start index in container to start accumulation from
+        if(m_frameSize < 0) {
+            // skip m_frameSize samples
+            c_idx = -m_frameSize;
+            m_frameSize = 0;
+        }
+        for(int i = 0; i < m_frameSizeMax && c_idx < c_size; ++i, ++c_idx) {
+            m_frameBuffer[i] = container[c_idx];
+            ++m_frameSize;
+        }
+        
+        if(m_frameSize == m_frameSizeMax)
+        {
+            Integer32 semi_p = calculate_semi_period(seed, s_size);
+            if(semi_p != -1) {
+                recovered = deintegrate(container, c_size, 0, semi_p, info);
+            }
+        }
+    } else {
+        Integer32 idx;
+        if(m_synchronizer->scan(container, c_size, idx)) {
+            Integer32 marker_size = m_synchronizer->markerSize();   // size of sync marker
+            // expected free space after sync marker and before secret info
+            Integer32 expect_size_left = c_size >= marker_size ? c_size - marker_size : c_size - c_size % marker_size;
+            Integer32 real_size_left = c_size - idx;                // real free space after sync marker and before secret info
+            Integer32 substruct_size = real_size_left - expect_size_left;
+            if(substruct_size >= 0)
+            {
+                Integer32 c_idx = idx + real_size_left;                 // start index in container to start accumulation from
+                // accumulate the part of frame buffer
+                for(int i = 0; i < substruct_size && c_idx < c_size; ++i, ++c_idx)
+                {
+                    m_frameBuffer[i] = container[c_idx];
+                    ++m_frameSize;
+                    --substruct_size;
+                }
+            } else {
+                Integer32 c_idx = idx;
+                for(int i = 0; i < substruct_size && c_idx < c_size; ++i, ++c_idx) {
+                    --m_frameSize;
+                }
+            }
+        }
+    }
+    return recovered;
 }
     
 }

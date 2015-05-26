@@ -112,7 +112,7 @@ namespace gsc {
  *  @param data values of discrete function
  *  @param n    number of samples
  *
- *  @return semi_period
+ *  @return semi_period or -1
  *      semi_period = argmin(a(tau)),
  *      semi_period_min <= semi_period <= semi_period_max
  */
@@ -127,7 +127,7 @@ Integer32 calculate_semi_period(const Integer16* const data, Integer32 n);
  *  @param n    number of samples
  *  @param out_data processed values
  *
- *  @return semi_period
+ *  @return semi_period or -1
  *      semi_period = argmin(a(tau)),
  *      semi_period_min <= semi_period <= semi_period_max
  */
@@ -137,13 +137,14 @@ Integer32 calculate_semi_period(const Integer16* const data, Integer32 n, float 
  *  Integrate data from 'info' to 'container' of size 'size' begining with 'begin' with step 'step'.
  *
  *  @param container container to modify
- *  @param size      container size
+ *  @param c_size    container size
  *  @param begin     integration start pos
  *  @param step      integration step
  *  @param info      message (encoded) to integrate
+ *  @param i_size    message (encoded) size
  *  @return          the amount of data that was integrated
  */
-Integer32 integrate(Integer16 **container, Integer32 size, Integer32 begin, Integer32 step, Binary * const info);
+Integer32 integrate(Integer16 **container, Integer32 c_size, Integer32 begin, Integer32 step, const Binary * const info, Integer32 i_size);
 
 /**
  *  Recover data to 'info' from 'container' of size 'size' begining with 'begin' with step 'step'.
