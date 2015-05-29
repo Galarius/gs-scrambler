@@ -18,57 +18,111 @@ static inline IntegerType tmp_abs(IntegerType x)
     return (x < 0 ? -x : x);
 }
 
+//-------------------------------------------------------------------------
+// char array to integer array
+//-------------------------------------------------------------------------
+
 /**
  *  Converts char array into array of type IntegerType.
- *
+ *  The calculation of size of the destination array and memory allocation is performed inside.
  *  @param src  source string
- *  @param dest destination array
+ *  @param dest reference to the destination array
  *  @param size src length
  *
  *  requirenments:
- *      size > 0
- *      src != null
- *      dest = null
+ *      dest = nullptr
+ *
+ *  @return size of dest array
  */
 template <typename IntegerType>
-void strToIntegerArray(char *const src, IntegerType **dest, Integer32 size)
+size_t strToIntegerArray(char *const src, size_t size, IntegerType **dest)
 {
-    if(size <= 0 || !src || (*dest)) {
-        printf("ArgumentsError");
-        return;
-    }
+    assert(src  && "ArgumentsError");
+    assert(!(*dest) && "ArgumentsError");
     
-    new_arr_primitive_s(dest, size);
-    for(Integer32  i = 0; i < size; ++i)
-        (*dest)[i] = static_cast<IntegerType>(src[i]);
+    size_t d_size = strlen(src);
+    new_arr_primitive_s(dest, d_size);
+    for(size_t  i = 0; i < d_size; ++i) {
+        (*dest)[i] =  static_cast<IntegerType>(static_cast<unsigned char>(src[i]));
+    }
+    return d_size;
 }
-//------------------------------------------------------------------------------------
+/**
+ *  Converts wide char array into array of type IntegerType.
+ *  The calculation of size of the destination array and memory allocation is performed inside.
+ *  @param src  source string
+ *  @param dest reference to the destination array
+ *  @param size src length
+ *
+ *  requirenments:
+ *      dest = nullptr
+ *
+ *  @return size of dest array
+ */
+template <typename IntegerType>
+size_t strToIntegerArray(wchar_t *const src, size_t size, IntegerType **dest)
+{
+    assert(src  && "ArgumentsError");
+    assert(!(*dest) && "ArgumentsError");
+    
+    size_t d_size = wcslen(src);
+    new_arr_primitive_s(dest, d_size);
+    for(size_t  i = 0; i < d_size; ++i) {
+        (*dest)[i] =  static_cast<IntegerType>(static_cast<unsigned short>(src[i]));
+    }
+    return d_size;
+}
+//-------------------------------------------------------------------------
+// integer array to char array
+//-------------------------------------------------------------------------
 /**
  *  Converts IntegerType array into char array.
+ *  The calculation of size of the destination array and memory allocation is performed inside.
  *
  *  @param src  source IntegerType array
- *  @param dest destination char array
+ *  @param dest reference to the destination array
  *  @param size src array length
  *
  *  requirenments:
- *      size > 0
- *      src != null
- *      dest = null
+ *      dest = nullptr
  */
 template <typename IntegerType>
-void integerArrayToStr(IntegerType *src, char **dest, Integer32 size)
+void integerArrayToStr(IntegerType *src, size_t size, char **dest)
 {
-    if(size <= 0 || !src || (*dest)) {
-        printf("ArgumentsError");
-        return;
-    }
+    assert(src  && "ArgumentsError");
+    assert(!(*dest) && "ArgumentsError");
     
     new_arr_primitive_s(dest, size + 1);
-    for(Integer32  i = 0; i < size; ++i)
+    for(size_t  i = 0; i < size; ++i)
         (*dest)[i] = static_cast<char>(src[i]);
     (*dest)[size] = '\0';
 }
-//------------------------------------------------------------------------------------
+/**
+ *  Converts wide char array into array of type IntegerType.
+ *  The calculation of size of the destination array and memory allocation is performed inside.
+ *  @param src  source string
+ *  @param dest reference to the destination array
+ *  @param size src length
+ *
+ *  requirenments:
+ *      dest = nullptr
+ *
+ *  @return size of dest array
+ */
+template <typename IntegerType>
+void integerArrayToStr(IntegerType *src, size_t size, wchar_t **dest)
+{
+    assert(src  && "ArgumentsError");
+    assert(!(*dest) && "ArgumentsError");
+    
+    new_arr_primitive_s(dest, size + 1);
+    for(size_t  i = 0; i < size; ++i)
+        (*dest)[i] = static_cast<wchar_t>(src[i]);
+    (*dest)[size] = '\0';
+}
+//-------------------------------------------------------------------------
+// integer to binary array
+//-------------------------------------------------------------------------
 /**
  *  Converts integer to binary array.
  *
@@ -76,56 +130,48 @@ void integerArrayToStr(IntegerType *src, char **dest, Integer32 size)
  *  @param binary out parameter - binary array
  * 
  *  requirenments:
- *     binary == 0
+ *     binary = nullptr
  *
  *  @return size of binary array
  */
-template <typename IntegerType>
-Integer16 integerToBits(IntegerType x, Binary **binary)
+template <typename IntegerType, typename BinaryType>
+size_t integerToBits(IntegerType x, BinaryType **binary)
 {
-    if((*binary))
-    {
-        printf("ArgumentsError");
-        return 0;
-    }
+    assert(!(*binary) && "ArgumentsError");
     
-    Integer16 sizeInBits = sizeof(IntegerType) * 8;
+    size_t sizeInBits = sizeof(IntegerType) * 8;
     new_arr_primitive_s(binary, sizeInBits);
-    Integer16 sign = SIGN(x);
-    for(Integer16 i = 0; i < sizeInBits; ++i)
-    {
+    IntegerType sign = SIGN(x);
+    for(size_t i = 0; i < sizeInBits; ++i) {
         (*binary)[i] = tmp_abs(x) % 2;
         x = floor(tmp_abs(x) / 2);
     }
-    for(Integer16 i = 0; i < sizeInBits; ++i)
+    for(size_t i = 0; i < sizeInBits; ++i) {
         (*binary)[i] *= sign;
-    
+    }
     return sizeInBits;
 }
-//------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------
+// binary array to integer
+//-------------------------------------------------------------------------
 /**
  *  Converts binary array to integer.
- *
- *  requirenments:
- *     binary != 0
  *
  *  @param binary binary array of type IntegerType to be converted to IntegerType value
  *  @param x      out parameter - result
  */
-template <typename IntegerType>
-void bitsToInteger(Binary *binary, IntegerType &x)
+template <typename BinaryType, typename IntegerType>
+void bitsToInteger(BinaryType *binary, IntegerType &x)
 {
-    if(!binary)
-    {
-        printf("ArgumentsError");
-        return;
-    }
+    assert(binary && "ArgumentsError");
     
     x = 0;
-    IntegerType sizeInBits = sizeof(IntegerType) * 8;
-    for(int i = 0; i < sizeInBits; ++i)
+    size_t sizeInBits = sizeof(IntegerType) * 8;
+    for(size_t i = 0; i < sizeInBits; ++i) {
         x += binary[i] * pow(2, i);
+    }
 }
+
 //------------------------------------------------------------------------------------
 /**
  *  Check if big array contains small one
@@ -139,25 +185,16 @@ void bitsToInteger(Binary *binary, IntegerType &x)
  *  @return operation result -> bool
  */
 template <typename IntegerType>
-bool contains(const IntegerType* small, Integer32 size_small, IntegerType *big, Integer32 size_big, Integer32 &out_pos)
+bool contains(const IntegerType* small, size_t size_small, IntegerType *big, size_t size_big, size_t &out_pos)
 {
-    if (size_small == 0) {
-        printf("Zero size array.\n");
-        return true;
-    }
-
-    if (size_small > size_big) {
-        printf("Wrong arguments.\n");
-        printf("%i\n", size_small);
-        printf("%i\n", size_big);
-        return false;
-    }
+    assert(size_small && "Zero size array.");
+    assert(size_small <= size_big && "ArgumentsError");
     
     bool matches = false;
     out_pos = -1;
-    for (Integer32 i = 0; i < size_big-size_small+1; ++i) {
+    for (size_t i = 0; i < size_big-size_small+1; ++i) {
         matches = true;
-        for (Integer32 j = 0; j < size_small; ++j) {
+        for (size_t j = 0; j < size_small; ++j) {
             if (big[i+j] != small[j]) {
                 matches = false;
                 break;
@@ -182,10 +219,137 @@ bool contains(const IntegerType* small, Integer32 size_small, IntegerType *big, 
  *  @return step
  */
 template <typename IntegerType>
-inline Integer32 dynamicStep(IntegerType *src, Integer32 size, Integer32 k)
+size_t dynamicStep(IntegerType *src, size_t size, size_t k)
 {
-    Integer32 res = 0;
-    for(Integer32 i = 0; i < size; ++i)
+    size_t res = 0;
+    for(size_t i = 0; i < size; ++i)
         res += src[i];
     return k * res;
 }
+/**
+ *  Calculate semi-period for discrete function using Alter-Johnson formula:
+ *     a(tau) = 1/(n-tau) * sum(t=1,t<n-tau, |f(t+tau) - f(t)|),
+ *  n - total number of samples,
+ *
+ *  @param data values of discrete function
+ *  @param n    number of samples
+ *
+ *  @return semi_period or -1
+ *      semi_period = argmin(a(tau)),
+ *      semi_period_min <= semi_period <= semi_period_max
+ */
+template<typename IntegerType>
+size_t calculate_semi_period(const IntegerType* const data, size_t n)
+{
+    float_t *data_processed = 0;
+    size_t semi_period = calculate_semi_period(data, n, &data_processed);
+    delete_arr_primitive_s(&data_processed);
+    return semi_period;
+}
+/**
+ *  Calculate semi-period for discrete function using Alter-Johnson formula:
+ *     a(tau) = 1/(n-tau) * sum(t=1,t<n-tau, |f(t+tau) - f(t)|),
+ *  n - total number of samples,
+ *
+ *  @param data values of discrete function
+ *  @param n    number of samples
+ *  @param out_data processed values
+ *
+ *  @return semi_period or -1
+ *      semi_period = argmin(a(tau)),
+ *      semi_period_min <= semi_period <= semi_period_max
+ */
+template<typename IntegerType>
+size_t calculate_semi_period(const IntegerType* const data, size_t n, float **out_data)
+{
+//    for(size_t i = 0; i < n; ++i)
+//        printf("%i ", data[i]);
+//    printf("\n");
+    
+    float *data_processed = *out_data;
+    new_arr_primitive_s<float>(&data_processed, n);
+    
+    size_t sum = 0;
+    size_t k = 0;
+    for(size_t tau = 0; tau < n; ++tau) {
+        sum = 0;
+        for(size_t t = 0; t < n - tau; ++t) {
+            sum += (size_t)fabs(data[t + tau] - data[t]);
+        }
+        if((n - tau)) {
+            data_processed[k++] = (1.0f / (n - tau) * sum);
+        }
+    }
+    
+    // prepare to calculate semi-period from calculated data
+    size_t l = static_cast<size_t>(floorf(0.1f * n));        // 10 % from len
+    size_t semi_period = l;
+    
+    // find min without first and last l elements
+    for(size_t p = l+1; p < n - l; ++p) {
+        if(data_processed[p] < data_processed[semi_period] && data_processed[p])
+            semi_period = p;
+    }
+    
+    printf("semi_period: %zu\n", semi_period);
+    
+    return data_processed[semi_period] != 0 ? semi_period : -1;
+}
+//------------------------------------------------------------------------------------
+/**
+ *  Integrate data from 'info' to 'container' of size 'size' begining with 'begin' with step 'step'.
+ *
+ *  @param container container to modify
+ *  @param c_size    container size
+ *  @param begin     integration start pos
+ *  @param step      integration step
+ *  @param info      message (encoded) to integrate
+ *  @param i_size    message (encoded) size
+ *  @return          the amount of data that was integrated
+ */
+template<typename IntegerType, typename BinaryType>
+size_t integrate(IntegerType **container, size_t c_size, IntegerType begin, IntegerType step, const BinaryType * const info, size_t i_size)
+{
+    assert(step > 0 && "ArgumentError");
+
+    size_t counter = 0;
+    for(size_t i = begin, k = 0; i < c_size && k < i_size; i += step, ++k) {
+        BinaryType *bits = 0;
+        integerToBits((*container)[i], &bits);
+        IntegerType sign = container[i] >= 0 ? 1 : -1;
+        bits[0] = sign * info[k];
+        ++counter;
+        bitsToInteger(bits, (*container)[i]);
+        delete_arr_primitive_s(&bits);
+    }
+    return counter;
+}
+//------------------------------------------------------------------------------------
+/**
+ *  Recover data to 'info' from 'container' of size 'size' begining with 'begin' with step 'step'.
+ *
+ *  @param container container to extract data from
+ *  @param size      container size
+ *  @param begin     deintegration start pos
+ *  @param step      deintegration step
+ *  @param info      message (encoded) to deintegrate to
+ *  @return          message length
+ */
+template<typename IntegerType, typename BinaryType>
+size_t deintegrate(const IntegerType * const container, size_t size, size_t begin, size_t step, BinaryType **info)
+{
+    assert(step > 0 && "ArgumentError");
+    
+    new_arr_primitive_s(info, (int)(ceil((size-begin) / step)));
+    size_t l = 0;
+    BinaryType *ptr = *info;
+    for(size_t i = begin; i < size; i += step, ++l) {
+        BinaryType *bits = 0;
+        integerToBits(container[i], &bits);
+        *ptr = tmp_abs(bits[0]);
+        ++ptr;
+        delete_arr_primitive_s(&bits);
+    }
+    return l;
+}
+//------------------------------------------------------------------------------------

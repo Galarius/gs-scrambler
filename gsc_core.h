@@ -9,7 +9,6 @@
 #ifndef __core__gsc_core__
 #define __core__gsc_core__
 
-#include "gsc_icore.h"
 #include "gsc_sync.h"
 
 namespace gsc {
@@ -17,7 +16,8 @@ namespace gsc {
 /**
  *  Core class to perform hiding/recovering data in/from container.
  */
-class Core : public ICore
+template <typename IntegerType, typename BinaryType>
+class Core
 {
 public:
     /**
@@ -26,7 +26,7 @@ public:
      *  @param frameSize the size of frame buffer
      *  @param scanBufferMaxSize the size for acummulative buffer used for sync marker detection, normally 3 * frameSize.
      */
-    Core(const Binary * const mark, Integer32 size, Integer32 frameSize, Integer32 scanBufferMaxSize);
+    Core(const BinaryType * const mark, size_t size, size_t frameSize, size_t scanBufferMaxSize);
     virtual ~Core();
     /**
      *  Hide 'info' inside 'container'.
@@ -39,7 +39,7 @@ public:
      *  @param i_size    size of the info
      *  @return          the amount of data that was integrated
      */
-    virtual Integer32 hide(const Integer16 * const seed, Integer32 s_size, Integer16 **container, Integer32 c_size, const Binary * const info, Integer32 i_size);
+    virtual size_t hide(const IntegerType * const seed, size_t s_size, IntegerType **container, size_t c_size, const BinaryType * const info, size_t i_size);
     /**
      *  Recover 'info' from the container
      *
@@ -50,7 +50,7 @@ public:
      *  @param info      buffer to store info in
      *  @return          message length
      */
-    virtual Integer32 recover(const Integer16 * const seed, Integer32 s_size, const Integer16 * const container, Integer32 c_size, Binary **info);
+    virtual size_t recover(const IntegerType * const seed, size_t s_size, const IntegerType * const container, size_t c_size, BinaryType **info);
     
 private:
     Core()                       = delete;
@@ -58,9 +58,9 @@ private:
     void operator=(Core const&)  = delete;
     
 protected:
-    ShortBufferAcc m_frame;    // container buffer
-    ShortBufferAcc m_seed;     // seed container buffer (to calculate unique step)
-    Sync *m_synchronizer;
+    BufferAcc<IntegerType> m_frame;    // container buffer
+    BufferAcc<IntegerType> m_seed;     // seed container buffer (to calculate unique step)
+    Sync<IntegerType, BinaryType> *m_synchronizer;
 };
     
 }

@@ -17,6 +17,7 @@ namespace gsc {
 /**
  *  Core class to perform hiding/recovering data in/from container.
  */
+template <typename IntegerType, typename BinaryType>
 class Sync
 {
 public:
@@ -25,7 +26,7 @@ public:
      *  @param size array size
      *  @param bufferMaxSize size of accumulative buffer
      */
-    Sync(const Binary * const mark, Integer32 size, Integer32 bufferMaxSize);
+    Sync(const BinaryType * const mark, size_t size, size_t bufferMaxSize);
     ~Sync();
 
 public:
@@ -38,7 +39,7 @@ public:
      *  @return true if marker fully integrated inside the container and
      *          false if more data required to insert what was left from marker
      */
-    bool put(Integer16 **container, Integer32 size);
+    bool put(IntegerType **container, size_t size);
     /**
      *  Try to detect marker inside container.
      *
@@ -48,7 +49,7 @@ public:
      *
      *  @return operation result
      */
-    bool scan(const Integer16 *const container, Integer32 size, Integer32 &endIdx);
+    bool scan(const IntegerType *const container, size_t size, size_t &endIdx);
     /**
      *  Reset scanner
      */
@@ -56,7 +57,7 @@ public:
     
 public:
     bool isSynchronized() const;
-    Integer32 markerSize() const;
+    size_t markerSize() const;
     
 private:
     Sync()                       = delete;
@@ -65,9 +66,9 @@ private:
 
     
 private:
-    BinaryBufferAcc m_mark;         // synchronization marker
-    BinaryBufferAcc m_accBuffer;    // synchronization accumulative buffer
-    Binary *m_pointer;              // current position in marker
+    BufferAcc<BinaryType> m_mark;         // synchronization marker
+    BufferAcc<BinaryType> m_accBuffer;    // synchronization accumulative buffer
+    BinaryType *m_pointer;              // current position in marker
     
     bool m_synchronized;
 };

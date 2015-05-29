@@ -18,7 +18,7 @@ namespace gsc {
  *	Safe new[] for array of primitive elements
  */
 template <typename Type>
-inline void new_arr_primitive_s(Type **arrPtr, Integer64 size)
+inline void new_arr_primitive_s(Type **arrPtr, size_t size)
 {
     if(!*arrPtr) {
         *arrPtr = new Type[size];

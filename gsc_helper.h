@@ -9,42 +9,82 @@
 #ifndef __core__core__
 #define __core__core__
 
-#include "gsc_types.h"
 #include "gsc_memory.h"
 #include <math.h>
+#include <cstdlib>
+#include <cassert>
+#include <cstring>
+#include <cwchar>
 
 /**
  *  Template functions
  */
 namespace gsc {
+    
+//-------------------------------------------------------------------------
+// char array to integer array
+//-------------------------------------------------------------------------
 /**
  *  Converts char array into array of type IntegerType.
- *
+ *  The calculation of size of the destination array and memory allocation is performed inside.
  *  @param src  source string
- *  @param dest destination array
+ *  @param dest reference to the destination array
  *  @param size src length
  *
  *  requirenments:
- *      size > 0
- *      src != null
- *      dest = null
+ *      dest = nullptr
+ *
+ *  @return size of dest array
  */
 template <typename IntegerType>
-void strToIntegerArray(char *const src, IntegerType **dest, Integer32 size);
+size_t strToIntegerArray(char *const src, size_t size, IntegerType **dest);
+/**
+ *  Converts wide char array into array of type IntegerType.
+ *  The calculation of size of the destination array and memory allocation is performed inside.
+ *  @param src  source string
+ *  @param dest reference to the destination array
+ *  @param size src length
+ *
+ *  requirenments:
+ *      dest = nullptr
+ *
+ *  @return size of dest array
+ */
+template <typename IntegerType>
+size_t strToIntegerArray(wchar_t *const src, size_t size, IntegerType **dest);
+//-------------------------------------------------------------------------
+// integer array to char array
+//-------------------------------------------------------------------------
 /**
  *  Converts IntegerType array into char array.
+ *  The calculation of size of the destination array and memory allocation is performed inside.
  *
  *  @param src  source IntegerType array
- *  @param dest destination char array
+ *  @param dest reference to the destination array
  *  @param size src array length
  *
  *  requirenments:
- *      size > 0
- *      src != null
- *      dest = null
+ *      dest = nullptr
  */
 template <typename IntegerType>
-void integerArrayToStr(IntegerType *src, char **dest, Integer32 size);
+void integerArrayToStr(IntegerType *src, size_t size, char **dest);
+/**
+ *  Converts wide char array into array of type IntegerType.
+ *  The calculation of size of the destination array and memory allocation is performed inside.
+ *  @param src  source string
+ *  @param dest reference to the destination array
+ *  @param size src length
+ *
+ *  requirenments:
+ *      dest = nullptr
+ *
+ *  @return size of dest array
+ */
+template <typename IntegerType>
+void integerArrayToStr(IntegerType *src, size_t size, wchar_t **dest);
+//-------------------------------------------------------------------------
+// integer to binary array
+//-------------------------------------------------------------------------
 /**
  *  Converts integer to binary array.
  *
@@ -52,24 +92,24 @@ void integerArrayToStr(IntegerType *src, char **dest, Integer32 size);
  *  @param binary out parameter - binary array
  *
  *  requirenments:
- *     binary == 0
+ *     binary = nullptr
  *
  *  @return size of binary array
  */
-template <typename IntegerType>
-Integer16 integerToBits(IntegerType x, Binary **binary);
+template <typename IntegerType, typename BinaryType>
+size_t integerToBits(IntegerType x, BinaryType **binary);
+//-------------------------------------------------------------------------
+// binary array to integer
+//-------------------------------------------------------------------------
 /**
  *  Converts binary array to integer.
- *
- *  requirenments:
- *     binary != 0
  *
  *  @param binary binary array of type IntegerType to be converted to IntegerType value
  *  @param x      out parameter - result
  */
-template <typename IntegerType>
-void bitsToInteger(Binary *binary, IntegerType &x);
-
+template <typename BinaryType, typename IntegerType>
+void bitsToInteger(BinaryType *binary, IntegerType &x);
+//-------------------------------------------------------------------------
 /**
  *  Check if big array contains small one
  *
@@ -82,7 +122,7 @@ void bitsToInteger(Binary *binary, IntegerType &x);
  *  @return operation result -> bool
  */
 template <typename IntegerType>
-bool contains(const IntegerType* small, Integer32 size_small, IntegerType *big, Integer32 size_big, Integer32 &out_pos);
+bool contains(const IntegerType* small, size_t size_small, IntegerType *big, size_t size_big, size_t &out_pos);
 /**
  *  Calculates dynamic step from array of bits.
  *  res = k * sum(src)
@@ -94,17 +134,8 @@ bool contains(const IntegerType* small, Integer32 size_small, IntegerType *big, 
  *  @return step
  */
 template <typename IntegerType>
-inline Integer32 dynamicStep(IntegerType *src, Integer32 size, Integer32 k);
-    
-/* Include implementation for template functions */
-#include "gsc_helper.tpp"    
-}
-
-/**
- *  Non-template functions
- */
-namespace gsc {
-    
+inline size_t dynamicStep(IntegerType *src, size_t size, size_t k);
+//------------------------------------------------------------------------------------
 /**
  *  Calculate semi-period for discrete function using Alter-Johnson formula:
  *     a(tau) = 1/(n-tau) * sum(t=1,t<n-tau, |f(t+tau) - f(t)|),
@@ -117,8 +148,8 @@ namespace gsc {
  *      semi_period = argmin(a(tau)),
  *      semi_period_min <= semi_period <= semi_period_max
  */
-Integer32 calculate_semi_period(const Integer16* const data, Integer32 n);
-
+template<typename IntegerType>
+size_t calculate_semi_period(const IntegerType* const data, size_t n);
 /**
  *  Calculate semi-period for discrete function using Alter-Johnson formula:
  *     a(tau) = 1/(n-tau) * sum(t=1,t<n-tau, |f(t+tau) - f(t)|),
@@ -132,8 +163,9 @@ Integer32 calculate_semi_period(const Integer16* const data, Integer32 n);
  *      semi_period = argmin(a(tau)),
  *      semi_period_min <= semi_period <= semi_period_max
  */
-Integer32 calculate_semi_period(const Integer16* const data, Integer32 n, float **out_data);
-
+template<typename IntegerType>
+size_t calculate_semi_period(const IntegerType* const data, size_t n, float **out_data);
+//------------------------------------------------------------------------------------
 /**
  *  Integrate data from 'info' to 'container' of size 'size' begining with 'begin' with step 'step'.
  *
@@ -145,8 +177,8 @@ Integer32 calculate_semi_period(const Integer16* const data, Integer32 n, float 
  *  @param i_size    message (encoded) size
  *  @return          the amount of data that was integrated
  */
-Integer32 integrate(Integer16 **container, Integer32 c_size, Integer32 begin, Integer32 step, const Binary * const info, Integer32 i_size);
-
+template<typename IntegerType, typename BinaryType>
+size_t integrate(IntegerType **container, size_t c_size, IntegerType begin, IntegerType step, const BinaryType * const info, size_t i_size);
 /**
  *  Recover data to 'info' from 'container' of size 'size' begining with 'begin' with step 'step'.
  *
@@ -157,7 +189,12 @@ Integer32 integrate(Integer16 **container, Integer32 c_size, Integer32 begin, In
  *  @param info      message (encoded) to deintegrate to
  *  @return          message length
  */
-Integer32 deintegrate(const Integer16 * const container, Integer32 size, Integer32 begin, Integer32 step, Binary **info);
+template<typename IntegerType, typename BinaryType>
+size_t deintegrate(const IntegerType * const container, size_t size, size_t begin, size_t step, BinaryType **info);
+//------------------------------------------------------------------------------------
+    
+/* Include implementation for template functions */
+#include "gsc_helper.tpp"    
 }
 
 #endif /* defined(__core__core__) */

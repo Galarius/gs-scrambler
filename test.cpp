@@ -9,12 +9,14 @@
 #include <iostream>
 #include "gsc_helper.h"
 #include "profiler.h"
-#include "gsc_icore.h"
+
+typedef bool Binary;
+typedef int16_t Integer16;
 
 using namespace gsc;
 
 template <typename T>
-void printArray(T *arr, int size)
+void printArray(T *arr, size_t size)
 {
     for(int i = 0; i < size; ++i)
         std::cout << arr[i] << " ";
@@ -27,11 +29,11 @@ void tests()
     char src[] = "ABCDEFJHIGKLMNOPQRSTUVWXYZabsdefghijklmnopqrstuvwxyz";
     int size = (int)strlen(src);
     short int *dest = 0;
-    strToIntegerArray(src, &dest, size);
-    printArray(dest, size);
+    size_t d_size = strToIntegerArray(src, size, &dest);
+    printArray(dest, d_size);
     // test vec_2_str
     char *src_back = 0;
-    integerArrayToStr(dest, &src_back, size);
+    integerArrayToStr(dest, d_size, &src_back);
     printArray(src_back, size);
     delete_arr_primitive_s(&dest);
     delete_arr_primitive_s(&src_back);
@@ -53,30 +55,30 @@ void tests()
     new_arr_primitive_s(&container_dynamic, 1024);
     for(int i = 0; i < 1024; ++i)
         container_dynamic[i] = container[i];
-    Integer32 semi_period = calculate_semi_period(container, 1024);
-    Integer32 step = Integer32(1024.0f / semi_period);
+    size_t semi_period = calculate_semi_period(container, 1024);
+    size_t step = size_t(1024.0f / semi_period);
     Binary *stream = 0;
     new_arr_primitive_s(&stream, 105);
     for(int i = 0; i < 105; ++i)
         stream[i] = i % 2 > 0 ? 1 : 0;
     printArray(stream, 105);
-    integrate(&container_dynamic, 1024, semi_period, step, stream, 105);
+    integrate<int16_t, bool>(&container_dynamic, 1024, semi_period, step, stream, 105);
     delete_arr_primitive_s(&stream);
-    Integer32 l = deintegrate(container_dynamic, 1024, semi_period, step, &stream);
+    size_t l = deintegrate(container_dynamic, 1024, semi_period, step, &stream);
     printArray(stream, l);
     delete_arr_primitive_s(&container_dynamic);
     // test contains
     Integer16 *small = 0;
-    Integer32 small_size = 10;
+    size_t small_size = 10;
     new_arr_primitive_s(&small, small_size);
     for(int i = 0; i < small_size; ++i)
         small[i] = i;
     Integer16 *big = 0;
-    Integer32 big_size = 30;
+    size_t big_size = 30;
     new_arr_primitive_s(&big, big_size);
     for(int i = -15; i < 15; ++i)
         big[i+15] = i;
-    Integer32 p = 0;
+    size_t p = 0;
     bool res = contains(small, small_size, big, big_size, p);
     std::cout << res << std::endl;
     printf("Test semi_period calculation\n");
@@ -87,7 +89,7 @@ void tests()
     CLOCK_START
     semi_period = calculate_semi_period(container, 1024);
     printf("%f sec\n", ELAPSED_TIME);
-    printf("%i \n", semi_period);
+    printf("%zu \n", semi_period);
     delete_arr_primitive_s(&container_dynamic);
     //--------------------------
 //    printf("Test core class\n");
