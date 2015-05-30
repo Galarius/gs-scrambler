@@ -9,7 +9,8 @@
 #ifndef __core__gsc_sync__
 #define __core__gsc_sync__
 
-#include "gsc_buffer.h"
+#include <cstddef>
+#include <vector>
 
 namespace gsc {
     

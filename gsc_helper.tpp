@@ -193,7 +193,7 @@ bool contains(const IntegerType* small, size_t size_small, IntegerType *big, siz
     assert(size_small <= size_big && "ArgumentsError");
     
     bool matches = false;
-    out_pos = -1;
+    out_pos = SIZE_T_MAX;
     for (size_t i = 0; i < size_big-size_small+1; ++i) {
         matches = true;
         for (size_t j = 0; j < size_small; ++j) {

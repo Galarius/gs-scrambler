@@ -50,6 +50,7 @@ bool Sync<IntegerType, BinaryType>::put(IntegerType **container, size_t size)
     assert(!m_synchronized && "Already synchronized.");
     
     const size_t step = 1;
+    assert(!mark_->empty() && "Buffer must not be empty.");
     BinaryType *m_ptr = &mark_->front();
     size_t integrate_len = integrate<IntegerType, BinaryType>(container, size, 0, step, m_ptr, m_size);
     bool result = integrate_len == m_size;
@@ -81,8 +82,11 @@ bool Sync<IntegerType, BinaryType>::scan(const IntegerType *const container, siz
     assert(!m_synchronized && "Already synchronized.");
     
     if(accumulator_.size() == accumulator_.capacity()) {
-        accumulator_.erase(accumulator_.begin() + size);    // delete first size elements
+        accumulator_.erase(accumulator_.begin(), accumulator_.begin() + size);    // delete first 'size' elements
     }
+    
+    size_t idx = accumulator_.size();
+    printf("%zu\n", idx);
     
     for(size_t i = 0; i < size; ++i)
     {
@@ -93,17 +97,18 @@ bool Sync<IntegerType, BinaryType>::scan(const IntegerType *const container, siz
     }
     
     assert(accumulator_.capacity() >= accumulator_.size() && "ArgumentError");
+    assert(!mark_->empty() && "Buffer must not be empty.");
+    assert(!accumulator_.empty() && "Buffer must not be empty.");
     
-    size_t pos;
-
     BinaryType *m_ptr = &mark_->front();
     BinaryType *a_ptr = &accumulator_.front();
+    size_t pos;
     bool result = contains<BinaryType>(m_ptr, mark_->size(), a_ptr, accumulator_.size(), pos);
     
     // index of the last integrated bit that was recovered from the original (not accumulative) container
     if(result) {
         m_synchronized = true;
-        endIdx = pos + accumulator_.size() - (accumulator_.end() - accumulator_.begin());
+        endIdx = pos + mark_->size() - idx;
         printf("\033[95m[gsc_core]\033[0m: \033[93m synchronized \033[0m\n");
     }
     

@@ -10,7 +10,6 @@
 #define __core__gsc_core__
 
 #include "gsc_sync.h"
-#include "gsc_acc_buffer.h"
 
 namespace gsc {
     
@@ -59,9 +58,9 @@ private:
     void operator=(Core const&)  = delete;
     
 private:
-    AccBuffer<IntegerType> m_frame;    // container buffer
-    AccBuffer<IntegerType> m_seed;     // seed container buffer (to calculate unique step)
-    Sync<IntegerType, BinaryType> *m_synchronizer;
+    std::vector<IntegerType> frames_;    // container buffer
+    std::vector<IntegerType> seed_;     // seed container buffer (to calculate unique step)
+    Sync<IntegerType, BinaryType> *synchronizer_;
 };
     
 }

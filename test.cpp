@@ -6,7 +6,6 @@
 //  Copyright (c) 2015 galarius. All rights reserved.
 //
 
-#include "gsc_buffer.h"
 #include "gsc_sync.h"
 #include "gsc_core.h"
 #include <iostream>
