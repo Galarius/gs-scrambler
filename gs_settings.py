@@ -10,8 +10,7 @@ __copyright__ = 'Copyright 2015, Ilya Shoshin'
 from extensions import Singleton
 import os
 import json
-import stego_device_info
-
+import gs_device_info
 
 class StreamMode:
     """
@@ -63,14 +62,14 @@ class StegoSettings:
         p_audio = pyaudio.PyAudio()
         result = False
         if stream_mode == StreamMode.StreamFromFileToFile:
-            result = stego_device_info.detect_build_in_input_device_idx(p_audio) >= 0 and \
-                   stego_device_info.detect_build_in_output_device_idx(p_audio) >= 0
+            result = gs_device_info.detect_build_in_input_device_idx(p_audio) >= 0 and \
+                   gs_device_info.detect_build_in_output_device_idx(p_audio) >= 0
         elif stream_mode == StreamMode.StreamFromBuildInInputToSoundFlower:
-            result = stego_device_info.detect_build_in_input_device_idx(p_audio) >= 0 and \
-                   stego_device_info.detect_sound_flower_device_idx(p_audio) >= 0
+            result = gs_device_info.detect_build_in_input_device_idx(p_audio) >= 0 and \
+                   gs_device_info.detect_sound_flower_device_idx(p_audio) >= 0
         elif stream_mode == StreamMode.StreamFromSoundFlowerToBuildInOutput:
-            result = stego_device_info.detect_sound_flower_device_idx(p_audio) >= 0 and \
-                   stego_device_info.detect_build_in_output_device_idx(p_audio) >= 0
+            result = gs_device_info.detect_sound_flower_device_idx(p_audio) >= 0 and \
+                   gs_device_info.detect_build_in_output_device_idx(p_audio) >= 0
         else:
             print "Unsupported stream mode! [%i]" % stream_mode
         p_audio.terminate()
