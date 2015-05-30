@@ -523,7 +523,7 @@ class InteractiveStegoScrambler(cmd.Cmd):
 
         msg_file_name = 'data/msg_r.txt'
         user_key = 7
-        session_key = 3600
+        session_key = io_stego.load_data_to_recover("data/recover_info.txt")
 
         self.session.recover(session_key, user_key, msg_file_name)
 

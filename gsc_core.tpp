@@ -19,8 +19,9 @@ namespace gsc {
  *  @param scanbufferSizeMax the size for acummulative buffer used for sync marker detection, normally 3 * frameSize.
  */
 template <typename IntegerType, typename BinaryType>
-Core<IntegerType, BinaryType>::Core(const BinaryType * const mark, size_t size, size_t frameSize, size_t scanbufferSizeMax) :
-        synchronizer_(nullptr) {
+Core<IntegerType, BinaryType>::Core(const BinaryType * const mark, size_t size, size_t frameSize, size_t scanbufferSizeMax) : skipSamples_(0), synchronizer_(nullptr) {
+            
+    assert(scanbufferSizeMax > frameSize && "ArgumentError");
             
     frames_.reserve(scanbufferSizeMax);
     seed_.reserve(scanbufferSizeMax);
@@ -53,7 +54,7 @@ size_t Core<IntegerType, BinaryType>::hide(const IntegerType * const seed, size_
     if (synchronizer_->isSynchronized()) {
         // synchronized, continue inserting info
         size_t semi_p = calculate_semi_period(seed, s_size);
-        if(semi_p != -1) {
+        if(semi_p != SIZE_T_MAX) {
             integrated = integrate<IntegerType, BinaryType>(container, c_size, semi_p, 1, info, i_size);
         }
     } else {
@@ -76,63 +77,73 @@ template <typename IntegerType, typename BinaryType>
     size_t Core<IntegerType, BinaryType>::recover(const IntegerType * const seed, size_t s_size, const IntegerType * const container, size_t c_size, BinaryType **info)
 {
     assert(s_size == c_size && "[gsc_core error]: s_size != c_size.");
+    assert(frames_.capacity() % c_size == 0 && "ArgumentError");
+    assert(seed_.capacity() % s_size == 0 && "ArgumentError");
     
     size_t recovered = 0;
     if (synchronizer_->isSynchronized()) {
+        
         // synchronized
-//        size_t c_idx = 0;                 // start index in container to start accumulation from
-//        if(frames_.bufferSizeCurrent < 0) {
-//            // skip m_frameSize samples
-//            c_idx = -m_frame.bufferSizeCurrent;
-//            m_frame.bufferSizeCurrent = 0;
-//            m_seed.bufferSizeCurrent = 0;
-//        } else if (m_frame.bufferSizeCurrent >= m_frame.bufferSizeMax) {
-//            m_frame.bufferSizeCurrent = 0;
-//            m_seed.bufferSizeCurrent = 0;
-//        }
-//        for(size_t i = m_frame.bufferSizeCurrent; i < m_frame.bufferSizeMax && c_idx < c_size; ++i, ++c_idx) {
-//            m_frame.buffer[i] = container[c_idx];
-//            ++m_frame.bufferSizeCurrent;
-//            m_seed.buffer[i]  = seed[c_idx];
-//            ++m_seed.bufferSizeCurrent;
-//        }
-//        
-//        if(m_frame.bufferSizeCurrent == m_frame.bufferSizeMax)
-//        {
-//            size_t semi_p = calculate_semi_period(m_seed.buffer, m_seed.bufferSizeCurrent);
-//            if(semi_p != -1) {
-//                recovered = deintegrate(m_frame.buffer, m_frame.bufferSizeCurrent, semi_p, 1, info);
-//            }
-//            m_frame.bufferSizeCurrent = 0;
-//            m_seed.bufferSizeCurrent = 0;
-//        }
+        
+        if(frames_.size() == frames_.capacity()) {
+            // delete first 'size' elements
+            frames_.erase(frames_.begin(), frames_.begin() + c_size);
+            seed_.erase(seed_.begin(), seed_.begin() + s_size);
+        }
+        
+        size_t c_idx = 0;
+        if(skipSamples_ > 0)
+        {
+            c_idx = skipSamples_;
+            skipSamples_ = 0;
+        }
+        
+        // add more datas
+        for(size_t i = frames_.size();
+            i < frames_.size() + c_size && c_idx < c_size;
+            ++i, ++c_idx)
+        {
+            frames_.push_back(container[c_idx]);
+            seed_.push_back(seed[c_idx]);
+        }
+        
+        if(frames_.size() >= c_size)
+        {
+            assert(!seed_.empty() && "Buffer must not be empty.");
+            assert(!frames_.empty() && "Buffer must not be empty.");
+
+            IntegerType *s_ptr = &seed_.front();
+            IntegerType *f_ptr = &frames_.front();
+        
+            size_t semi_p = calculate_semi_period(s_ptr, s_size);           // take first s_size elements
+            if(semi_p != SIZE_T_MAX) {
+                recovered = deintegrate(f_ptr, c_size, semi_p, 1, info);    // take first c_size elements
+                
+                // delete first 'size' elements
+                frames_.erase(frames_.begin(), frames_.begin() + c_size);
+                seed_.erase(seed_.begin(), seed_.begin() + s_size);
+            }
+        }
+        
     } else {
         size_t end_idx;
+        // try to find sync marker inside container
         if(synchronizer_->scan(container, c_size, end_idx)) {
-//            size_t marker_size = synchronizer_->markerSize();   // size of sync marker
-//            // expected free space after sync marker and before secret info
-//            size_t expect_size_left = c_size >= marker_size ? c_size - marker_size : c_size - marker_size % c_size;
-//            size_t real_size_left = c_size - end_idx;                // real free space after sync marker and before secret info
-//            int64_t substruct_size = real_size_left - expect_size_left;
-//            if(substruct_size >= 0)
-//            {
-//                size_t c_idx = end_idx + real_size_left;                 // start index in container to start accumulation from
-//                // accumulate the part of frame buffer
-//                for(int i = 0; i < substruct_size && c_idx < c_size; ++i, ++c_idx)
-//                {
-//                    m_frame.buffer[i] = container[c_idx];
-//                    ++m_frame.bufferSizeCurrent;
-//                    m_seed.buffer[i] = seed[c_idx];
-//                    ++m_seed.bufferSizeCurrent;
-//                    --substruct_size;
-//                }
-//            } else {
-//                size_t c_idx = end_idx;
-//                for(int i = 0; i < substruct_size && c_idx < c_size; ++i, ++c_idx) {
-//                    --m_frame.bufferSizeCurrent;
-//                    --m_seed.bufferSizeCurrent;
-//                }
-//            }
+            size_t marker_size = synchronizer_->markerSize();   // size of sync marker
+            // expected free space after sync marker and before secret info
+            size_t expect_size_left = c_size >= marker_size ? c_size - marker_size : c_size - marker_size % c_size;
+            size_t real_size_left = c_size - end_idx;           // real free space after sync marker and before secret info
+            if(real_size_left > expect_size_left)
+            {
+                size_t c_idx = end_idx + real_size_left;        // start index in container to start accumulation from
+                // accumulate the part of frame buffer and seed  buffer
+                for(size_t i = 0; c_idx < c_size; ++i, ++c_idx) {
+                    frames_.push_back(container[c_idx]);
+                    seed_.push_back(seed[c_idx]);
+                }
+            } else {
+                skipSamples_ =  expect_size_left - real_size_left;
+            }
         }
     }
     return recovered;

@@ -182,7 +182,7 @@ void bitsToInteger(BinaryType *binary, IntegerType &x)
  *  @param size_small size of a small array
  *  @param big        big array
  *  @param size_big   size of a big array
- *  @param out_pos    position of small array inside big one or -1
+ *  @param out_pos    position of small array inside big one or SIZE_T_MAX
  *
  *  @return operation result -> bool
  */
@@ -236,7 +236,7 @@ size_t dynamicStep(IntegerType *src, size_t size, size_t k)
  *  @param data values of discrete function
  *  @param n    number of samples
  *
- *  @return semi_period or -1
+ *  @return semi_period or SIZE_T_MAX
  *      semi_period = argmin(a(tau)),
  *      semi_period_min <= semi_period <= semi_period_max
  */
@@ -257,17 +257,13 @@ size_t calculate_semi_period(const IntegerType* const data, size_t n)
  *  @param n    number of samples
  *  @param out_data processed values
  *
- *  @return semi_period or -1
+ *  @return semi_period or SIZE_T_MAX
  *      semi_period = argmin(a(tau)),
  *      semi_period_min <= semi_period <= semi_period_max
  */
 template<typename IntegerType>
 size_t calculate_semi_period(const IntegerType* const data, size_t n, float **out_data)
 {
-//    for(size_t i = 0; i < n; ++i)
-//        printf("%i ", data[i]);
-//    printf("\n");
-    
     new_arr_primitive_s<float>(out_data, n);
     float *data_processed = *out_data;
     
@@ -294,9 +290,7 @@ size_t calculate_semi_period(const IntegerType* const data, size_t n, float **ou
         }
     }
     
-    printf("semi_period: %zu\n", semi_period);
-    
-    return data_processed[semi_period] != 0 ? semi_period : -1;
+    return data_processed[semi_period] != 0 ? semi_period : SIZE_T_MAX;
 }
 //------------------------------------------------------------------------------------
 /**

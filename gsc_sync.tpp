@@ -20,6 +20,9 @@ namespace gsc {
  */
 template <typename IntegerType, typename BinaryType>
 Sync<IntegerType, BinaryType>::Sync(const BinaryType * const mark, size_t size, size_t bufferSizeMax) {
+    
+    assert(bufferSizeMax > size && "ArgumentError");
+    
     mark_ = new std::vector<BinaryType>(mark, mark + size);
     accumulator_.reserve(bufferSizeMax);
     
@@ -86,7 +89,6 @@ bool Sync<IntegerType, BinaryType>::scan(const IntegerType *const container, siz
     }
     
     size_t idx = accumulator_.size();
-    printf("%zu\n", idx);
     
     for(size_t i = 0; i < size; ++i)
     {

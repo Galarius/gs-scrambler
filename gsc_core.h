@@ -59,7 +59,8 @@ private:
     
 private:
     std::vector<IntegerType> frames_;    // container buffer
-    std::vector<IntegerType> seed_;     // seed container buffer (to calculate unique step)
+    std::vector<IntegerType> seed_;      // seed container buffer (to calculate unique step)
+    size_t skipSamples_;                 // number of samples to skip before accumulation
     Sync<IntegerType, BinaryType> *synchronizer_;
 };
     
