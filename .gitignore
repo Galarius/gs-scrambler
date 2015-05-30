@@ -2,6 +2,7 @@ build/
 .idea/
 wav/
 data/
+dist/
 *.pyc
 *.c
 *.so

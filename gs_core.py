@@ -3,9 +3,7 @@
 __author__ = 'Ilya Shoshin'
 __copyright__ = 'Copyright 2015, Ilya Shoshin'
 
-# ToDo correct step calculation
-
-from q_matrix import *
+from gs_q_matrix import *
 import stego_helper as sh
 import gsc_core
 import numpy as np

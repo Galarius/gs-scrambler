@@ -11,7 +11,6 @@ import collections
 import pyaudio
 import gsc_core
 
-
 def message_to_matrix(message):
     """
     Transform message to matrix.

@@ -13,19 +13,18 @@ __author__ = 'Ilya Shoshin'
 __copyright__ = 'Copyright 2015, Ilya Shoshin'
 
 # Example commands for 'file to file' mode
-# python stego_scrambler.py -i "wav/input.wav" -m "data/msg.txt" -o "wav/output.wav" -k 7 -r "data/recover_info.txt"
-# python stego_scrambler.py -i "wav/output.wav" -m "data/msg_recovered.txt" -k 7 -r "data/recover_info.txt"
+# python gs_scrambler.py -i "wav/input.wav" -m "data/msg.txt" -o "wav/output.wav" -k 7 -r "data/recover_info.txt"
+# python gs_scrambler.py -i "wav/output.wav" -m "data/msg_recovered.txt" -k 7 -r "data/recover_info.txt"
 
 import pyaudio, wave, time
 
-import stego_helper
-import io_stego
-import stego_device_info
+import gs_helper
+import gs_io
+import gs_device_info
 
-#import pyximport; pyximport.install()
-from stego_core import StegoCore, StegoMode
+from gs_core import StegoCore, StegoMode
 
-from stego_settings import StreamMode, StegoSettings
+from gs_settings import StreamMode, StegoSettings
 from extensions import COLORS, colorize, elapsed_timer
 
 import sys, getopt, cmd, urlparse, inspect
@@ -104,11 +103,11 @@ class StegoScramblerSession:
             in_data = self.file_source.readframes(frame_count)
             if StegoScramblerSession.is_power2(len(in_data)):
                 # decode frames
-                left, right = stego_helper.audio_decode(in_data, self.file_source.getnchannels(), np.int16)
+                left, right = gs_helper.audio_decode(in_data, self.file_source.getnchannels(), np.int16)
                 # process frames
                 left, right = self.core.process(left, right)
                 # encode back
-                processed_data = stego_helper.audio_encode((left, right), np.int16)
+                processed_data = gs_helper.audio_encode((left, right), np.int16)
             else:
                 processed_data = in_data
             # write to file
@@ -129,7 +128,7 @@ class StegoScramblerSession:
                 return in_data, pyaudio.paContinue
             #with elapsed_timer() as elapsed:
             # decode frames
-            left, right = stego_helper.audio_decode(in_data, CHANNELS)
+            left, right = gs_helper.audio_decode(in_data, CHANNELS)
             # process frames
             left, right = self.core.process(left, right)
             #right = np.array([i for i in range(1024)], dtype=np.int16)
@@ -137,7 +136,7 @@ class StegoScramblerSession:
             if not len(self.core.message_to_proc_part):
                 self.enable_processing = False
             # encode back
-            processed_data = stego_helper.audio_encode((left, right))
+            processed_data = gs_helper.audio_encode((left, right))
             #print(elapsed())
 
         #-----------------------------------------------------------------------
@@ -147,12 +146,12 @@ class StegoScramblerSession:
                 return in_data, pyaudio.paContinue
             # with elapsed_timer() as elapsed:
             # decode frames
-            left, right = stego_helper.audio_decode(in_data, CHANNELS)
+            left, right = gs_helper.audio_decode(in_data, CHANNELS)
             #print right
             # process frames
             left, right = self.core.process(left, right)
             # encode back
-            processed_data = stego_helper.audio_encode((left, right))
+            processed_data = gs_helper.audio_encode((left, right))
                 # print(elapsed())
         else:
             print 'Unknown mode!'
@@ -168,22 +167,22 @@ class StegoScramblerSession:
             # file to file
             format, channels, rate = self.p_audio.get_format_from_width(self.file_source.getsampwidth()), \
                                      self.file_source.getnchannels(), self.file_source.getframerate()
-            input_dev_idx = stego_device_info.detect_build_in_input_device_idx(self.p_audio)
-            output_dev_idx = stego_device_info.detect_build_in_output_device_idx(self.p_audio)
+            input_dev_idx = gs_device_info.detect_build_in_input_device_idx(self.p_audio)
+            output_dev_idx = gs_device_info.detect_build_in_output_device_idx(self.p_audio)
             enable_input, enable_output = False, True
         elif self.stream_mode == StreamMode.StreamFromBuildInInputToSoundFlower:
             print colorize("Opening stream...", COLORS.OKBLUE)
             # build-in input to sound flower
             format, channels, rate = FORMAT, CHANNELS, RATE
-            input_dev_idx = stego_device_info.detect_build_in_input_device_idx(self.p_audio)
-            output_dev_idx = stego_device_info.detect_sound_flower_device_idx(self.p_audio)
+            input_dev_idx = gs_device_info.detect_build_in_input_device_idx(self.p_audio)
+            output_dev_idx = gs_device_info.detect_sound_flower_device_idx(self.p_audio)
             enable_input, enable_output = True, True
         elif self.stream_mode == StreamMode.StreamFromSoundFlowerToBuildInOutput:
             print colorize("Opening stream...", COLORS.OKGREEN)
             # sound flower to build-in output
             format, channels, rate = FORMAT, CHANNELS, RATE
-            input_dev_idx = stego_device_info.detect_sound_flower_device_idx(self.p_audio)
-            output_dev_idx = stego_device_info.detect_build_in_output_device_idx(self.p_audio)
+            input_dev_idx = gs_device_info.detect_sound_flower_device_idx(self.p_audio)
+            output_dev_idx = gs_device_info.detect_build_in_output_device_idx(self.p_audio)
             enable_input, enable_output = True, True
         else:
             print colorize("Unsupported stream mode! [%i]" % self.stream_mode, COLORS.FAIL)
@@ -206,7 +205,7 @@ class StegoScramblerSession:
                   "you're running on OS X.", COLORS.FAIL)
             sys.exit(-1)
 
-        if stego_device_info.validate_audio_setup(self.p_audio, format, channels, rate, input_dev_idx):
+        if gs_device_info.validate_audio_setup(self.p_audio, format, channels, rate, input_dev_idx):
             self.stream = self.p_audio.open(format=format,
                                             channels=channels,
                                             rate=rate,
@@ -253,11 +252,11 @@ class StegoScramblerSession:
                 self.stream_mode == StreamMode.StreamFromFileToFile):
             print colorize("Not applicable for current stream mode!", COLORS.FAIL)
         # load mesage
-        message = io_stego.load_message_from_file(msg_file_name)
+        message = gs_io.load_message_from_file(msg_file_name)
         if not message == '':
             print colorize("Begin integration...", COLORS.OKBLUE)
             session_key = self.core.hide(message, key)
-            io_stego.save_data_to_recover(recover_info_filename, session_key)
+            gs_io.save_data_to_recover(recover_info_filename, session_key)
             self.enable_processing = True
         else:
             print colorize("Wrong or empty file with message!", COLORS.FAIL)
@@ -285,7 +284,7 @@ class StegoScramblerSession:
             print colorize("Not applicable for current stream mode!", COLORS.FAIL)
             return
         message = self.core.recover(session_key, user_key)
-        io_stego.save_message_to_file(msg_file_name, message)
+        gs_io.save_message_to_file(msg_file_name, message)
         if not message == '':
             print colorize("Message recovered.", COLORS.OKGREEN)
 
@@ -380,7 +379,7 @@ def main(opts):
         # --------------------------------------
     else:
         if message_length <= 0:
-            message_length = io_stego.load_data_to_recover(recover_info_file_name)
+            message_length = gs_io.load_data_to_recover(recover_info_file_name)
         if message_length > 0:
             # --------------------------------------
             # recover
@@ -411,7 +410,7 @@ def main(opts):
         pass
     finally:
         if stego_session.stego_mode == StegoMode.Recover:
-            session_key = io_stego.load_data_to_recover(recover_info_file_name)
+            session_key = gs_io.load_data_to_recover(recover_info_file_name)
             try:
                 stego_session.recover(session_key, key, message_file_name)
             except AttributeError:
@@ -523,7 +522,7 @@ class InteractiveStegoScrambler(cmd.Cmd):
 
         msg_file_name = 'data/msg_r.txt'
         user_key = 7
-        session_key = io_stego.load_data_to_recover("data/recover_info.txt")
+        session_key = gs_io.load_data_to_recover("data/recover_info.txt")
 
         self.session.recover(session_key, user_key, msg_file_name)
 
