@@ -11,6 +11,10 @@
 
 #include "gsc_memory.h"
 #include <cstddef>
+// keep assert enabled in release
+#ifdef NDEBUG
+#undef NDEBUG
+#endif
 #include <cassert>
 #include <algorithm>    // std::copy
 
@@ -26,6 +30,7 @@ struct AccBuffer {
 template <typename T>
 inline void allocate_buffer(AccBuffer<T>& b, size_t size)
 {
+    b.buffer = nullptr;
     new_arr_primitive_s(&b.buffer, size);
     b.bufferSizeMax = size;
     b.bufferSizeCurrent = 0;

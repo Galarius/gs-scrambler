@@ -9,6 +9,10 @@
 #ifndef __core__memory__
 #define __core__memory__
 
+// keep assert enabled in release
+#ifdef NDEBUG
+#undef NDEBUG
+#endif
 #include <cassert>
 #include <cstddef>
 

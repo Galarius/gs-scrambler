@@ -12,6 +12,10 @@
 #include "gsc_memory.h"
 #include <math.h>
 #include <cstdlib>
+// keep assert enabled in release
+#ifdef NDEBUG
+#undef NDEBUG
+#endif
 #include <cassert>
 #include <cstring>
 #include <cwchar>

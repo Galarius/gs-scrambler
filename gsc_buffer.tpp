@@ -6,6 +6,10 @@
 //  Copyright (c) 2015 galarius. All rights reserved.
 //
 
+// keep assert enabled in release
+#ifdef NDEBUG
+#undef NDEBUG
+#endif
 #include <cassert>
 
 namespace gsc {

@@ -22,7 +22,7 @@ namespace gsc {
 template <typename IntegerType, typename BinaryType>
 Core<IntegerType, BinaryType>::Core(const BinaryType * const mark, size_t size, size_t frameSize, size_t scanbufferSizeMax) :
         m_synchronizer(nullptr) {
-            
+    
     allocate_buffer(m_frame, frameSize);
     allocate_buffer(m_seed, frameSize);
             
