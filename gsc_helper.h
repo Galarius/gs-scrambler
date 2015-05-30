@@ -178,7 +178,7 @@ size_t calculate_semi_period(const IntegerType* const data, size_t n, float **ou
  *  @return          the amount of data that was integrated
  */
 template<typename IntegerType, typename BinaryType>
-size_t integrate(IntegerType **container, size_t c_size, IntegerType begin, IntegerType step, const BinaryType * const info, size_t i_size);
+size_t integrate(IntegerType **container, size_t c_size, size_t begin, size_t step, const BinaryType * const info, size_t i_size);
 /**
  *  Recover data to 'info' from 'container' of size 'size' begining with 'begin' with step 'step'.
  *

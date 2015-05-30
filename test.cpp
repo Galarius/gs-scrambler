@@ -6,11 +6,14 @@
 //  Copyright (c) 2015 galarius. All rights reserved.
 //
 
+#include "gsc_buffer.h"
+#include "gsc_sync.h"
+#include "gsc_core.h"
 #include <iostream>
 #include "gsc_helper.h"
 #include "profiler.h"
 
-typedef bool Binary;
+typedef int8_t Binary;
 typedef int16_t Integer16;
 
 using namespace gsc;
@@ -18,13 +21,13 @@ using namespace gsc;
 template <typename T>
 void printArray(T *arr, size_t size)
 {
-    for(int i = 0; i < size; ++i)
-        std::cout << arr[i] << " ";
+    for(size_t i = 0; i < size; ++i)
+        std::cout <<static_cast<int16_t>(arr[i]) << " ";
     std::cout<<std::endl;
 }
 
 void tests()
-{
+{    
     // test str_2_vec
     char src[] = "ABCDEFJHIGKLMNOPQRSTUVWXYZabsdefghijklmnopqrstuvwxyz";
     int size = (int)strlen(src);
@@ -61,11 +64,11 @@ void tests()
     new_arr_primitive_s(&stream, 105);
     for(int i = 0; i < 105; ++i)
         stream[i] = i % 2 > 0 ? 1 : 0;
-    printArray(stream, 105);
-    integrate<int16_t, bool>(&container_dynamic, 1024, semi_period, step, stream, 105);
+    printArray<Binary>(stream, 105);
+    integrate<int16_t, Binary>(&container_dynamic, 1024, semi_period, step, stream, 105);
     delete_arr_primitive_s(&stream);
     size_t l = deintegrate(container_dynamic, 1024, semi_period, step, &stream);
-    printArray(stream, l);
+    printArray<Binary>(stream, l);
     delete_arr_primitive_s(&container_dynamic);
     // test contains
     Integer16 *small = 0;

@@ -40,8 +40,8 @@ ext_modules = [
     #           # extra_link_args = "...".split()
     #           ),
     Extension(name="gsc_core",
-              sources=["gsc_core_py_wrapper.pyx", "gsc_core.cpp", "gsc_helper.cpp", "gsc_sync.cpp"],
-              include_dirs = [numpy.get_include()],
+              sources=["gsc_core_py_wrapper.pyx"],
+              include_dirs = [".", numpy.get_include()],
               language="c++",
               extra_compile_args=["-std=c++11", "-Wno-unused-function"],
               ),

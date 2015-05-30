@@ -9,8 +9,8 @@
 #ifndef __core__memory__
 #define __core__memory__
 
-#include "gsc_types.h"
-#include <stdio.h>
+#include <cassert>
+#include <cstddef>
 
 namespace gsc {
 
@@ -20,10 +20,9 @@ namespace gsc {
 template <typename Type>
 inline void new_arr_primitive_s(Type **arrPtr, size_t size)
 {
-    if(!*arrPtr) {
-        *arrPtr = new Type[size];
-        if(!*arrPtr) { printf("allocating error: failed to allocate %lli bytes", size * sizeof(Type)); }
-    } else { printf("allocating error: 'ptr' shoud be equals to 0 initially"); }
+    assert(!*arrPtr && "Allocating error: 'ptr' shoud be equals to 0 initially.");
+    *arrPtr = new Type[size];
+    assert(*arrPtr && "Allocating error: failed to allocate.");
 }
 /*
  *	Safe delete[] for array of primitive elements
@@ -31,10 +30,9 @@ inline void new_arr_primitive_s(Type **arrPtr, size_t size)
 template <typename ArrType>
 inline void delete_arr_primitive_s(ArrType **arrPtr)
 {
-    if(*arrPtr) {
-        delete[] *arrPtr;
-        *arrPtr = 0;
-    }
+    assert(*arrPtr != 0 && "Allocating error: 'ptr' shoudn't be equals to 0.");
+    delete[] *arrPtr;
+    *arrPtr = nullptr;
 }
     
 }

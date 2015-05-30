@@ -412,7 +412,14 @@ def main(opts):
     finally:
         if stego_session.stego_mode == StegoMode.Recover:
             session_key = io_stego.load_data_to_recover(recover_info_file_name)
-            stego_session.recover(session_key, key, message_file_name)
+            try:
+                stego_session.recover(session_key, key, message_file_name)
+            except AttributeError:
+                pass
+            except ValueError:
+                pass
+            except RuntimeError:
+                pass
         stego_session.close_stream()
         print colorize('Done!', COLORS.WARNING)
     sys.exit(0)

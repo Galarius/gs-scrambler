@@ -6,9 +6,7 @@
 //  Copyright (c) 2015 galarius. All rights reserved.
 //
 
-#include "gsc_sync.h"
 #include "gsc_helper.h"
-
 #include <stdio.h>
 #include <algorithm>    // std::copy, memset
 #include <cstdlib>
@@ -18,32 +16,23 @@ namespace gsc {
 /**
  *  @param mark array of bits
  *  @param size array size
- *  @param bufferMaxSize size of accumulative buffer
+ *  @param bufferSizeMax size of accumulative buffer
  */
 template <typename IntegerType, typename BinaryType>
-Sync<IntegerType, BinaryType>::Sync(const BinaryType * const mark, size_t size, size_t bufferMaxSize) {
-    m_mark.buffer = 0;
-    m_mark.bufferMaxSize = size;
-    m_mark.bufferSize = size;
-    new_arr_primitive_s(&m_mark.buffer, m_mark.bufferMaxSize);
-    m_accBuffer.buffer = 0;
-    m_accBuffer.bufferMaxSize = bufferMaxSize;
-    m_accBuffer.bufferSize = 0;
-    new_arr_primitive_s(&m_accBuffer.buffer, m_accBuffer.bufferMaxSize);
-    memset(m_accBuffer.buffer, 0, m_accBuffer.bufferMaxSize);
-    std::copy(mark, mark + size, m_mark.buffer);
-    m_pointer = m_mark.buffer;
+Sync<IntegerType, BinaryType>::Sync(const BinaryType * const mark, size_t size, size_t bufferSizeMax) {
+    mark_ = new std::vector<BinaryType>(mark, mark + size);
+    accumulator_.reserve(bufferSizeMax);
+    
     m_synchronized = false;
 }
 
 template <typename IntegerType, typename BinaryType>
 Sync<IntegerType, BinaryType>::Sync::~Sync()
 {
-    delete_arr_primitive_s(&m_mark.buffer);
-    delete_arr_primitive_s(&m_accBuffer.buffer);
+    delete mark_;
+    mark_ = nullptr;
 }
 
-    
 /**
  *  Insert marker inside the container.
  *
@@ -56,21 +45,20 @@ Sync<IntegerType, BinaryType>::Sync::~Sync()
 template <typename IntegerType, typename BinaryType>
 bool Sync<IntegerType, BinaryType>::put(IntegerType **container, size_t size)
 {
-    if(m_synchronized)
-    {
-        printf("resetting...\n");
-        reset();
-    }
+    size_t m_size = mark_->size();
+    assert(size >= m_size && "Container is too small.");
+    assert(!m_synchronized && "Already synchronized.");
     
-    const int step = 1;
-    size_t l = integrate(container, size, 0, step, m_pointer, m_mark.bufferSize);
-    m_pointer += l;
-    bool result = l >= m_mark.bufferSize;
+    const size_t step = 1;
+    BinaryType *m_ptr = &mark_->front();
+    size_t integrate_len = integrate<IntegerType, BinaryType>(container, size, 0, step, m_ptr, m_size);
+    bool result = integrate_len == m_size;
+    
+    assert(result && "Failed to integrate sync marker.");
+    
     if(result) {
         m_synchronized = true;
         printf("\033[95m[gsc_core]\033[0m: \033[93m synchronized \033[0m\n");
-    } else {
-        m_mark.bufferSize -= l;    // new marker size
     }
     return result;
 }
@@ -87,35 +75,35 @@ bool Sync<IntegerType, BinaryType>::put(IntegerType **container, size_t size)
 template <typename IntegerType, typename BinaryType>
 bool Sync<IntegerType, BinaryType>::scan(const IntegerType *const container, size_t size, size_t &endIdx)
 {
-    if(m_synchronized)
-    {
-        printf("already synchronized\n");
-        return true;
+    
+    assert(mark_->size() > 0 && "ArgumentError");
+    assert(accumulator_.capacity() % size == 0 && "ArgumentError");
+    assert(!m_synchronized && "Already synchronized.");
+    
+    if(accumulator_.size() == accumulator_.capacity()) {
+        accumulator_.erase(accumulator_.begin() + size);    // delete first size elements
     }
     
-    size_t idx;
-    if(m_accBuffer.bufferSize >= m_accBuffer.bufferMaxSize) {
-        m_accBuffer.bufferSize = idx = 0;
-    } else {
-        idx = m_accBuffer.bufferSize;
-    }
-    size_t j = idx;
-    for(size_t i = 0; i < size; ++i, ++j)
+    for(size_t i = 0; i < size; ++i)
     {
         BinaryType *bits = 0;
         integerToBits(container[i], &bits);
-        m_accBuffer.buffer[j] = tmp_abs(bits[0]);
+        accumulator_.push_back(tmp_abs(bits[0]));
         delete_arr_primitive_s(&bits);
-        ++m_accBuffer.bufferSize;
     }
     
+    assert(accumulator_.capacity() >= accumulator_.size() && "ArgumentError");
+    
     size_t pos;
-    bool result = contains(m_mark.buffer, m_mark.bufferMaxSize, m_accBuffer.buffer, m_accBuffer.bufferSize, pos);
+
+    BinaryType *m_ptr = &mark_->front();
+    BinaryType *a_ptr = &accumulator_.front();
+    bool result = contains<BinaryType>(m_ptr, mark_->size(), a_ptr, accumulator_.size(), pos);
     
     // index of the last integrated bit that was recovered from the original (not accumulative) container
     if(result) {
         m_synchronized = true;
-        endIdx = pos + m_mark.bufferMaxSize - idx;
+        endIdx = pos + accumulator_.size() - (accumulator_.end() - accumulator_.begin());
         printf("\033[95m[gsc_core]\033[0m: \033[93m synchronized \033[0m\n");
     }
     
@@ -129,23 +117,21 @@ bool Sync<IntegerType, BinaryType>::scan(const IntegerType *const container, siz
 template <typename IntegerType, typename BinaryType>
 void Sync<IntegerType, BinaryType>::reset()
 {
-    memset(m_accBuffer.buffer, 0, m_accBuffer.bufferMaxSize);
-    m_pointer = m_mark.buffer;
-    m_mark.bufferSize = m_mark.bufferMaxSize;
+    accumulator_.erase(accumulator_.begin() + accumulator_.capacity());
     m_synchronized = false;
 }
     
 template <typename IntegerType, typename BinaryType>
-bool Sync<IntegerType, BinaryType>::isSynchronized() const
+inline bool Sync<IntegerType, BinaryType>::isSynchronized() const
 {
     return m_synchronized;
 }
     
 
 template <typename IntegerType, typename BinaryType>
-size_t Sync<IntegerType, BinaryType>::markerSize() const
+inline size_t Sync<IntegerType, BinaryType>::markerSize() const
 {
-    return m_mark.bufferMaxSize;
+    return mark_->size();
 }
     
 }

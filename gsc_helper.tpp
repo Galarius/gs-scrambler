@@ -93,8 +93,9 @@ void integerArrayToStr(IntegerType *src, size_t size, char **dest)
     assert(!(*dest) && "ArgumentsError");
     
     new_arr_primitive_s(dest, size + 1);
-    for(size_t  i = 0; i < size; ++i)
+    for(size_t  i = 0; i < size; ++i) {
         (*dest)[i] = static_cast<char>(src[i]);
+    }
     (*dest)[size] = '\0';
 }
 /**
@@ -116,8 +117,9 @@ void integerArrayToStr(IntegerType *src, size_t size, wchar_t **dest)
     assert(!(*dest) && "ArgumentsError");
     
     new_arr_primitive_s(dest, size + 1);
-    for(size_t  i = 0; i < size; ++i)
+    for(size_t  i = 0; i < size; ++i) {
         (*dest)[i] = static_cast<wchar_t>(src[i]);
+    }
     (*dest)[size] = '\0';
 }
 //-------------------------------------------------------------------------
@@ -241,7 +243,7 @@ size_t dynamicStep(IntegerType *src, size_t size, size_t k)
 template<typename IntegerType>
 size_t calculate_semi_period(const IntegerType* const data, size_t n)
 {
-    float_t *data_processed = 0;
+    float *data_processed = 0;
     size_t semi_period = calculate_semi_period(data, n, &data_processed);
     delete_arr_primitive_s(&data_processed);
     return semi_period;
@@ -266,8 +268,8 @@ size_t calculate_semi_period(const IntegerType* const data, size_t n, float **ou
 //        printf("%i ", data[i]);
 //    printf("\n");
     
+    new_arr_primitive_s<float>(out_data, n);
     float *data_processed = *out_data;
-    new_arr_primitive_s<float>(&data_processed, n);
     
     size_t sum = 0;
     size_t k = 0;
@@ -287,8 +289,9 @@ size_t calculate_semi_period(const IntegerType* const data, size_t n, float **ou
     
     // find min without first and last l elements
     for(size_t p = l+1; p < n - l; ++p) {
-        if(data_processed[p] < data_processed[semi_period] && data_processed[p])
+        if(data_processed[p] < data_processed[semi_period] && data_processed[p]) {
             semi_period = p;
+        }
     }
     
     printf("semi_period: %zu\n", semi_period);
@@ -308,7 +311,7 @@ size_t calculate_semi_period(const IntegerType* const data, size_t n, float **ou
  *  @return          the amount of data that was integrated
  */
 template<typename IntegerType, typename BinaryType>
-size_t integrate(IntegerType **container, size_t c_size, IntegerType begin, IntegerType step, const BinaryType * const info, size_t i_size)
+size_t integrate(IntegerType **container, size_t c_size, size_t begin, size_t step, const BinaryType * const info, size_t i_size)
 {
     assert(step > 0 && "ArgumentError");
 

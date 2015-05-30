@@ -9,8 +9,7 @@
 #ifndef __core__gsc_sync__
 #define __core__gsc_sync__
 
-#include "gsc_types.h"
-
+#include "gsc_buffer.h"
 
 namespace gsc {
     
@@ -66,13 +65,14 @@ private:
 
     
 private:
-    BufferAcc<BinaryType> m_mark;         // synchronization marker
-    BufferAcc<BinaryType> m_accBuffer;    // synchronization accumulative buffer
-    BinaryType *m_pointer;              // current position in marker
-    
+    std::vector<BinaryType> *mark_;             // synchronization marker
+    std::vector<BinaryType> accumulator_;      // synchronization accumulative buffer
     bool m_synchronized;
 };
     
 }
+
+/* Include implementation for template class */
+#include "gsc_sync.tpp"
 
 #endif /* defined(__core__gsc_sync__) */

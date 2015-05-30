@@ -1,45 +1,40 @@
 //
-//  gsc_core.cpp
+//  gsc_core.tpp
 //  core
 //
 //  Created by Galarius on 24.05.15.
 //  Copyright (c) 2015 galarius. All rights reserved.
 //
 
-#include "gsc_core.h"
 #include "gsc_helper.h"
+#include "gsc_acc_buffer.h"
 #include <stdio.h>
-
 #include <algorithm>    // std::copy, memset
 
 namespace gsc {
-    
 /*----------------------------------------------------------------------------*/
 /**
  *  @param mark array of bits
  *  @param size mark array size
  *  @param frameSize the size of frame buffer
- *  @param scanBufferMaxSize the size for acummulative buffer used for sync marker detection, normally 3 * frameSize.
+ *  @param scanbufferSizeMax the size for acummulative buffer used for sync marker detection, normally 3 * frameSize.
  */
 template <typename IntegerType, typename BinaryType>
-Core<IntegerType, BinaryType>::Core(const BinaryType * const mark, size_t size, size_t frameSize, size_t scanBufferMaxSize) :
+Core<IntegerType, BinaryType>::Core(const BinaryType * const mark, size_t size, size_t frameSize, size_t scanbufferSizeMax) :
         m_synchronizer(nullptr) {
-    m_frame.buffer = 0;
-    m_frame.bufferMaxSize = frameSize;
-    m_frame.bufferSize = 0;
-    new_arr_primitive_s(&m_frame.buffer, m_frame.bufferMaxSize);
-    memset(m_frame.buffer, 0, m_frame.bufferMaxSize);
-    m_seed.buffer = 0;
-    m_seed.bufferMaxSize = frameSize;
-    m_seed.bufferSize = 0;
-    new_arr_primitive_s(&m_seed.buffer, m_seed.bufferMaxSize);
-    memset(m_seed.buffer, 0, m_seed.bufferMaxSize);
-    m_synchronizer = new Sync<IntegerType, BinaryType>(mark, size, scanBufferMaxSize);
+            
+    allocate_buffer(m_frame, frameSize);
+    allocate_buffer(m_seed, frameSize);
+            
+    m_synchronizer = new Sync<IntegerType, BinaryType>(mark, size, scanbufferSizeMax);
 }
 
 template <typename IntegerType, typename BinaryType>
 Core<IntegerType, BinaryType>::~Core() {
-    delete_arr_primitive_s(&m_frame.buffer);
+    
+    deallocate_buffer(m_frame);
+    deallocate_buffer(m_seed);
+    
     delete m_synchronizer;
 }
 /*----------------------------------------------------------------------------*/
@@ -63,7 +58,7 @@ size_t Core<IntegerType, BinaryType>::hide(const IntegerType * const seed, size_
         // synchronized, continue inserting info
         size_t semi_p = calculate_semi_period(seed, s_size);
         if(semi_p != -1) {
-            integrated = integrate(container, c_size, semi_p, 1, info, i_size);
+            integrated = integrate<IntegerType, BinaryType>(container, c_size, semi_p, 1, info, i_size);
         }
     } else {
         // insert sync mark
@@ -84,40 +79,36 @@ size_t Core<IntegerType, BinaryType>::hide(const IntegerType * const seed, size_
 template <typename IntegerType, typename BinaryType>
     size_t Core<IntegerType, BinaryType>::recover(const IntegerType * const seed, size_t s_size, const IntegerType * const container, size_t c_size, BinaryType **info)
 {
-    if(s_size != c_size)
-    {
-        printf("[gsc_core error]: s_size != c_size. Not supported yet.");
-        return 0;
-    }
+    assert(s_size == c_size && "[gsc_core error]: s_size != c_size. Not supported yet.");
     
     size_t recovered = 0;
     if (m_synchronizer->isSynchronized()) {
         // synchronized
         size_t c_idx = 0;                 // start index in container to start accumulation from
-        if(m_frame.bufferSize < 0) {
+        if(m_frame.bufferSizeCurrent < 0) {
             // skip m_frameSize samples
-            c_idx = -m_frame.bufferSize;
-            m_frame.bufferSize = 0;
-            m_seed.bufferSize = 0;
-        } else if (m_frame.bufferSize >= m_frame.bufferMaxSize) {
-            m_frame.bufferSize = 0;
-            m_seed.bufferSize = 0;
+            c_idx = -m_frame.bufferSizeCurrent;
+            m_frame.bufferSizeCurrent = 0;
+            m_seed.bufferSizeCurrent = 0;
+        } else if (m_frame.bufferSizeCurrent >= m_frame.bufferSizeMax) {
+            m_frame.bufferSizeCurrent = 0;
+            m_seed.bufferSizeCurrent = 0;
         }
-        for(size_t i = m_frame.bufferSize; i < m_frame.bufferMaxSize && c_idx < c_size; ++i, ++c_idx) {
+        for(size_t i = m_frame.bufferSizeCurrent; i < m_frame.bufferSizeMax && c_idx < c_size; ++i, ++c_idx) {
             m_frame.buffer[i] = container[c_idx];
-            ++m_frame.bufferSize;
+            ++m_frame.bufferSizeCurrent;
             m_seed.buffer[i]  = seed[c_idx];
-            ++m_seed.bufferSize;
+            ++m_seed.bufferSizeCurrent;
         }
         
-        if(m_frame.bufferSize == m_frame.bufferMaxSize)
+        if(m_frame.bufferSizeCurrent == m_frame.bufferSizeMax)
         {
-            size_t semi_p = calculate_semi_period(m_seed.buffer, m_seed.bufferSize);
+            size_t semi_p = calculate_semi_period(m_seed.buffer, m_seed.bufferSizeCurrent);
             if(semi_p != -1) {
-                recovered = deintegrate(m_frame.buffer, m_frame.bufferSize, semi_p, 1, info);
+                recovered = deintegrate(m_frame.buffer, m_frame.bufferSizeCurrent, semi_p, 1, info);
             }
-            m_frame.bufferSize = 0;
-            m_seed.bufferSize = 0;
+            m_frame.bufferSizeCurrent = 0;
+            m_seed.bufferSizeCurrent = 0;
         }
     } else {
         size_t end_idx;
@@ -134,21 +125,20 @@ template <typename IntegerType, typename BinaryType>
                 for(int i = 0; i < substruct_size && c_idx < c_size; ++i, ++c_idx)
                 {
                     m_frame.buffer[i] = container[c_idx];
-                    ++m_frame.bufferSize;
+                    ++m_frame.bufferSizeCurrent;
                     m_seed.buffer[i] = seed[c_idx];
-                    ++m_seed.bufferSize;
+                    ++m_seed.bufferSizeCurrent;
                     --substruct_size;
                 }
             } else {
                 size_t c_idx = end_idx;
                 for(int i = 0; i < substruct_size && c_idx < c_size; ++i, ++c_idx) {
-                    --m_frame.bufferSize;
-                    --m_seed.bufferSize;
+                    --m_frame.bufferSizeCurrent;
+                    --m_seed.bufferSizeCurrent;
                 }
             }
         }
     }
     return recovered;
 }
-    
 }

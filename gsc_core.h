@@ -10,6 +10,7 @@
 #define __core__gsc_core__
 
 #include "gsc_sync.h"
+#include "gsc_acc_buffer.h"
 
 namespace gsc {
     
@@ -27,7 +28,7 @@ public:
      *  @param scanBufferMaxSize the size for acummulative buffer used for sync marker detection, normally 3 * frameSize.
      */
     Core(const BinaryType * const mark, size_t size, size_t frameSize, size_t scanBufferMaxSize);
-    virtual ~Core();
+    ~Core();
     /**
      *  Hide 'info' inside 'container'.
      *
@@ -39,7 +40,7 @@ public:
      *  @param i_size    size of the info
      *  @return          the amount of data that was integrated
      */
-    virtual size_t hide(const IntegerType * const seed, size_t s_size, IntegerType **container, size_t c_size, const BinaryType * const info, size_t i_size);
+    size_t hide(const IntegerType * const seed, size_t s_size, IntegerType **container, size_t c_size, const BinaryType * const info, size_t i_size);
     /**
      *  Recover 'info' from the container
      *
@@ -50,19 +51,22 @@ public:
      *  @param info      buffer to store info in
      *  @return          message length
      */
-    virtual size_t recover(const IntegerType * const seed, size_t s_size, const IntegerType * const container, size_t c_size, BinaryType **info);
+    size_t recover(const IntegerType * const seed, size_t s_size, const IntegerType * const container, size_t c_size, BinaryType **info);
     
 private:
     Core()                       = delete;
     Core(Core const&)            = delete;
     void operator=(Core const&)  = delete;
     
-protected:
-    BufferAcc<IntegerType> m_frame;    // container buffer
-    BufferAcc<IntegerType> m_seed;     // seed container buffer (to calculate unique step)
+private:
+    AccBuffer<IntegerType> m_frame;    // container buffer
+    AccBuffer<IntegerType> m_seed;     // seed container buffer (to calculate unique step)
     Sync<IntegerType, BinaryType> *m_synchronizer;
 };
     
 }
+
+/* Include implementation for template class */
+#include "gsc_core.tpp"
 
 #endif /* defined(__core__gsc_core__) */

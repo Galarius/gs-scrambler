@@ -1,7 +1,11 @@
-from libcpp cimport bool
+cdef extern from "stdint.h" nogil:
+    ctypedef   signed char  int8_t
+    ctypedef   signed short int16_t
+
 cdef extern from "gsc_helper.h":
-    cdef void str_to_short_arr "gsc::strToIntegerArray<short int>"(char *src, short int **dest, int size);
-    cdef void short_arr_to_str "gsc::integerArrayToStr<short int>"(short int *src, char **dest, int size);
-    cdef short int short_to_binary_arr "gsc::integerToBits<short int>"(short int x, bool **binary)
-    cdef void binary_arr_to_short "gsc::bitsToInteger<short int>"(bool *binary, short int &x)
+    cdef size_t str_to_short_arr "gsc::strToIntegerArray<int16_t>"(char *src, size_t size, int16_t **dest);
+    cdef void short_arr_to_str "gsc::integerArrayToStr<int16_t>"(int16_t *src, size_t size, char **dest);
+    cdef size_t short_to_binary_arr "gsc::integerToBits<int16_t, int8_t>"(int16_t x, int8_t **binary)
+    cdef void binary_arr_to_short "gsc::bitsToInteger<int8_t, int16_t>"(int8_t *binary, int16_t &x)
     cdef void delete_char_arr "gsc::delete_arr_primitive_s<char>"(char **arr)
+    cdef size_t calculate_semi_period_short "gsc::calculate_semi_period<int16_t>" (const int16_t* data, size_t n, float **out_data);

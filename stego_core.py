@@ -49,12 +49,12 @@ class StegoCore:
         """
 
         self.stego_mode = stego_mode    # encode or decode
-        self.message_to_proc_part = np.empty(0, dtype=np.uint8)    # the part of message that left to be integrated
+        self.message_to_proc_part = np.empty(0, dtype=np.int8)    # the part of message that left to be integrated
         self.skip_frames = 0            # how many frames shoud be skipped
         self.mediate_length = 0         # length of message to recover (length of bits array)
         # synchronization
         self.sync_mark = ''                 # synchronization mark
-        self.sync_mark_encoded_array = np.empty(0, dtype=np.uint8)   # synchronization mark encoded
+        self.sync_mark_encoded_array = np.empty(0, dtype=np.int8)   # synchronization mark encoded
         self.sync_mark_temp_encoded_array = []  # list that may contain sync mark
         if stego_mode == StegoMode.Hide:
             if StegoCore.SKIP_FRAMES_KEY in kwargs:
@@ -155,7 +155,7 @@ class StegoCore:
         # 4) Convert 2D array to 1D array
         half_linearize = msg_matrix_encoded_array.ravel()
         # 5) linearize completely
-        self.message_to_proc_part = np.empty(0, dtype=np.uint8)
+        self.message_to_proc_part = np.empty(0, dtype=np.int8)
         for seq in half_linearize:
             self.message_to_proc_part = np.append(self.message_to_proc_part, seq)
         # print self.message_to_proc_part.tolist()
@@ -200,6 +200,6 @@ class StegoCore:
         # 4) Convert 2D array to 1D array
         half_linearize = sync_marker_matrix_encoded_array.ravel()
         # 5) linearize completely
-        self.sync_mark_encoded_array = np.empty(0, dtype=np.uint8)
+        self.sync_mark_encoded_array = np.empty(0, dtype=np.int8)
         for seq in half_linearize:
             self.sync_mark_encoded_array = np.append(self.sync_mark_encoded_array, seq)
