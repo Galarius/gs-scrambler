@@ -9,6 +9,7 @@ PyAudio required.
 __author__ = 'Ilya Shoshin'
 __copyright__ = 'Copyright 2015, Ilya Shoshin'
 
+from gs_settings import StegoSettings
 
 def __detect_device_index(p, device_name):
     """
@@ -26,31 +27,24 @@ def __detect_device_index(p, device_name):
     return idx
 
 
-def detect_sound_aggregator_device_idx(p):
+def detect_virtual_audio_device_idx(p):
     """
-    Detect OS X aggregator virtual device index
+    Detect virtual audio device index
     :param p: PyAudio instance
     :return: device index
     """
-    return __detect_device_index(p, "StegoScrambler")
-
-
-def detect_sound_flower_device_idx(p):
-    """
-    Detect SoundFlower virtual device index
-    :param p: PyAudio instance
-    :return: device index
-    """
-    return __detect_device_index(p, "Soundflower (2ch)")
+    StegoSettings.Instance().deserialize()  # load settings
+    return __detect_device_index(p, StegoSettings.Instance().virtual_audio_device_name)
 
 
 def detect_build_in_input_device_idx(p):
     """
-    Detect Built-in Microph device index
+    Detect Built-in input device index
     :param p: PyAudio instance
     :return: device index
     """
-    return __detect_device_index(p, "Built-in Microph")
+    StegoSettings.Instance().deserialize()  # load settings
+    return __detect_device_index(p, StegoSettings.Instance().build_in_input_audio_device_name)
 
 
 def detect_build_in_output_device_idx(p):
@@ -59,7 +53,8 @@ def detect_build_in_output_device_idx(p):
     :param p: PyAudio instance
     :return: device index
     """
-    return __detect_device_index(p, "Built-in Output")
+    StegoSettings.Instance().deserialize()  # load settings
+    return __detect_device_index(p, StegoSettings.Instance().build_in_output_audio_device_name)
 
 
 def validate_audio_setup(p, input_format, input_channels, rate, input_device):

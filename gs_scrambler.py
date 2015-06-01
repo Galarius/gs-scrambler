@@ -119,20 +119,20 @@ class StegoScramblerSession:
             if not self.enable_processing:
                 # left, right = stego_helper.audio_decode(in_data, SAMPLE_WIDTH, CHANNELS)
                 # process frames
-                #right = np.array([7 for i in range(1024)], dtype=np.int16)
-                #left = np.copy(right)
-                # print left, right[0]
+                # right = np.array([1024 for i in range(1024)], dtype=np.int16)
+                # left = np.copy(right)
+                # print right
                 # encode back
-                #processed_data = stego_helper.audio_encode((left, right), np_format)
-                #return processed_data, pyaudio.paContinue
+                # processed_data = gs_helper.audio_encode((left, right))
+                # return processed_data, pyaudio.paContinue
                 return in_data, pyaudio.paContinue
             #with elapsed_timer() as elapsed:
             # decode frames
             left, right = gs_helper.audio_decode(in_data, CHANNELS)
             # process frames
             left, right = self.core.process(left, right)
-            #right = np.array([i for i in range(1024)], dtype=np.int16)
-            #print right
+            # right = np.array([1024 for i in range(1024)], dtype=np.int16)
+            # print right
             if not len(self.core.message_to_proc_part):
                 self.enable_processing = False
             # encode back
@@ -147,7 +147,7 @@ class StegoScramblerSession:
             # with elapsed_timer() as elapsed:
             # decode frames
             left, right = gs_helper.audio_decode(in_data, CHANNELS)
-            #print right
+            # print right
             # process frames
             left, right = self.core.process(left, right)
             # encode back
@@ -175,13 +175,13 @@ class StegoScramblerSession:
             # build-in input to sound flower
             format, channels, rate = FORMAT, CHANNELS, RATE
             input_dev_idx = gs_device_info.detect_build_in_input_device_idx(self.p_audio)
-            output_dev_idx = gs_device_info.detect_sound_flower_device_idx(self.p_audio)
+            output_dev_idx = gs_device_info.detect_virtual_audio_device_idx(self.p_audio)
             enable_input, enable_output = True, True
         elif self.stream_mode == StreamMode.StreamFromSoundFlowerToBuildInOutput:
             print colorize("Opening stream...", COLORS.OKGREEN)
             # sound flower to build-in output
             format, channels, rate = FORMAT, CHANNELS, RATE
-            input_dev_idx = gs_device_info.detect_sound_flower_device_idx(self.p_audio)
+            input_dev_idx = gs_device_info.detect_virtual_audio_device_idx(self.p_audio)
             output_dev_idx = gs_device_info.detect_build_in_output_device_idx(self.p_audio)
             enable_input, enable_output = True, True
         else:
@@ -435,6 +435,7 @@ class InteractiveStegoScrambler(cmd.Cmd):
     def __init__(self):
         cmd.Cmd.__init__(self)
         self.session = None
+        self.debug = False
         print colorize("Welcome!", COLORS.WARNING)
 
     def print_err(self, fa_name):
@@ -445,15 +446,26 @@ class InteractiveStegoScrambler(cmd.Cmd):
         Create session with specified mode.
 
         usage:
-            connect m=<mode>
+            connect m=<mode>&d=<debug>
 
         :param mode:
             0 - record sound from mic, hide message and redirect it to SoundFlower virtual device
             1 - receive sound from  SoundFlower virtual device, recover message and play it in dynamics
+        :param debug
+            0 - false (default)
+            1 - true
         """
         args = urlparse.parse_qs(line)
-        mode = int(args['m'][0]) if len(args.keys()) > 0 else 0
-
+        try:
+            mode = int(args['m'][0])
+        except KeyError:
+            mode = 0
+        try:
+            self.debug = bool(args['d'][0])
+            if self.debug:
+                print colorize("Debug mode.", COLORS.WARNING)
+        except KeyError:
+            pass
         if not (mode == StreamMode.StreamFromBuildInInputToSoundFlower or
                 mode == StreamMode.StreamFromSoundFlowerToBuildInOutput):
             self.print_err(inspect.currentframe().f_code.co_name.replace('do_', ''))
@@ -478,18 +490,19 @@ class InteractiveStegoScrambler(cmd.Cmd):
         :param msg_file_name: path to the text file with message
         :param key: key to encode message (unsigned integer)
         """
-        #args = urlparse.parse_qs(line)
-
-        #try:
-        #    msg_file_name, key = args['f'][0], int(args['k'][0])
-        #    if msg_file_name.strip() == '' or key <= 0:
-                #self.print_err(inspect.currentframe().f_code.co_name.replace('do_', ''))
-                #return
-        msg_file_name = 'data/msg.txt'
-        key = 7
-        #except KeyError:
-        #    self.print_err(inspect.currentframe().f_code.co_name.replace('do_', ''))
-        #    return
+        if self.debug:
+            msg_file_name = 'data/msg.txt'
+            key = 7
+        else:
+            args = urlparse.parse_qs(line)
+            try:
+                msg_file_name, key = args['f'][0], int(args['k'][0])
+                if msg_file_name.strip() == '' or key <= 0:
+                    self.print_err(inspect.currentframe().f_code.co_name.replace('do_', ''))
+                    return
+            except KeyError:
+                self.print_err(inspect.currentframe().f_code.co_name.replace('do_', ''))
+                return
 
         self.session.hide(msg_file_name, key)
 
@@ -510,19 +523,21 @@ class InteractiveStegoScrambler(cmd.Cmd):
         :param user_key: key to decode message      (unsigned integer)
         :param msg_file_name: name of the file to save message to
         """
-        args = urlparse.parse_qs(line)
-        # try:
-        #     session_key, user_key, msg_file_name = int(args['s'][0]), int(args['k'][0]), args['f'][0]
-        #     if msg_file_name.strip() == '' or user_key <= 0 or session_key <= 0:
-        #         self.print_err(inspect.currentframe().f_code.co_name.replace('do_', ''))
-        #         return
-        # except KeyError:
-        #     self.print_err(inspect.currentframe().f_code.co_name.replace('do_', ''))
-        #     return
 
-        msg_file_name = 'data/msg_r.txt'
-        user_key = 7
-        session_key = gs_io.load_data_to_recover("data/recover_info.txt")
+        if self.debug:
+            msg_file_name = 'data/msg_r.txt'
+            user_key = 7
+            session_key = gs_io.load_data_to_recover("data/recover_info.txt")
+        else:
+            args = urlparse.parse_qs(line)
+            try:
+                session_key, user_key, msg_file_name = int(args['s'][0]), int(args['k'][0]), args['f'][0]
+                if msg_file_name.strip() == '' or user_key <= 0 or session_key <= 0:
+                    self.print_err(inspect.currentframe().f_code.co_name.replace('do_', ''))
+                    return
+            except KeyError:
+                self.print_err(inspect.currentframe().f_code.co_name.replace('do_', ''))
+                return
 
         self.session.recover(session_key, user_key, msg_file_name)
 
@@ -547,7 +562,7 @@ class InteractiveStegoScrambler(cmd.Cmd):
 if __name__ == "__main__":
     argv = sys.argv[1:]
     try:
-       opts, args = getopt.getopt(argv, "hsi:m:o:k:l:r:", ["ifile=", "mfile=", "ofile=", "key=", "length=", "recover_info="])
+       opts, args = getopt.getopt(argv, "hsdi:m:o:k:l:r:", ["ifile=", "mfile=", "ofile=", "key=", "length=", "recover_info="])
     except getopt.GetoptError:
         print_usage()
         sys.exit(2)
@@ -566,6 +581,9 @@ if __name__ == "__main__":
         if opt == '-s':
             # run interactive prompt
             InteractiveStegoScrambler().cmdloop()
+        if opt == '-d':
+            # run interactive prompt
+            InteractiveStegoScrambler().cmdloop(True)
         else:
             # run automatic mode (for direct file processing)
             main(opts)
