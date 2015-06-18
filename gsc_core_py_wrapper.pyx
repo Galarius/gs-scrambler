@@ -18,16 +18,16 @@ cdef extern from "stdint.h" nogil:
 
 cdef extern from "gsc_core.h" namespace "gsc":
     cdef cppclass Core[I, B]:
-        Core(const B * mark, size_t size, size_t frameSize, size_t scanBufferMaxSize) except +
+        Core(const B * mark, size_t size, size_t frameSize, size_t scanBufferMaxSize, int security_or_capacity) except +
         size_t hide(const I * const seed, size_t s_size, I **container, size_t c_size, const B * const info, size_t i_size);
         size_t recover(const I * seed, size_t s_size, const I * container, size_t c_size, B **info);
 
 cdef class PyCore:
     cdef Core[int16_t, int8_t] *thisptr      # hold a C++ instance which we're wrapping
-    def __cinit__(self, np.ndarray[np.int8_t, ndim=1, mode="c"] mark not None, frame_size, scan_buffer_max_size):
+    def __cinit__(self, np.ndarray[np.int8_t, ndim=1, mode="c"] mark not None, frame_size, scan_buffer_max_size, security_or_capacity):
         cdef size_t size = mark.size
         cdef int8_t *bptr = <int8_t*> &mark[0]
-        self.thisptr = new Core[int16_t, int8_t](bptr, size, frame_size, scan_buffer_max_size)
+        self.thisptr = new Core[int16_t, int8_t](bptr, size, frame_size, scan_buffer_max_size, security_or_capacity)
 
     def __dealloc__(self):
         del self.thisptr

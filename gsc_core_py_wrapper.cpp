@@ -752,7 +752,7 @@ typedef npy_cdouble __pyx_t_5numpy_complex_t;
  * 
  * cdef class PyCore:             # <<<<<<<<<<<<<<
  *     cdef Core[int16_t, int8_t] *thisptr      # hold a C++ instance which we're wrapping
- *     def __cinit__(self, np.ndarray[np.int8_t, ndim=1, mode="c"] mark not None, frame_size, scan_buffer_max_size):
+ *     def __cinit__(self, np.ndarray[np.int8_t, ndim=1, mode="c"] mark not None, frame_size, scan_buffer_max_size, security_or_capacity):
  */
 struct __pyx_obj_8gsc_core_PyCore {
   PyObject_HEAD
@@ -950,6 +950,8 @@ static PyObject *__Pyx_Import(PyObject *name, PyObject *from_list, int level);
 
 static CYTHON_INLINE size_t __Pyx_PyInt_As_size_t(PyObject *);
 
+static CYTHON_INLINE int __Pyx_PyInt_As_int(PyObject *);
+
 #ifndef __Pyx_CppExn2PyErr
 #include <new>
 #include <typeinfo>
@@ -990,8 +992,6 @@ static void __Pyx_CppExn2PyErr() {
 #endif
 
 static CYTHON_INLINE PyObject* __Pyx_PyInt_From_int(int value);
-
-static CYTHON_INLINE int __Pyx_PyInt_As_int(PyObject *);
 
 static CYTHON_INLINE int16_t __Pyx_PyInt_As_int16_t(PyObject *);
 
@@ -1162,7 +1162,7 @@ int __pyx_module_is_main_gsc_core = 0;
 static PyObject *__pyx_builtin_ValueError;
 static PyObject *__pyx_builtin_range;
 static PyObject *__pyx_builtin_RuntimeError;
-static int __pyx_pf_8gsc_core_6PyCore___cinit__(struct __pyx_obj_8gsc_core_PyCore *__pyx_v_self, PyArrayObject *__pyx_v_mark, PyObject *__pyx_v_frame_size, PyObject *__pyx_v_scan_buffer_max_size); /* proto */
+static int __pyx_pf_8gsc_core_6PyCore___cinit__(struct __pyx_obj_8gsc_core_PyCore *__pyx_v_self, PyArrayObject *__pyx_v_mark, PyObject *__pyx_v_frame_size, PyObject *__pyx_v_scan_buffer_max_size, PyObject *__pyx_v_security_or_capacity); /* proto */
 static void __pyx_pf_8gsc_core_6PyCore_2__dealloc__(struct __pyx_obj_8gsc_core_PyCore *__pyx_v_self); /* proto */
 static PyObject *__pyx_pf_8gsc_core_6PyCore_4hide(struct __pyx_obj_8gsc_core_PyCore *__pyx_v_self, PyArrayObject *__pyx_v_seed, PyArrayObject *__pyx_v_container, PyArrayObject *__pyx_v_info); /* proto */
 static PyObject *__pyx_pf_8gsc_core_6PyCore_6recover(struct __pyx_obj_8gsc_core_PyCore *__pyx_v_self, PyArrayObject *__pyx_v_seed, PyArrayObject *__pyx_v_container); /* proto */
@@ -1228,6 +1228,7 @@ static char __pyx_k_RuntimeError[] = "RuntimeError";
 static char __pyx_k_bin_arr_to_integer[] = "bin_arr_to_integer";
 static char __pyx_k_integer_to_bin_arr[] = "integer_to_bin_arr";
 static char __pyx_k_scan_buffer_max_size[] = "scan_buffer_max_size";
+static char __pyx_k_security_or_capacity[] = "security_or_capacity";
 static char __pyx_k_ndarray_is_not_C_contiguous[] = "ndarray is not C contiguous";
 static char __pyx_k_Users_galarius_Documents_Projec[] = "/Users/galarius/Documents/!Projects/Steganography/Python/gs_scrambler/gsc_core_py_wrapper.pyx";
 static char __pyx_k_unknown_dtype_code_in_numpy_pxd[] = "unknown dtype code in numpy.pxd (%d)";
@@ -1270,6 +1271,7 @@ static PyObject *__pyx_n_s_range;
 static PyObject *__pyx_n_s_retval;
 static PyObject *__pyx_n_s_samples;
 static PyObject *__pyx_n_s_scan_buffer_max_size;
+static PyObject *__pyx_n_s_security_or_capacity;
 static PyObject *__pyx_n_s_seed;
 static PyObject *__pyx_n_s_semi_p;
 static PyObject *__pyx_n_s_shape;
@@ -1301,7 +1303,7 @@ static PyObject *__pyx_codeobj__16;
 /* "gsc_core_py_wrapper.pyx":27
  * cdef class PyCore:
  *     cdef Core[int16_t, int8_t] *thisptr      # hold a C++ instance which we're wrapping
- *     def __cinit__(self, np.ndarray[np.int8_t, ndim=1, mode="c"] mark not None, frame_size, scan_buffer_max_size):             # <<<<<<<<<<<<<<
+ *     def __cinit__(self, np.ndarray[np.int8_t, ndim=1, mode="c"] mark not None, frame_size, scan_buffer_max_size, security_or_capacity):             # <<<<<<<<<<<<<<
  *         cdef size_t size = mark.size
  *         cdef int8_t *bptr = <int8_t*> &mark[0]
  */
@@ -1312,6 +1314,7 @@ static int __pyx_pw_8gsc_core_6PyCore_1__cinit__(PyObject *__pyx_v_self, PyObjec
   PyArrayObject *__pyx_v_mark = 0;
   PyObject *__pyx_v_frame_size = 0;
   PyObject *__pyx_v_scan_buffer_max_size = 0;
+  PyObject *__pyx_v_security_or_capacity = 0;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
   int __pyx_clineno = 0;
@@ -1319,12 +1322,13 @@ static int __pyx_pw_8gsc_core_6PyCore_1__cinit__(PyObject *__pyx_v_self, PyObjec
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__cinit__ (wrapper)", 0);
   {
-    static PyObject **__pyx_pyargnames[] = {&__pyx_n_s_mark,&__pyx_n_s_frame_size,&__pyx_n_s_scan_buffer_max_size,0};
-    PyObject* values[3] = {0,0,0};
+    static PyObject **__pyx_pyargnames[] = {&__pyx_n_s_mark,&__pyx_n_s_frame_size,&__pyx_n_s_scan_buffer_max_size,&__pyx_n_s_security_or_capacity,0};
+    PyObject* values[4] = {0,0,0,0};
     if (unlikely(__pyx_kwds)) {
       Py_ssize_t kw_args;
       const Py_ssize_t pos_args = PyTuple_GET_SIZE(__pyx_args);
       switch (pos_args) {
+        case  4: values[3] = PyTuple_GET_ITEM(__pyx_args, 3);
         case  3: values[2] = PyTuple_GET_ITEM(__pyx_args, 2);
         case  2: values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
         case  1: values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
@@ -1339,38 +1343,45 @@ static int __pyx_pw_8gsc_core_6PyCore_1__cinit__(PyObject *__pyx_v_self, PyObjec
         case  1:
         if (likely((values[1] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_frame_size)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("__cinit__", 1, 3, 3, 1); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 27; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+          __Pyx_RaiseArgtupleInvalid("__cinit__", 1, 4, 4, 1); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 27; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
         }
         case  2:
         if (likely((values[2] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_scan_buffer_max_size)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("__cinit__", 1, 3, 3, 2); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 27; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+          __Pyx_RaiseArgtupleInvalid("__cinit__", 1, 4, 4, 2); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 27; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+        }
+        case  3:
+        if (likely((values[3] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_security_or_capacity)) != 0)) kw_args--;
+        else {
+          __Pyx_RaiseArgtupleInvalid("__cinit__", 1, 4, 4, 3); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 27; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
         }
       }
       if (unlikely(kw_args > 0)) {
         if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "__cinit__") < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 27; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
       }
-    } else if (PyTuple_GET_SIZE(__pyx_args) != 3) {
+    } else if (PyTuple_GET_SIZE(__pyx_args) != 4) {
       goto __pyx_L5_argtuple_error;
     } else {
       values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
       values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
       values[2] = PyTuple_GET_ITEM(__pyx_args, 2);
+      values[3] = PyTuple_GET_ITEM(__pyx_args, 3);
     }
     __pyx_v_mark = ((PyArrayObject *)values[0]);
     __pyx_v_frame_size = values[1];
     __pyx_v_scan_buffer_max_size = values[2];
+    __pyx_v_security_or_capacity = values[3];
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("__cinit__", 1, 3, 3, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 27; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+  __Pyx_RaiseArgtupleInvalid("__cinit__", 1, 4, 4, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 27; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   __pyx_L3_error:;
   __Pyx_AddTraceback("gsc_core.PyCore.__cinit__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return -1;
   __pyx_L4_argument_unpacking_done:;
   if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_mark), __pyx_ptype_5numpy_ndarray, 0, "mark", 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 27; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_r = __pyx_pf_8gsc_core_6PyCore___cinit__(((struct __pyx_obj_8gsc_core_PyCore *)__pyx_v_self), __pyx_v_mark, __pyx_v_frame_size, __pyx_v_scan_buffer_max_size);
+  __pyx_r = __pyx_pf_8gsc_core_6PyCore___cinit__(((struct __pyx_obj_8gsc_core_PyCore *)__pyx_v_self), __pyx_v_mark, __pyx_v_frame_size, __pyx_v_scan_buffer_max_size, __pyx_v_security_or_capacity);
 
   /* function exit code */
   goto __pyx_L0;
@@ -1381,7 +1392,7 @@ static int __pyx_pw_8gsc_core_6PyCore_1__cinit__(PyObject *__pyx_v_self, PyObjec
   return __pyx_r;
 }
 
-static int __pyx_pf_8gsc_core_6PyCore___cinit__(struct __pyx_obj_8gsc_core_PyCore *__pyx_v_self, PyArrayObject *__pyx_v_mark, PyObject *__pyx_v_frame_size, PyObject *__pyx_v_scan_buffer_max_size) {
+static int __pyx_pf_8gsc_core_6PyCore___cinit__(struct __pyx_obj_8gsc_core_PyCore *__pyx_v_self, PyArrayObject *__pyx_v_mark, PyObject *__pyx_v_frame_size, PyObject *__pyx_v_scan_buffer_max_size, PyObject *__pyx_v_security_or_capacity) {
   size_t __pyx_v_size;
   int8_t *__pyx_v_bptr;
   __Pyx_LocalBuf_ND __pyx_pybuffernd_mark;
@@ -1392,7 +1403,8 @@ static int __pyx_pf_8gsc_core_6PyCore___cinit__(struct __pyx_obj_8gsc_core_PyCor
   size_t __pyx_t_2;
   long __pyx_t_3;
   size_t __pyx_t_4;
-  gsc::Core<int16_t,int8_t>  *__pyx_t_5;
+  int __pyx_t_5;
+  gsc::Core<int16_t,int8_t>  *__pyx_t_6;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
   int __pyx_clineno = 0;
@@ -1409,10 +1421,10 @@ static int __pyx_pf_8gsc_core_6PyCore___cinit__(struct __pyx_obj_8gsc_core_PyCor
 
   /* "gsc_core_py_wrapper.pyx":28
  *     cdef Core[int16_t, int8_t] *thisptr      # hold a C++ instance which we're wrapping
- *     def __cinit__(self, np.ndarray[np.int8_t, ndim=1, mode="c"] mark not None, frame_size, scan_buffer_max_size):
+ *     def __cinit__(self, np.ndarray[np.int8_t, ndim=1, mode="c"] mark not None, frame_size, scan_buffer_max_size, security_or_capacity):
  *         cdef size_t size = mark.size             # <<<<<<<<<<<<<<
  *         cdef int8_t *bptr = <int8_t*> &mark[0]
- *         self.thisptr = new Core[int16_t, int8_t](bptr, size, frame_size, scan_buffer_max_size)
+ *         self.thisptr = new Core[int16_t, int8_t](bptr, size, frame_size, scan_buffer_max_size, security_or_capacity)
  */
   __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_mark), __pyx_n_s_size); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 28; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
@@ -1421,10 +1433,10 @@ static int __pyx_pf_8gsc_core_6PyCore___cinit__(struct __pyx_obj_8gsc_core_PyCor
   __pyx_v_size = __pyx_t_2;
 
   /* "gsc_core_py_wrapper.pyx":29
- *     def __cinit__(self, np.ndarray[np.int8_t, ndim=1, mode="c"] mark not None, frame_size, scan_buffer_max_size):
+ *     def __cinit__(self, np.ndarray[np.int8_t, ndim=1, mode="c"] mark not None, frame_size, scan_buffer_max_size, security_or_capacity):
  *         cdef size_t size = mark.size
  *         cdef int8_t *bptr = <int8_t*> &mark[0]             # <<<<<<<<<<<<<<
- *         self.thisptr = new Core[int16_t, int8_t](bptr, size, frame_size, scan_buffer_max_size)
+ *         self.thisptr = new Core[int16_t, int8_t](bptr, size, frame_size, scan_buffer_max_size, security_or_capacity)
  * 
  */
   __pyx_t_3 = 0;
@@ -1433,24 +1445,25 @@ static int __pyx_pf_8gsc_core_6PyCore___cinit__(struct __pyx_obj_8gsc_core_PyCor
   /* "gsc_core_py_wrapper.pyx":30
  *         cdef size_t size = mark.size
  *         cdef int8_t *bptr = <int8_t*> &mark[0]
- *         self.thisptr = new Core[int16_t, int8_t](bptr, size, frame_size, scan_buffer_max_size)             # <<<<<<<<<<<<<<
+ *         self.thisptr = new Core[int16_t, int8_t](bptr, size, frame_size, scan_buffer_max_size, security_or_capacity)             # <<<<<<<<<<<<<<
  * 
  *     def __dealloc__(self):
  */
   __pyx_t_2 = __Pyx_PyInt_As_size_t(__pyx_v_frame_size); if (unlikely((__pyx_t_2 == (size_t)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 30; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_t_4 = __Pyx_PyInt_As_size_t(__pyx_v_scan_buffer_max_size); if (unlikely((__pyx_t_4 == (size_t)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 30; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_5 = __Pyx_PyInt_As_int(__pyx_v_security_or_capacity); if (unlikely((__pyx_t_5 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 30; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   try {
-    __pyx_t_5 = new gsc::Core<int16_t,int8_t> (__pyx_v_bptr, __pyx_v_size, __pyx_t_2, __pyx_t_4);
+    __pyx_t_6 = new gsc::Core<int16_t,int8_t> (__pyx_v_bptr, __pyx_v_size, __pyx_t_2, __pyx_t_4, __pyx_t_5);
   } catch(...) {
     __Pyx_CppExn2PyErr();
     {__pyx_filename = __pyx_f[0]; __pyx_lineno = 30; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
-  __pyx_v_self->thisptr = __pyx_t_5;
+  __pyx_v_self->thisptr = __pyx_t_6;
 
   /* "gsc_core_py_wrapper.pyx":27
  * cdef class PyCore:
  *     cdef Core[int16_t, int8_t] *thisptr      # hold a C++ instance which we're wrapping
- *     def __cinit__(self, np.ndarray[np.int8_t, ndim=1, mode="c"] mark not None, frame_size, scan_buffer_max_size):             # <<<<<<<<<<<<<<
+ *     def __cinit__(self, np.ndarray[np.int8_t, ndim=1, mode="c"] mark not None, frame_size, scan_buffer_max_size, security_or_capacity):             # <<<<<<<<<<<<<<
  *         cdef size_t size = mark.size
  *         cdef int8_t *bptr = <int8_t*> &mark[0]
  */
@@ -1475,7 +1488,7 @@ static int __pyx_pf_8gsc_core_6PyCore___cinit__(struct __pyx_obj_8gsc_core_PyCor
 }
 
 /* "gsc_core_py_wrapper.pyx":32
- *         self.thisptr = new Core[int16_t, int8_t](bptr, size, frame_size, scan_buffer_max_size)
+ *         self.thisptr = new Core[int16_t, int8_t](bptr, size, frame_size, scan_buffer_max_size, security_or_capacity)
  * 
  *     def __dealloc__(self):             # <<<<<<<<<<<<<<
  *         del self.thisptr
@@ -1507,7 +1520,7 @@ static void __pyx_pf_8gsc_core_6PyCore_2__dealloc__(struct __pyx_obj_8gsc_core_P
   delete __pyx_v_self->thisptr;
 
   /* "gsc_core_py_wrapper.pyx":32
- *         self.thisptr = new Core[int16_t, int8_t](bptr, size, frame_size, scan_buffer_max_size)
+ *         self.thisptr = new Core[int16_t, int8_t](bptr, size, frame_size, scan_buffer_max_size, security_or_capacity)
  * 
  *     def __dealloc__(self):             # <<<<<<<<<<<<<<
  *         del self.thisptr
@@ -5056,6 +5069,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_retval, __pyx_k_retval, sizeof(__pyx_k_retval), 0, 0, 1, 1},
   {&__pyx_n_s_samples, __pyx_k_samples, sizeof(__pyx_k_samples), 0, 0, 1, 1},
   {&__pyx_n_s_scan_buffer_max_size, __pyx_k_scan_buffer_max_size, sizeof(__pyx_k_scan_buffer_max_size), 0, 0, 1, 1},
+  {&__pyx_n_s_security_or_capacity, __pyx_k_security_or_capacity, sizeof(__pyx_k_security_or_capacity), 0, 0, 1, 1},
   {&__pyx_n_s_seed, __pyx_k_seed, sizeof(__pyx_k_seed), 0, 0, 1, 1},
   {&__pyx_n_s_semi_p, __pyx_k_semi_p, sizeof(__pyx_k_semi_p), 0, 0, 1, 1},
   {&__pyx_n_s_shape, __pyx_k_shape, sizeof(__pyx_k_shape), 0, 0, 1, 1},
@@ -6901,32 +6915,6 @@ raise_neg_overflow:
     return (size_t) -1;
 }
 
-static CYTHON_INLINE PyObject* __Pyx_PyInt_From_int(int value) {
-    const int neg_one = (int) -1, const_zero = 0;
-    const int is_unsigned = neg_one > const_zero;
-    if (is_unsigned) {
-        if (sizeof(int) < sizeof(long)) {
-            return PyInt_FromLong((long) value);
-        } else if (sizeof(int) <= sizeof(unsigned long)) {
-            return PyLong_FromUnsignedLong((unsigned long) value);
-        } else if (sizeof(int) <= sizeof(unsigned long long)) {
-            return PyLong_FromUnsignedLongLong((unsigned long long) value);
-        }
-    } else {
-        if (sizeof(int) <= sizeof(long)) {
-            return PyInt_FromLong((long) value);
-        } else if (sizeof(int) <= sizeof(long long)) {
-            return PyLong_FromLongLong((long long) value);
-        }
-    }
-    {
-        int one = 1; int little = (int)*(unsigned char *)&one;
-        unsigned char *bytes = (unsigned char *)&value;
-        return _PyLong_FromByteArray(bytes, sizeof(int),
-                                     little, !is_unsigned);
-    }
-}
-
 static CYTHON_INLINE int __Pyx_PyInt_As_int(PyObject *x) {
     const int neg_one = (int) -1, const_zero = 0;
     const int is_unsigned = neg_one > const_zero;
@@ -7020,6 +7008,32 @@ raise_neg_overflow:
     PyErr_SetString(PyExc_OverflowError,
         "can't convert negative value to int");
     return (int) -1;
+}
+
+static CYTHON_INLINE PyObject* __Pyx_PyInt_From_int(int value) {
+    const int neg_one = (int) -1, const_zero = 0;
+    const int is_unsigned = neg_one > const_zero;
+    if (is_unsigned) {
+        if (sizeof(int) < sizeof(long)) {
+            return PyInt_FromLong((long) value);
+        } else if (sizeof(int) <= sizeof(unsigned long)) {
+            return PyLong_FromUnsignedLong((unsigned long) value);
+        } else if (sizeof(int) <= sizeof(unsigned long long)) {
+            return PyLong_FromUnsignedLongLong((unsigned long long) value);
+        }
+    } else {
+        if (sizeof(int) <= sizeof(long)) {
+            return PyInt_FromLong((long) value);
+        } else if (sizeof(int) <= sizeof(long long)) {
+            return PyLong_FromLongLong((long long) value);
+        }
+    }
+    {
+        int one = 1; int little = (int)*(unsigned char *)&one;
+        unsigned char *bytes = (unsigned char *)&value;
+        return _PyLong_FromByteArray(bytes, sizeof(int),
+                                     little, !is_unsigned);
+    }
 }
 
 static CYTHON_INLINE int16_t __Pyx_PyInt_As_int16_t(PyObject *x) {

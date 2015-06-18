@@ -24,9 +24,10 @@ public:
      *  @param mark array of bits
      *  @param size mark array size
      *  @param frameSize the size of frame buffer
-     *  @param scanBufferMaxSize the size for acummulative buffer used for sync marker detection, normally 3 * frameSize.
+     *  @param scanBufferMaxSize the size for accumulative buffer used for sync marker detection, normally 3 * frameSize.
+     *  @param securityPriorCapacity if security is more important than integration will be longer {0, 1}
      */
-    Core(const BinaryType * const mark, size_t size, size_t frameSize, size_t scanBufferMaxSize);
+    Core(const BinaryType * const mark, size_t size, size_t frameSize, size_t scanBufferMaxSize, int securityPriorCapacity = 0);
     ~Core();
     /**
      *  Hide 'info' inside 'container'.
@@ -62,6 +63,7 @@ private:
     std::vector<IntegerType> seed_;      // seed container buffer (to calculate unique step)
     size_t skipSamples_;                 // number of samples to skip before accumulation
     Sync<IntegerType, BinaryType> *synchronizer_;
+    int securityPriorCapacity_;
 };
     
 }

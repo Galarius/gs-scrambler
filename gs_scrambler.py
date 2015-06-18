@@ -370,7 +370,8 @@ def main(opts):
                                                     KEY_INPUT_FILE_NAME:input_container_file_name,
                                                     KEY_OUTPUT_FILE_NAME:output_container_file_name,
                                                     StegoCore.SKIP_FRAMES_KEY: settings.frames_to_skip,
-                                                    StegoCore.SYNC_MARK_KEY: settings.sync_mark
+                                                    StegoCore.SYNC_MARK_KEY: settings.sync_mark,
+                                                    StegoCore.SECURITY_OR_CAPACITY: settings.security_or_capacity
                                                     })
             stego_session.open_stream()
             stego_session.hide(message_file_name, key)
@@ -392,7 +393,8 @@ def main(opts):
                                                     KEY_STEGO_MODE:StegoMode.Recover,
                                                     KEY_INPUT_FILE_NAME:input_container_file_name,
                                                     StegoCore.SKIP_FRAMES_KEY: settings.frames_to_skip,
-                                                    StegoCore.SYNC_MARK_KEY: settings.sync_mark
+                                                    StegoCore.SYNC_MARK_KEY: settings.sync_mark,
+                                                    StegoCore.SECURITY_OR_CAPACITY: settings.security_or_capacity
                                                     })
                 stego_session.open_stream()
                 stego_session.scan()
@@ -475,7 +477,8 @@ class InteractiveStegoScrambler(cmd.Cmd):
         settings = StegoSettings.Instance()
         settings.deserialize()
         if settings.validate_stream_mode(mode):
-            self.session = StegoScramblerSession(mode, **{StegoCore.SYNC_MARK_KEY: settings.sync_mark})
+            self.session = StegoScramblerSession(mode, **{StegoCore.SYNC_MARK_KEY: settings.sync_mark,
+                                                          StegoCore.SECURITY_OR_CAPACITY: settings.security_or_capacity})
             self.session.open_stream()
         else:
             print colorize("There are no supported audio devices for current stream mode.", COLORS.FAIL)

@@ -28,6 +28,7 @@ class StegoCore:
     """
     SKIP_FRAMES_KEY = 'skip_frames'     # number of frames to skip before integration
     SYNC_MARK_KEY = 'sync_mark_key'     # synchronization mark
+    SECURITY_OR_CAPACITY = 'security_or_capacity'     # what is more important
 
     BITS = 16
     SYNC_KEY = 8
@@ -50,6 +51,7 @@ class StegoCore:
         self.message_to_proc_part = np.empty(0, dtype=np.int8)    # the part of message that left to be integrated
         self.skip_frames = 0            # how many frames shoud be skipped
         self.mediate_length = 0         # length of message to recover (length of bits array)
+        self.security_or_capacity = 0
         # synchronization
         self.sync_mark = ''                 # synchronization mark
         self.sync_mark_encoded_array = np.empty(0, dtype=np.int8)   # synchronization mark encoded
@@ -66,7 +68,11 @@ class StegoCore:
         if StegoCore.SYNC_MARK_KEY in kwargs:
             self.sync_mark = kwargs[StegoCore.SYNC_MARK_KEY]
             self.__synchronization_prepare()
-            self.gsc = gsc_core.PyCore(self.sync_mark_encoded_array, 1024, 3 * 1024)
+
+            if StegoCore.SECURITY_OR_CAPACITY in kwargs:
+                self.security_or_capacity = kwargs[StegoCore.SECURITY_OR_CAPACITY]
+
+            self.gsc = gsc_core.PyCore(self.sync_mark_encoded_array, 1024, 3 * 1024, self.security_or_capacity)
         else:
             print colorize("Error: no sync mark provided", COLORS.FAIL)
 

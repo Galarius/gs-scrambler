@@ -17,9 +17,11 @@ namespace gsc {
  *  @param size mark array size
  *  @param frameSize the size of frame buffer
  *  @param scanbufferSizeMax the size for acummulative buffer used for sync marker detection, normally 3 * frameSize.
+ *  @param securityPriorCapacity if  security is more important than integration will be longer {0, 1}
  */
 template <typename IntegerType, typename BinaryType>
-Core<IntegerType, BinaryType>::Core(const BinaryType * const mark, size_t size, size_t frameSize, size_t scanbufferSizeMax) : skipSamples_(0), synchronizer_(nullptr) {
+Core<IntegerType, BinaryType>::Core(const BinaryType * const mark, size_t size, size_t frameSize, size_t scanbufferSizeMax, int securityPriorCapacity) : skipSamples_(0), synchronizer_(nullptr),
+ securityPriorCapacity_(securityPriorCapacity) {
             
     assert(scanbufferSizeMax > frameSize && "ArgumentError");
             
@@ -55,7 +57,8 @@ size_t Core<IntegerType, BinaryType>::hide(const IntegerType * const seed, size_
         // synchronized, continue inserting info
         size_t semi_p = calculate_semi_period(seed, s_size);
         if(semi_p != SIZE_T_MAX) {
-            integrated = integrate<IntegerType, BinaryType>(container, c_size, semi_p, 1, info, i_size);
+            size_t step = (securityPriorCapacity_ == 0 ? semi_p : 1);
+            integrated = integrate<IntegerType, BinaryType>(container, c_size, semi_p, step, info, i_size);
         }
     } else {
         // insert sync mark
@@ -117,8 +120,8 @@ template <typename IntegerType, typename BinaryType>
         
             size_t semi_p = calculate_semi_period(s_ptr, s_size);           // take first s_size elements
             if(semi_p != SIZE_T_MAX) {
-                recovered = deintegrate(f_ptr, c_size, semi_p, 1, info);    // take first c_size elements
-                
+                size_t step = (securityPriorCapacity_ == 0 ? semi_p : 1);
+                recovered = deintegrate(f_ptr, c_size, semi_p, step, info);    // take first c_size elements
                 // delete first 'size' elements
                 frames_.erase(frames_.begin(), frames_.begin() + c_size);
                 seed_.erase(seed_.begin(), seed_.begin() + s_size);

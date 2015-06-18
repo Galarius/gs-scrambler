@@ -28,6 +28,7 @@ SETTINGS_FILE_NAME = 'settings.json'            # settings full file name
 SETTING_KEY_FRAMES_TO_SKIP = 'frames_to_skip'   # how many frames will be skipped before processing
 SETTINGS_KEY_FRAME_SIZE = 'frame_size'          # frame size
 SETTINGS_KEY_SYNC_MARK = 'sync_mark'            # synchronization text marker
+SETTINGS_SECURITY_OR_CAPACITY = 'security_or_capacity'  # select what is mor important
 SETTINGS_KEY_BUILD_IN_INPUT = 'build_in_input_audio_device_name'
 SETTINGS_KEY_BUILD_IN_OUTPUT = 'build_in_output_audio_device_name'
 SETTINGS_KEY_VIRTUAL_DEVICE = 'virtual_audio_device_name'
@@ -41,6 +42,7 @@ class StegoSettings:
         self.frames_to_skip = 5
         self.frame_size = 1024
         self.sync_mark = "*()@beg^^^$!7"
+        self.security_or_capacity = 0
         self.build_in_input_audio_device_name = "Built-in Input"
         self.build_in_output_audio_device_name = "Built-in Output"
         self.virtual_audio_device_name = "Soundflower (2ch)"
@@ -49,6 +51,7 @@ class StegoSettings:
         data = {SETTING_KEY_FRAMES_TO_SKIP: self.frames_to_skip,
                 SETTINGS_KEY_FRAME_SIZE: self.frame_size,
                 SETTINGS_KEY_SYNC_MARK: self.sync_mark,
+                SETTINGS_SECURITY_OR_CAPACITY: self.security_or_capacity,
                 SETTINGS_KEY_BUILD_IN_INPUT: self.build_in_input_audio_device_name,
                 SETTINGS_KEY_BUILD_IN_OUTPUT: self.build_in_output_audio_device_name,
                 SETTINGS_KEY_VIRTUAL_DEVICE: self.virtual_audio_device_name}
@@ -62,6 +65,7 @@ class StegoSettings:
                     self.frames_to_skip = data[SETTING_KEY_FRAMES_TO_SKIP]
                     self.frame_size = data[SETTINGS_KEY_FRAME_SIZE]
                     self.sync_mark = data[SETTINGS_KEY_SYNC_MARK]
+                    self.security_or_capacity = data[SETTINGS_SECURITY_OR_CAPACITY]
                     self.build_in_input_audio_device_name = data[SETTINGS_KEY_BUILD_IN_INPUT]
                     self.build_in_output_audio_device_name = data[SETTINGS_KEY_BUILD_IN_OUTPUT]
                     self.virtual_audio_device_name = data[SETTINGS_KEY_VIRTUAL_DEVICE]
