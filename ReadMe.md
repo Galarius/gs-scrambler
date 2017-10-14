@@ -306,6 +306,10 @@
 
 4. В.И.Кузьмин, А.Ф. Гадзаов, Методы построения моделей по эмпирическим данным, МИРЭА , Москва, 2012  —  96 стр.
 
+# 
+[Расчетно-пояснительная записка, 2015 (полная версия)](gs-scrambler.pdf)
+#
+
 ## Лицензия
 
 <a rel="license" href="http://creativecommons.org/licenses/by-nc-nd/4.0/"><img alt="Лицензия Creative Commons" style="border-width:0" src="https://i.creativecommons.org/l/by-nc-nd/4.0/88x31.png" /></a><br />Материал, описывающий «<span xmlns:dct="http://purl.org/dc/terms/" property="dct:title">gs-scrambler</span>» и созданный автором по имени <span xmlns:cc="http://creativecommons.org/ns#" property="cc:attributionName">Шошин Илья Сергеевич (Galarius)</span>, публикуется на условиях <a rel="license" href="http://creativecommons.org/licenses/by-nc-nd/4.0/">лицензии Creative Commons «Attribution-NonCommercial-NoDerivatives» («Атрибуция — Некоммерческое использование — Без производных произведений») 4.0 Всемирная</a>.
