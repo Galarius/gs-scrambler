@@ -294,16 +294,16 @@ def print_usage():
 
             Start interactive prompt:
                  ----------------------------
-                 python stego_scrambler.py -s
+                 python gs_scrambler.py -s
                  ----------------------------
             or process .wav file directly:
                 *) hide msg
                     ------------------------------
-                    stego_scrambler.py -i <input_container_file_name> -m <message_file_name> -o <output_container_file_name> -k <key> [-r <recover_info_file_name>]
+                    gs_scrambler.py -i <input_container_file_name> -m <message_file_name> -o <output_container_file_name> -k <key> [-r <recover_info_file_name>]
                     ------------------------------
                 *) recover msg
                     ------------------------------
-                    stego_scrambler.py -i <input_container_file_name> -m <message_file_name> -k <key> (-l <message_length> or -r <recover_info_file_name>)
+                    gs_scrambler.py -i <input_container_file_name> -m <message_file_name> -k <key> (-l <message_length> or -r <recover_info_file_name>)
                     ------------------------------
           """
 

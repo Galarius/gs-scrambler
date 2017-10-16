@@ -2,7 +2,7 @@
 #!/usr/bin/env python
 """
 python setup_cy.py build_ext --inplace
-or import pyximport; pyximport.install() in source befor import
+or import pyximport; pyximport.install() in source before import
 
 distutils uses the Makefile distutils.sysconfig.get_makefile_filename()
 for compiling and linking: a sea of options.

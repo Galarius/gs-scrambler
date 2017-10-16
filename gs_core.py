@@ -4,7 +4,7 @@ __author__ = 'Ilya Shoshin'
 __copyright__ = 'Copyright 2015, Ilya Shoshin'
 
 from gs_q_matrix import *
-import stego_helper as sh
+import gs_helper as sh
 import gsc_core
 import numpy as np
 import math

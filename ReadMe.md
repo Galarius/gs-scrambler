@@ -19,6 +19,9 @@
 - [Совместное использование c другими приложениями](#совместное-использование-c-другими-приложениями)
 - [Оценка качества системы](#оценка-качества-системы)
 - [Использование](#использование)
+- [Зависимости](#зависимости)
+- [Подготовка](#подготовка)
+- [Запуск](#запуск)
 - [Литература](#литература)
 - [Лицензия](#лицензия)
 
@@ -295,6 +298,23 @@
 * Если одновременно существуют отправитель и получатель, то канал связи между ними не должен прерываться для успешного выполнения синхронизации;
 
 * Аудиоконтейнер должен иметь 2 канала.
+
+## Зависимости
+
+* `pip install cython`
+* `brew install portaudio`
+* `pip install --global-option='build_ext' --global-option='-I/usr/local/include' --global-option='-L/usr/local/lib' pyaudio`
+
+## Подготовка 
+
+* Построение: `python setup_cy.py build_ext --inplace`
+* Настройка: [settings.json](settings.json)
+
+## Запуск 
+
+* `python gs_scrambler.py -s` - потоковый интерактивный режим
+* `gs_scrambler.py -i <input_container_file_name> -m <message_file_name> -o <output_container_file_name> -k <key> [-r <recover_info_file_name>]` - скрытие в фиксированном контейнере
+* `gs_scrambler.py -i <input_container_file_name> -m <message_file_name> -k <key> (-l <message_length> or -r <recover_info_file_name>)` - извлечение из фиксированного контейнера
 
 ## Литература
 

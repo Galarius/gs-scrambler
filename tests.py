@@ -5,7 +5,7 @@ __author__ = 'Ilya Shoshin'
 __copyright__ = 'Copyright 2015, Ilya Shoshin'
 
 from gs_q_matrix import *
-from stego_helper import *
+from gs_helper import *
 #from stego_core import *
 
 import matplotlib.pyplot as plt
