@@ -1,5 +1,21 @@
 # gs-scrambler
 
+Streaming audio steganography algorithm developed as diploma project in Applied Mathematics at Moscow State Technical University of Radio Engineering, Electronics and Automation.
+
+<u>Features</u>:
+
+* Data hiding / extraction in streaming mode
+* Encryption before integration
+* Noise-immune coding based on generalized Fibonacci matrices
+* Using Alter-Johnson shift function as pseudo-random integration scheme generator
+* Resolving "dropped-frames" effect and synchronization problem
+* Estimation of the system with difference and correlation functions provides good results
+* Command-line tool implementing the algorithm was developed with C++ and Python and can be used with any audio system allowing to setup audio input/output
+
+*Programming languages: `Python`, `C++`*
+
+---
+
 *Дипломный проект, 2015*
 
 **Программное обеспечение для скрытия цифровой информации внутри аудиосигнала в потоковом режиме.**
