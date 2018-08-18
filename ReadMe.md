@@ -1,6 +1,6 @@
 # gs-scrambler
 
-Streaming audio steganography algorithm developed as diploma project in Applied Mathematics at Moscow State Technical University of Radio Engineering, Electronics and Automation.
+Streaming audio steganography algorithm developed as the graduation project in Applied Mathematics at Moscow State Technical University of Radio Engineering, Electronics and Automation.
 
 <u>Features</u>:
 
