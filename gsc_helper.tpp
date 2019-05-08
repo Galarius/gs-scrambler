@@ -313,7 +313,7 @@ size_t integrate(IntegerType **container, size_t c_size, size_t begin, size_t st
     for(size_t i = begin, k = 0; i < c_size && k < i_size; i += step, ++k) {
         BinaryType *bits = 0;
         integerToBits((*container)[i], &bits);
-        IntegerType sign = container[i] >= 0 ? 1 : -1;
+        IntegerType sign = (*container)[i] >= 0 ? 1 : -1;
         bits[0] = sign * info[k];
         ++counter;
         bitsToInteger(bits, (*container)[i]);
