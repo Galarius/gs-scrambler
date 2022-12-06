@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+
 class Singleton:
     """
 
@@ -37,21 +38,21 @@ class Singleton:
             return self._instance
 
     def __call__(self):
-        raise TypeError('Singletons must be accessed through `Instance()`.')
+        raise TypeError("Singletons must be accessed through `Instance()`.")
 
     def __instancecheck__(self, inst):
         return isinstance(inst, self._decorated)
 
 
 class COLORS:
-    HEADER = '\033[95m'
-    OKBLUE = '\033[94m'
-    OKGREEN = '\033[92m'
-    WARNING = '\033[93m'
-    FAIL = '\033[91m'
-    ENDC = '\033[0m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
+    HEADER = "\033[95m"
+    OKBLUE = "\033[94m"
+    OKGREEN = "\033[92m"
+    WARNING = "\033[93m"
+    FAIL = "\033[91m"
+    ENDC = "\033[0m"
+    BOLD = "\033[1m"
+    UNDERLINE = "\033[4m"
 
 
 def colorize(text, color):
@@ -62,11 +63,13 @@ def colorize(text, color):
     """
     return color + text + COLORS.ENDC
 
+
 # http://stackoverflow.com/a/30024601/2422367
 
 from contextlib import contextmanager
 from timeit import default_timer
 import time
+
 
 @contextmanager
 def elapsed_timer():
@@ -80,5 +83,4 @@ def elapsed_timer():
     elapser = lambda: default_timer() - start
     yield lambda: elapser()
     end = default_timer()
-    elapser = lambda: end-start
-
+    elapser = lambda: end - start

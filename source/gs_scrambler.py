@@ -9,8 +9,8 @@ that provide voice chats. SoundFlower is required to route sound in the write or
 Moreover it is possible to perform just 'file to file' processing if audio container will be send later.
 """
 
-__author__ = 'Ilya Shoshin'
-__copyright__ = 'Copyright 2015, Ilya Shoshin'
+__author__ = "Ilya Shoshin"
+__copyright__ = "Copyright 2015, Ilya Shoshin"
 
 # Example commands for 'file to file' mode
 # python gs_scrambler.py -i "wav/input.wav" -m "data/msg.txt" -o "wav/output.wav" -k 7 -r "data/recover_info.txt"
@@ -33,21 +33,22 @@ import numpy as np
 import math
 
 
-
-RECOVER_INFO_DEFAULT_FILE_NAME = 'data/recover_info.txt'
+RECOVER_INFO_DEFAULT_FILE_NAME = "data/recover_info.txt"
 # Keys
-KEY_INPUT_FILE_NAME = 'input_key'
-KEY_OUTPUT_FILE_NAME = 'output_key'
-KEY_STEGO_MODE = 'stego_mode_key'
+KEY_INPUT_FILE_NAME = "input_key"
+KEY_OUTPUT_FILE_NAME = "output_key"
+KEY_STEGO_MODE = "stego_mode_key"
 # Audio setup
 CHANNELS = 2
 FORMAT = pyaudio.paFloat32
 RATE = 44100
 
+
 class StegoScramblerSession:
     """
     Class to maintain steganography scrambler session.
     """
+
     def __init__(self, stream_mode, **kwargs):
         """
         Init session
@@ -75,9 +76,9 @@ class StegoScramblerSession:
             # file to file
             input = kwargs[KEY_INPUT_FILE_NAME]
             self.stego_mode = kwargs[KEY_STEGO_MODE]
-            self.file_source = wave.open(input, 'rb')
+            self.file_source = wave.open(input, "rb")
             if self.stego_mode == StegoMode.Hide:
-                self.output_wave_file = wave.open(kwargs[KEY_OUTPUT_FILE_NAME], 'wb')
+                self.output_wave_file = wave.open(kwargs[KEY_OUTPUT_FILE_NAME], "wb")
                 self.output_wave_file.setnchannels(self.file_source.getnchannels())
                 self.output_wave_file.setsampwidth(self.file_source.getsampwidth())
                 self.output_wave_file.setframerate(self.file_source.getframerate())
@@ -89,7 +90,11 @@ class StegoScramblerSession:
             # sound flower to build-in output
             self.stego_mode = StegoMode.Recover
         else:
-            print(colorize("Unsupported stream mode! [%i]" % self.stream_mode, COLORS.FAIL))
+            print(
+                colorize(
+                    "Unsupported stream mode! [%i]" % self.stream_mode, COLORS.FAIL
+                )
+            )
 
     @staticmethod
     def is_power2(num):
@@ -97,14 +102,16 @@ class StegoScramblerSession:
         return num and not num & (num - 1)
 
     def __recording_callback(self, in_data, frame_count, time_info, status):
-        #-----------------------------------------------------------------------
+        # -----------------------------------------------------------------------
         if self.stream_mode == StreamMode.StreamFromFileToFile:
             # file to file
             # read frames
             in_data = self.file_source.readframes(frame_count)
             if StegoScramblerSession.is_power2(len(in_data)):
                 # decode frames
-                left, right = gs_helper.audio_decode(in_data, self.file_source.getnchannels(), np.int16)
+                left, right = gs_helper.audio_decode(
+                    in_data, self.file_source.getnchannels(), np.int16
+                )
                 # process frames
                 left, right = self.core.process(left, right)
                 # encode back
@@ -114,7 +121,7 @@ class StegoScramblerSession:
             # write to file
             if self.stego_mode == StegoMode.Hide:
                 self.output_wave_file.writeframes(processed_data)
-        #-----------------------------------------------------------------------
+        # -----------------------------------------------------------------------
         elif self.stream_mode == StreamMode.StreamFromBuildInInputToSoundFlower:
             # build-in input to sound flower or
             if not self.enable_processing:
@@ -128,7 +135,7 @@ class StegoScramblerSession:
             # encode back
             processed_data = gs_helper.audio_encode((left, right))
 
-        #-----------------------------------------------------------------------
+        # -----------------------------------------------------------------------
         elif self.stream_mode == StreamMode.StreamFromSoundFlowerToBuildInOutput:
             # sound flower to build-in output
             if not self.enable_processing:
@@ -140,9 +147,9 @@ class StegoScramblerSession:
             # encode back
             processed_data = gs_helper.audio_encode((left, right))
         else:
-            print('Unknown mode!')
+            print("Unknown mode!")
             processed_data = in_data
-        #-----------------------------------------------------------------------
+        # -----------------------------------------------------------------------
         return processed_data, pyaudio.paContinue
 
     def open_stream(self):
@@ -153,41 +160,65 @@ class StegoScramblerSession:
         if self.stream_mode == StreamMode.StreamFromFileToFile:
             print(colorize("Opening file stream...", COLORS.WARNING))
             # file to file
-            format, channels, rate = self.p_audio.get_format_from_width(self.file_source.getsampwidth()), \
-                                self.file_source.getnchannels(), self.file_source.getframerate()
-            input_dev_idx = gs_device_info.detect_build_in_input_device_idx(self.p_audio)
-            output_dev_idx = gs_device_info.detect_build_in_output_device_idx(self.p_audio)
+            format, channels, rate = (
+                self.p_audio.get_format_from_width(self.file_source.getsampwidth()),
+                self.file_source.getnchannels(),
+                self.file_source.getframerate(),
+            )
+            input_dev_idx = gs_device_info.detect_build_in_input_device_idx(
+                self.p_audio
+            )
+            output_dev_idx = gs_device_info.detect_build_in_output_device_idx(
+                self.p_audio
+            )
             enable_input, enable_output = False, True
             isSupported = True
         elif self.stream_mode == StreamMode.StreamFromBuildInInputToSoundFlower:
             print(colorize("Opening stream...", COLORS.OKBLUE))
             # build-in input to sound flower
             format, channels, rate = FORMAT, CHANNELS, RATE
-            input_dev_idx = gs_device_info.detect_build_in_input_device_idx(self.p_audio)
-            output_dev_idx = gs_device_info.detect_virtual_audio_device_idx(self.p_audio)
+            input_dev_idx = gs_device_info.detect_build_in_input_device_idx(
+                self.p_audio
+            )
+            output_dev_idx = gs_device_info.detect_virtual_audio_device_idx(
+                self.p_audio
+            )
             enable_input, enable_output = True, True
-            isSupported = self.p_audio.is_format_supported(rate,
-                                input_device=input_dev_idx,
-                                input_channels=channels, 
-                                input_format=format)
+            isSupported = self.p_audio.is_format_supported(
+                rate,
+                input_device=input_dev_idx,
+                input_channels=channels,
+                input_format=format,
+            )
         elif self.stream_mode == StreamMode.StreamFromSoundFlowerToBuildInOutput:
             print(colorize("Opening stream...", COLORS.OKGREEN))
             # sound flower to build-in output
             format, channels, rate = FORMAT, CHANNELS, RATE
             input_dev_idx = gs_device_info.detect_virtual_audio_device_idx(self.p_audio)
-            output_dev_idx = gs_device_info.detect_build_in_output_device_idx(self.p_audio)
+            output_dev_idx = gs_device_info.detect_build_in_output_device_idx(
+                self.p_audio
+            )
             enable_input, enable_output = True, True
-            isSupported = self.p_audio.is_format_supported(rate,
-                                output_device=output_dev_idx,
-                                output_channels=channels,
-                                output_format=format)
+            isSupported = self.p_audio.is_format_supported(
+                rate,
+                output_device=output_dev_idx,
+                output_channels=channels,
+                output_format=format,
+            )
         else:
-            print(colorize(f"Unsupported stream mode! [{self.stream_mode}]", COLORS.FAIL))
+            print(
+                colorize(f"Unsupported stream mode! [{self.stream_mode}]", COLORS.FAIL)
+            )
             raise ValueError(f"Unsupported stream mode! [{self.stream_mode}]")
 
         print(colorize(f"Input device: {input_dev_idx}", COLORS.WARNING))
         print(colorize(f"Output device: {output_dev_idx}", COLORS.WARNING))
-        print(colorize(f"Format: {format}, Channels: {channels}, Rate: {rate}, Frame size: {settings.frame_size}", COLORS.WARNING))
+        print(
+            colorize(
+                f"Format: {format}, Channels: {channels}, Rate: {rate}, Frame size: {settings.frame_size}",
+                COLORS.WARNING,
+            )
+        )
 
         if not isSupported or channels != 2:
             print(colorize("Unsupported audio configuration!", COLORS.FAIL))
@@ -198,29 +229,42 @@ class StegoScramblerSession:
         try:
             stream_info = pyaudio.PaMacCoreStreamInfo(
                 flags=pyaudio.PaMacCoreStreamInfo.paMacCorePlayNice,  # default
-                channel_map=channel_map)
+                channel_map=channel_map,
+            )
         except AttributeError:
-            print(colorize("Sorry, couldn't find PaMacCoreStreamInfo. Make sure that "
-                  "you're running on OS X.", COLORS.FAIL))
+            print(
+                colorize(
+                    "Sorry, couldn't find PaMacCoreStreamInfo. Make sure that "
+                    "you're running on OS X.",
+                    COLORS.FAIL,
+                )
+            )
             sys.exit(1)
 
-        self.stream = self.p_audio.open(format=format,
-                                        channels=channels,
-                                        rate=rate,
-                                        frames_per_buffer=settings.frame_size,
-                                        input=enable_input,
-                                        output=enable_output,
-                                        output_host_api_specific_stream_info=stream_info,
-                                        input_device_index=input_dev_idx,
-                                        output_device_index=output_dev_idx,
-                                        stream_callback=self.__recording_callback)
+        self.stream = self.p_audio.open(
+            format=format,
+            channels=channels,
+            rate=rate,
+            frames_per_buffer=settings.frame_size,
+            input=enable_input,
+            output=enable_output,
+            output_host_api_specific_stream_info=stream_info,
+            input_device_index=input_dev_idx,
+            output_device_index=output_dev_idx,
+            stream_callback=self.__recording_callback,
+        )
         self.stream.start_stream()
 
         src_latency = 1000.0 * self.stream.get_input_latency()
         buffer_latency = 1000.0 * settings.frame_size / rate
         dst_latency = 1000.0 * self.stream.get_output_latency()
         total_latency = buffer_latency + dst_latency + src_latency
-        print(colorize(f"Expected delay: {total_latency:.1f} ms (src: {src_latency:.1f}, buf: {buffer_latency:.1f}, dst: {dst_latency:.1f})", COLORS.WARNING))
+        print(
+            colorize(
+                f"Expected delay: {total_latency:.1f} ms (src: {src_latency:.1f}, buf: {buffer_latency:.1f}, dst: {dst_latency:.1f})",
+                COLORS.WARNING,
+            )
+        )
 
     def close_stream(self):
         print("Closing stream...")
@@ -236,18 +280,22 @@ class StegoScramblerSession:
 
         self.p_audio.terminate()
 
-    def hide(self, msg_file_name, key, recover_info_filename=RECOVER_INFO_DEFAULT_FILE_NAME):
+    def hide(
+        self, msg_file_name, key, recover_info_filename=RECOVER_INFO_DEFAULT_FILE_NAME
+    ):
         """
         Load message and call core method to begin integration.
         :param msg_file_name: file name of the file with message
         :param key:           key to encode message
         """
-        if not (self.stream_mode == StreamMode.StreamFromBuildInInputToSoundFlower or
-                self.stream_mode == StreamMode.StreamFromFileToFile):
+        if not (
+            self.stream_mode == StreamMode.StreamFromBuildInInputToSoundFlower
+            or self.stream_mode == StreamMode.StreamFromFileToFile
+        ):
             print(colorize("Not applicable for current stream mode!", COLORS.FAIL))
         # load mesage
         message = gs_io.load_message_from_file(msg_file_name)
-        if not message == '':
+        if not message == "":
             print(colorize("Begin integration...", COLORS.OKBLUE))
             session_key = self.core.hide(message, key)
             gs_io.save_data_to_recover(recover_info_filename, session_key)
@@ -259,8 +307,10 @@ class StegoScramblerSession:
         """
         Begin synchronization and message extraction.
         """
-        if not (self.stream_mode == StreamMode.StreamFromSoundFlowerToBuildInOutput or
-                self.stream_mode == StreamMode.StreamFromFileToFile):
+        if not (
+            self.stream_mode == StreamMode.StreamFromSoundFlowerToBuildInOutput
+            or self.stream_mode == StreamMode.StreamFromFileToFile
+        ):
             print(colorize("Not applicable for current stream mode!", COLORS.FAIL))
             return
         print(colorize("Begin scanning...", COLORS.OKGREEN))
@@ -273,18 +323,21 @@ class StegoScramblerSession:
         :param user_key:
         :return:
         """
-        if not (self.stream_mode == StreamMode.StreamFromSoundFlowerToBuildInOutput or
-                self.stream_mode == StreamMode.StreamFromFileToFile):
+        if not (
+            self.stream_mode == StreamMode.StreamFromSoundFlowerToBuildInOutput
+            or self.stream_mode == StreamMode.StreamFromFileToFile
+        ):
             print(colorize("Not applicable for current stream mode!", COLORS.FAIL))
             return
         message = self.core.recover(session_key, user_key)
         gs_io.save_message_to_file(msg_file_name, message)
-        if not message == '':
+        if not message == "":
             print(colorize("Message recovered.", COLORS.OKGREEN))
 
 
 def print_usage():
-    print("""
+    print(
+        """
 
             Start interactive prompt:
                  ----------------------------
@@ -299,17 +352,19 @@ def print_usage():
                     ------------------------------
                     gs_scrambler.py -i <input_container_file_name> -m <message_file_name> -k <key> (-l <message_length> or -r <recover_info_file_name>)
                     ------------------------------
-          """)
+          """
+    )
+
 
 def main(opts):
-    input_container_file_name = ''
-    message_file_name = ''
-    output_container_file_name = ''
+    input_container_file_name = ""
+    message_file_name = ""
+    output_container_file_name = ""
     key = -1
     message_length = -1
     recover_info_file_name = RECOVER_INFO_DEFAULT_FILE_NAME
     for opt, arg in opts:
-        if opt == '-h':
+        if opt == "-h":
             print_usage()
             sys.exit()
         elif opt in ("-i", "--ifile"):
@@ -325,11 +380,11 @@ def main(opts):
         elif opt in ("-r", "--recover_info"):
             recover_info_file_name = arg
 
-    if input_container_file_name == '' or message_file_name == '':
+    if input_container_file_name == "" or message_file_name == "":
         print_usage()
         sys.exit()
 
-    if not output_container_file_name == '':
+    if not output_container_file_name == "":
         # --------------------------------------
         # hide
         # --------------------------------------
@@ -338,14 +393,17 @@ def main(opts):
         settings.deserialize()
         stego_session = None
         if settings.validate_stream_mode(StreamMode.StreamFromFileToFile):
-            stego_session = StegoScramblerSession(StreamMode.StreamFromFileToFile, **{
-                                                    KEY_STEGO_MODE:StegoMode.Hide,
-                                                    KEY_INPUT_FILE_NAME:input_container_file_name,
-                                                    KEY_OUTPUT_FILE_NAME:output_container_file_name,
-                                                    StegoCore.SKIP_FRAMES_KEY: settings.frames_to_skip,
-                                                    StegoCore.SYNC_MARK_KEY: settings.sync_mark,
-                                                    StegoCore.SECURITY_OR_CAPACITY: settings.security_or_capacity
-                                                    })
+            stego_session = StegoScramblerSession(
+                StreamMode.StreamFromFileToFile,
+                **{
+                    KEY_STEGO_MODE: StegoMode.Hide,
+                    KEY_INPUT_FILE_NAME: input_container_file_name,
+                    KEY_OUTPUT_FILE_NAME: output_container_file_name,
+                    StegoCore.SKIP_FRAMES_KEY: settings.frames_to_skip,
+                    StegoCore.SYNC_MARK_KEY: settings.sync_mark,
+                    StegoCore.SECURITY_OR_CAPACITY: settings.security_or_capacity,
+                },
+            )
             stego_session.open_stream()
             stego_session.hide(message_file_name, key)
         else:
@@ -362,13 +420,16 @@ def main(opts):
             settings = StegoSettings.Instance()
             settings.deserialize()
             if settings.validate_stream_mode(StreamMode.StreamFromFileToFile):
-                stego_session = StegoScramblerSession(StreamMode.StreamFromFileToFile, **{
-                                                    KEY_STEGO_MODE:StegoMode.Recover,
-                                                    KEY_INPUT_FILE_NAME:input_container_file_name,
-                                                    StegoCore.SKIP_FRAMES_KEY: settings.frames_to_skip,
-                                                    StegoCore.SYNC_MARK_KEY: settings.sync_mark,
-                                                    StegoCore.SECURITY_OR_CAPACITY: settings.security_or_capacity
-                                                    })
+                stego_session = StegoScramblerSession(
+                    StreamMode.StreamFromFileToFile,
+                    **{
+                        KEY_STEGO_MODE: StegoMode.Recover,
+                        KEY_INPUT_FILE_NAME: input_container_file_name,
+                        StegoCore.SKIP_FRAMES_KEY: settings.frames_to_skip,
+                        StegoCore.SYNC_MARK_KEY: settings.sync_mark,
+                        StegoCore.SECURITY_OR_CAPACITY: settings.security_or_capacity,
+                    },
+                )
                 stego_session.open_stream()
                 stego_session.scan()
             else:
@@ -392,13 +453,13 @@ def main(opts):
             try:
                 stego_session.recover(session_key, key, message_file_name)
             except AttributeError as error:
-                print(colorize(f'{error}', COLORS.FAIL))
+                print(colorize(f"{error}", COLORS.FAIL))
             except ValueError as error:
-                print(colorize(f'{error}', COLORS.FAIL))
+                print(colorize(f"{error}", COLORS.FAIL))
             except RuntimeError as error:
-                print(colorize(f'{error}', COLORS.FAIL))
+                print(colorize(f"{error}", COLORS.FAIL))
         stego_session.close_stream()
-        print(colorize('Done!', COLORS.WARNING))
+        print(colorize("Done!", COLORS.WARNING))
     sys.exit(0)
 
 
@@ -407,7 +468,7 @@ class InteractiveStegoScrambler(cmd.Cmd):
     Interactive prompt for steganography scrambler.
     """
 
-    prompt = 'scrambler prompt: '
+    prompt = "scrambler prompt: "
     intro = "Interactive prompt for steganography scrambler."
 
     def __init__(self):
@@ -435,29 +496,41 @@ class InteractiveStegoScrambler(cmd.Cmd):
         """
         args = urlparse.parse_qs(line)
         try:
-            mode = int(args['m'][0])
+            mode = int(args["m"][0])
         except KeyError:
             mode = 0
         try:
-            self.debug = bool(args['d'][0])
+            self.debug = bool(args["d"][0])
             if self.debug:
                 print(colorize("Debug mode.", COLORS.WARNING))
         except KeyError:
             pass
-        if not (mode == StreamMode.StreamFromBuildInInputToSoundFlower or
-                mode == StreamMode.StreamFromSoundFlowerToBuildInOutput):
-            self.print_err(inspect.currentframe().f_code.co_name.replace('do_', ''))
+        if not (
+            mode == StreamMode.StreamFromBuildInInputToSoundFlower
+            or mode == StreamMode.StreamFromSoundFlowerToBuildInOutput
+        ):
+            self.print_err(inspect.currentframe().f_code.co_name.replace("do_", ""))
             return
 
         # load settings
         settings = StegoSettings.Instance()
         settings.deserialize()
         if settings.validate_stream_mode(mode):
-            self.session = StegoScramblerSession(mode, **{StegoCore.SYNC_MARK_KEY: settings.sync_mark,
-                                                          StegoCore.SECURITY_OR_CAPACITY: settings.security_or_capacity})
+            self.session = StegoScramblerSession(
+                mode,
+                **{
+                    StegoCore.SYNC_MARK_KEY: settings.sync_mark,
+                    StegoCore.SECURITY_OR_CAPACITY: settings.security_or_capacity,
+                },
+            )
             self.session.open_stream()
         else:
-            print(colorize("There are no supported audio devices for current stream mode.", COLORS.FAIL))
+            print(
+                colorize(
+                    "There are no supported audio devices for current stream mode.",
+                    COLORS.FAIL,
+                )
+            )
 
     def do_hide(self, line):
         """
@@ -470,17 +543,19 @@ class InteractiveStegoScrambler(cmd.Cmd):
         :param key: key to encode message (unsigned integer)
         """
         if self.debug:
-            msg_file_name = 'data/msg.txt'
+            msg_file_name = "data/msg.txt"
             key = 7
         else:
             args = urlparse.parse_qs(line)
             try:
-                msg_file_name, key = args['f'][0], int(args['k'][0])
-                if msg_file_name.strip() == '' or key <= 0:
-                    self.print_err(inspect.currentframe().f_code.co_name.replace('do_', ''))
+                msg_file_name, key = args["f"][0], int(args["k"][0])
+                if msg_file_name.strip() == "" or key <= 0:
+                    self.print_err(
+                        inspect.currentframe().f_code.co_name.replace("do_", "")
+                    )
                     return
             except KeyError:
-                self.print_err(inspect.currentframe().f_code.co_name.replace('do_', ''))
+                self.print_err(inspect.currentframe().f_code.co_name.replace("do_", ""))
                 return
 
         self.session.hide(msg_file_name, key)
@@ -504,18 +579,24 @@ class InteractiveStegoScrambler(cmd.Cmd):
         """
 
         if self.debug:
-            msg_file_name = 'data/msg_r.txt'
+            msg_file_name = "data/msg_r.txt"
             user_key = 7
             session_key = gs_io.load_data_to_recover("data/recover_info.txt")
         else:
             args = urlparse.parse_qs(line)
             try:
-                session_key, user_key, msg_file_name = int(args['s'][0]), int(args['k'][0]), args['f'][0]
-                if msg_file_name.strip() == '' or user_key <= 0 or session_key <= 0:
-                    self.print_err(inspect.currentframe().f_code.co_name.replace('do_', ''))
+                session_key, user_key, msg_file_name = (
+                    int(args["s"][0]),
+                    int(args["k"][0]),
+                    args["f"][0],
+                )
+                if msg_file_name.strip() == "" or user_key <= 0 or session_key <= 0:
+                    self.print_err(
+                        inspect.currentframe().f_code.co_name.replace("do_", "")
+                    )
                     return
             except KeyError:
-                self.print_err(inspect.currentframe().f_code.co_name.replace('do_', ''))
+                self.print_err(inspect.currentframe().f_code.co_name.replace("do_", ""))
                 return
 
         self.session.recover(session_key, user_key, msg_file_name)
@@ -535,13 +616,17 @@ class InteractiveStegoScrambler(cmd.Cmd):
         try:
             cmd.Cmd.cmdloop(self)
         except KeyboardInterrupt as e:
-            self.do_disconnect('')
+            self.do_disconnect("")
 
 
 if __name__ == "__main__":
     argv = sys.argv[1:]
     try:
-       opts, args = getopt.getopt(argv, "hsdi:m:o:k:l:r:", ["ifile=", "mfile=", "ofile=", "key=", "length=", "recover_info="])
+        opts, args = getopt.getopt(
+            argv,
+            "hsdi:m:o:k:l:r:",
+            ["ifile=", "mfile=", "ofile=", "key=", "length=", "recover_info="],
+        )
     except getopt.GetoptError:
         print_usage()
         sys.exit(2)
@@ -551,13 +636,13 @@ if __name__ == "__main__":
         sys.exit(1)
 
     for opt, arg in opts:
-        if opt == '-h':
+        if opt == "-h":
             print_usage()
             sys.exit()
-        if opt == '-s':
+        if opt == "-s":
             # run interactive prompt
             InteractiveStegoScrambler().cmdloop()
-        if opt == '-d':
+        if opt == "-d":
             # run interactive prompt
             InteractiveStegoScrambler().cmdloop(True)
         else:

@@ -1,21 +1,23 @@
 # -*- coding: utf-8 -*-
 
-__author__ = 'Ilya Shoshin'
-__copyright__ = 'Copyright 2015, Ilya Shoshin'
+__author__ = "Ilya Shoshin"
+__copyright__ = "Copyright 2015, Ilya Shoshin"
 
 import numpy as np
+
 
 class QMatrix:
     """
     Generalized Q-matrix of fibonacci numbers
     """
+
     def __init__(self, p, n):
         """
         Init q-matrix with size (p+1)*(p+1) of power n
         """
         self.p = p
         self.n = n
-        self.Q = np.empty((self.p+1, self.p+1), dtype=np.int16)
+        self.Q = np.empty((self.p + 1, self.p + 1), dtype=np.int16)
         # create matrix
         self.create()
 
@@ -23,16 +25,16 @@ class QMatrix:
         """
         Q-matrix creation method
         """
-        for i in range(0, self.p+1):
-            for j in range(0, self.p+1):
-                k = self.n-self.p+i-j if i != 0 else self.n+1-j
+        for i in range(0, self.p + 1):
+            for j in range(0, self.p + 1):
+                k = self.n - self.p + i - j if i != 0 else self.n + 1 - j
                 self.Q[i][j] = self.fib(k)
 
     def det(self):
         """
         Determinant of the matrix
         """
-        return (-1)**(self.p*self.n)
+        return (-1) ** (self.p * self.n)
 
     def fib(self, n):
         """
@@ -40,15 +42,14 @@ class QMatrix:
         """
         if n == 0:
             return 0
-        elif n > self.p+1:
-            return self.fib(n-1) + self.fib(n-self.p-1)
+        elif n > self.p + 1:
+            return self.fib(n - 1) + self.fib(n - self.p - 1)
         elif n > 0 or n == -self.p:
             return 1
-        elif n >= -self.p+1:
+        elif n >= -self.p + 1:
             return 0
         else:
-            return self.fib(n+self.p+1) - self.fib(n+self.p)
-
+            return self.fib(n + self.p + 1) - self.fib(n + self.p)
 
     @staticmethod
     def mult(a, b):
@@ -60,8 +61,13 @@ class QMatrix:
         :return:  multiplication
         """
         zip_b = zip(*b)
-        return [[sum(ele_a*ele_b for ele_a, ele_b in zip(row_a, col_b))
-               for col_b in zip_b] for row_a in a]
+        return [
+            [
+                sum(ele_a * ele_b for ele_a, ele_b in zip(row_a, col_b))
+                for col_b in zip_b
+            ]
+            for row_a in a
+        ]
 
     @staticmethod
     def encode_matrix_message(M, n):
@@ -71,7 +77,7 @@ class QMatrix:
         :param n: power of Q-Matrix
         :return:  encoded matrix M
         """
-        p = len(M)-1
+        p = len(M) - 1
         Q = QMatrix(p, n)
         E = M.dot(Q.Q)
         return E
@@ -84,7 +90,7 @@ class QMatrix:
         :param n: power of Q-Matrix
         :return:  decoded matrix E
         """
-        p = len(E)-1
+        p = len(E) - 1
         Q = QMatrix(p, -n)
         M = E.dot(Q.Q)
         return M
@@ -93,9 +99,9 @@ class QMatrix:
         """
         Print current Q-matrix
         """
-        for i in range(0, self.p+1):
+        for i in range(0, self.p + 1):
             print(self.Q[i])
-        print('')
+        print("")
 
     @staticmethod
     def pretty_print_matrix(M):
@@ -104,4 +110,4 @@ class QMatrix:
         """
         for i in range(0, len(M)):
             print(M[i])
-        print('')
+        print("")

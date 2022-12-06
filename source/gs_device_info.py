@@ -6,10 +6,11 @@ Helper methods to detect build-in audio devices indices and SoundFlower virtual 
 PyAudio required.
 """
 
-__author__ = 'Ilya Shoshin'
-__copyright__ = 'Copyright 2015, Ilya Shoshin'
+__author__ = "Ilya Shoshin"
+__copyright__ = "Copyright 2015, Ilya Shoshin"
 
 from gs_settings import StegoSettings
+
 
 def __detect_device_index(p, device_name):
     """
@@ -21,8 +22,8 @@ def __detect_device_index(p, device_name):
     idx = -1
     for i in range(p.get_device_count()):
         info = p.get_device_info_by_index(i)
-        if info['name'] == device_name:
-            idx = info['index']
+        if info["name"] == device_name:
+            idx = info["index"]
             break
     return idx
 
@@ -44,7 +45,9 @@ def detect_build_in_input_device_idx(p):
     :return: device index
     """
     StegoSettings.Instance().deserialize()  # load settings
-    return __detect_device_index(p, StegoSettings.Instance().build_in_input_audio_device_name)
+    return __detect_device_index(
+        p, StegoSettings.Instance().build_in_input_audio_device_name
+    )
 
 
 def detect_build_in_output_device_idx(p):
@@ -54,5 +57,6 @@ def detect_build_in_output_device_idx(p):
     :return: device index
     """
     StegoSettings.Instance().deserialize()  # load settings
-    return __detect_device_index(p, StegoSettings.Instance().build_in_output_audio_device_name)
-
+    return __detect_device_index(
+        p, StegoSettings.Instance().build_in_output_audio_device_name
+    )

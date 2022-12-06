@@ -21,27 +21,30 @@ ext_modules = [
     # ---------------------------------
     # Steganography helper methods
     # ---------------------------------
-    Extension(name="gs_helper",
-              sources=["gs_helper.pyx"],
-              libraries=["m"],
-              extra_compile_args=["-ffast-math"]),
+    Extension(
+        name="gs_helper",
+        sources=["gs_helper.pyx"],
+        libraries=["m"],
+        extra_compile_args=["-ffast-math"],
+    ),
     # ---------------------------------
     # Steganography c core methods
     # ---------------------------------
-    Extension(name="gsc_core",
-              sources=["gsc_core_py_wrapper.pyx"],
-              include_dirs = [".", numpy.get_include()],
-              language="c++",
-              extra_compile_args=["-std=c++11", "-Wno-unused-function"],
-              ),
+    Extension(
+        name="gsc_core",
+        sources=["gsc_core_py_wrapper.pyx"],
+        include_dirs=[".", numpy.get_include()],
+        language="c++",
+        extra_compile_args=["-std=c++11", "-Wno-unused-function"],
+    ),
 ]
 
 setup(
-  name = "gs",
-  cmdclass = {"build_ext": build_ext},
-  ext_modules = ext_modules,
-  version = '1.0.0',
-  description = 'steganography scrambler',
-  author = 'galarius',
-  author_email = ''
+    name="gs",
+    cmdclass={"build_ext": build_ext},
+    ext_modules=ext_modules,
+    version="0.1.0",
+    description="steganography scrambler",
+    author="galarius",
+    author_email="",
 )
