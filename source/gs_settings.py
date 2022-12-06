@@ -28,7 +28,7 @@ SETTINGS_FILE_NAME = 'settings.json'            # settings full file name
 SETTING_KEY_FRAMES_TO_SKIP = 'frames_to_skip'   # how many frames will be skipped before processing
 SETTINGS_KEY_FRAME_SIZE = 'frame_size'          # frame size
 SETTINGS_KEY_SYNC_MARK = 'sync_mark'            # synchronization text marker
-SETTINGS_SECURITY_OR_CAPACITY = 'security_or_capacity'  # select what is mor important
+SETTINGS_SECURITY_OR_CAPACITY = 'security_or_capacity'  # select what is more important
 SETTINGS_KEY_BUILD_IN_INPUT = 'build_in_input_audio_device_name'
 SETTINGS_KEY_BUILD_IN_OUTPUT = 'build_in_output_audio_device_name'
 SETTINGS_KEY_VIRTUAL_DEVICE = 'virtual_audio_device_name'
@@ -70,7 +70,7 @@ class StegoSettings:
                     self.build_in_output_audio_device_name = data[SETTINGS_KEY_BUILD_IN_OUTPUT]
                     self.virtual_audio_device_name = data[SETTINGS_KEY_VIRTUAL_DEVICE]
         else:
-            print colorize("%s couldn't be found. Applying default settings." % SETTINGS_FILE_NAME, COLORS.FAIL)
+            print(colorize(f"{SETTINGS_FILE_NAME} couldn't be found. Applying default settings.", COLORS.FAIL))
             self.serialize()
             self.deserialize()
 
@@ -88,13 +88,13 @@ class StegoSettings:
             result = gs_device_info.detect_virtual_audio_device_idx(p_audio) >= 0 and \
                      gs_device_info.detect_build_in_output_device_idx(p_audio) >= 0
         else:
-            print "Unsupported stream mode! [%i]" % stream_mode
+            print(f"Unsupported stream mode! [{stream_mode}]")
 
         if not result:
-            print "Available audio devices:"
+            print("Available audio devices:")
             for i in range(p_audio.get_device_count()):
                 info = p_audio.get_device_info_by_index(i)
-                print info['name']
+                print(info['name'])
         
         p_audio.terminate()
         return result

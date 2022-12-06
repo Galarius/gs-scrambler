@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#cython: boundscheck=False, wraparound=False, nonecheck=False
+# cython: boundscheck=False, wraparound=False, nonecheck=False, language_level=2
 
 __author__ = 'Ilya Shoshin'
 __copyright__ = 'Copyright 2015, Ilya Shoshin'
@@ -64,7 +64,7 @@ def py_audio_format_to_num_py(fmt):
     elif fmt == pyaudio.paFloat32:
         return np.float32
     else:
-        print 'Unsupported format!'
+        print('Unsupported format!')
     return -1
 
 # based on: https://github.com/mgeier/python-audio/blob/master/audio-files/utility.py
@@ -99,10 +99,10 @@ def float_2_pcm(sig, dtype='int16'):
     return (sig * np.iinfo(dtype).max).astype(dtype)
 
 def audio_decode(in_data, channels, dtype=np.float32):
-    result = np.fromstring(in_data, dtype=dtype)
+    result = np.frombuffer(in_data, dtype=dtype)
     if dtype == np.float32:
         result = float_2_pcm(result, np.int16)
-    chunk_length = len(result) / channels
+    chunk_length = len(result) // channels
     output = np.reshape(result, (chunk_length, channels))
     l, r = np.copy(output[:, 0]), np.copy(output[:, 1])
     return l, r
@@ -114,7 +114,7 @@ def audio_encode(samples, dtype=np.float32):
     else:
         l, r, = samples
     interleaved = np.array([l, r]).flatten('F')
-    out_data = interleaved.astype(dtype).tostring()
+    out_data = interleaved.astype(dtype).tobytes()
     return out_data
 
 def compare(x, y):

@@ -1,16 +1,20 @@
 #!python
-#cython: wraparound=False, boundscheck=False
+#cython: wraparound=False, boundscheck=False, language_level=2
 __author__ = 'galarius'
 
 import cython
 import numpy as np
 cimport numpy as np
 from gsc_helper_template_py_wrapper cimport *
-from cpython.string cimport PyString_AsString, PyString_FromStringAndSize, PyString_FromString
 
 # Numpy must be initialized. When using numpy from C or Cython you must
 # _always_ do that, or you will have segfaults
 np.import_array()
+
+cdef extern from "Python.h":
+    const char* PyUnicode_AsUTF8(object unicode)
+    object PyUnicode_FromString(const char *u)
+    object PyUnicode_FromStringAndSize(const char *u, Py_ssize_t size)
 
 cdef extern from "stdint.h" nogil:
     ctypedef   signed char  int8_t
@@ -68,8 +72,8 @@ def str_to_vec(source):
     cdef int16_t *dest = NULL
     cdef size_t size = len(source)
     # python string to char *: http://stackoverflow.com/a/5061862/2422367
-    cdef str retval = PyString_FromStringAndSize(PyString_AsString(source), <Py_ssize_t>size)
-    cdef char *text = PyString_AsString(retval)
+    cdef str retval = PyUnicode_FromStringAndSize(PyUnicode_AsUTF8(source), <Py_ssize_t>size)
+    cdef const char *text = PyUnicode_AsUTF8(retval)
     # call C func
     str_to_short_arr(text, size, &dest)
     # Create a C array to describe the shape of the ndarray
@@ -96,7 +100,7 @@ def vec_to_str(np.ndarray[np.int16_t, ndim=1] source):
     cdef size_t size = len(source)
     # call C func
     short_arr_to_str(<int16_t*> &source[0], size, &dest)
-    pystring = PyString_FromString(dest)
+    pystring = PyUnicode_FromString(dest)
     delete_char_arr(&dest)
     return pystring
 

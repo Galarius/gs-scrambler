@@ -94,8 +94,8 @@ class QMatrix:
         Print current Q-matrix
         """
         for i in range(0, self.p+1):
-            print self.Q[i]
-        print ''
+            print(self.Q[i])
+        print('')
 
     @staticmethod
     def pretty_print_matrix(M):
@@ -103,5 +103,5 @@ class QMatrix:
         Print 'M'
         """
         for i in range(0, len(M)):
-            print M[i]
-        print ''
+            print(M[i])
+        print('')

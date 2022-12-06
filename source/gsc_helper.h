@@ -41,7 +41,7 @@ namespace gsc {
  *  @return size of dest array
  */
 template <typename IntegerType>
-size_t strToIntegerArray(char *const src, size_t size, IntegerType **dest);
+size_t strToIntegerArray(const char *const src, size_t size, IntegerType **dest);
 /**
  *  Converts wide char array into array of type IntegerType.
  *  The calculation of size of the destination array and memory allocation is performed inside.
@@ -55,7 +55,7 @@ size_t strToIntegerArray(char *const src, size_t size, IntegerType **dest);
  *  @return size of dest array
  */
 template <typename IntegerType>
-size_t strToIntegerArray(wchar_t *const src, size_t size, IntegerType **dest);
+size_t strToIntegerArray(const wchar_t *const src, size_t size, IntegerType **dest);
 //-------------------------------------------------------------------------
 // integer array to char array
 //-------------------------------------------------------------------------

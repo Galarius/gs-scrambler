@@ -8,7 +8,6 @@ import gs_helper as sh
 import gsc_core
 import numpy as np
 import math
-from extensions import elapsed_timer
 
 from extensions import colorize, COLORS
 
@@ -74,7 +73,7 @@ class StegoCore:
 
             self.gsc = gsc_core.PyCore(self.sync_mark_encoded_array, 1024, 3 * 1024, self.security_or_capacity)
         else:
-            print colorize("Error: no sync mark provided", COLORS.FAIL)
+            print(colorize("Error: no sync mark provided", COLORS.FAIL))
 
     def hide(self, message, key):
         """
@@ -101,7 +100,6 @@ class StegoCore:
         :param chunk: chunk to be used as container to perform integration or recovering
         :return: processed chunk or the original chunk
         """
-        #if not self.skip_frames:                                           # if no frames left to skip
         if self.stego_mode == StegoMode.Hide:                               # if hiding
             # hide
             if len(self.message_to_proc_part) > 0:                          # if there is smth to hide
@@ -109,10 +107,8 @@ class StegoCore:
         else:
             # recover
             self.__recover(chunk_source, chunk_container)                   # recover msg part from a chunk
-        #else:
-        #    self.skip_frames -= 1
 
-        return chunk_source, chunk_container                                         # return original chunk
+        return chunk_source, chunk_container                                # return original chunk
 
     def __recover_message(self, mediate_length, key):
         """
@@ -129,15 +125,13 @@ class StegoCore:
         if len(self.message_to_proc_part) > mediate_length:
             self.message_to_proc_part = self.message_to_proc_part[:mediate_length]
         elif len(self.message_to_proc_part) < mediate_length:
-            raise RuntimeError("Couldn't extract message with provided argument.")
-
-        # print self.message_to_proc_part.tolist()
+            raise RuntimeError("Couldn't extract message with provided arguments.")
 
         s = int(math.ceil(math.sqrt(len(self.message_to_proc_part) / StegoCore.BITS)))
         try:
             msg_matrix_encoded_array = np.reshape(self.message_to_proc_part, (s, s, StegoCore.BITS))
         except ValueError:
-            print colorize("Wrong session key. Can't extract message.", COLORS.FAIL)
+            print(colorize("Wrong session key. Can't extract message.", COLORS.FAIL))
             return ''
 
         msg_matrix_encoded = sh.bits_matrix_to_int_matrix(msg_matrix_encoded_array)
@@ -162,7 +156,6 @@ class StegoCore:
         self.message_to_proc_part = np.empty(0, dtype=np.int8)
         for seq in half_linearize:
             self.message_to_proc_part = np.append(self.message_to_proc_part, seq)
-        # print self.message_to_proc_part.tolist()
         # 6) Save array length to recover message later
         return len(self.message_to_proc_part)
 
@@ -174,7 +167,7 @@ class StegoCore:
         """
         container_processed, self.message_to_proc_part = self.gsc.hide(chunk_source, chunk_container, self.message_to_proc_part)
         if not len(self.message_to_proc_part):
-            print colorize("Message integrated.", COLORS.OKBLUE)
+            print(colorize("Message integrated.", COLORS.OKBLUE))
         return chunk_source, container_processed
 
     def __recover(self, chunk_source, chunk_container):

@@ -35,7 +35,7 @@ static inline IntegerType tmp_abs(IntegerType x)
  *  @return size of dest array
  */
 template <typename IntegerType>
-size_t strToIntegerArray(char *const src, size_t size, IntegerType **dest)
+size_t strToIntegerArray(const char *const src, size_t size, IntegerType **dest)
 {
     assert(src  && "ArgumentsError");
     assert(!(*dest) && "ArgumentsError");
@@ -60,7 +60,7 @@ size_t strToIntegerArray(char *const src, size_t size, IntegerType **dest)
  *  @return size of dest array
  */
 template <typename IntegerType>
-size_t strToIntegerArray(wchar_t *const src, size_t size, IntegerType **dest)
+size_t strToIntegerArray(const wchar_t *const src, size_t size, IntegerType **dest)
 {
     assert(src  && "ArgumentsError");
     assert(!(*dest) && "ArgumentsError");
