@@ -18,9 +18,9 @@ def load_message_from_file(file_name):
             with open(file_name, "r") as f:
                 data = f.read()
         except IOError as e:
-            print("I/O error({0}): {1}".format(e.errno, e.strerror))
+            print(f"I/O error({e.errno}): {e.strerror}; file name: {file_name}")
     else:
-        print("File doesn't exists! [%s]" % (file_name))
+        print(f"File doesn't exists! [{file_name}]")
     return data
 
 
@@ -34,7 +34,7 @@ def save_message_to_file(file_name, message):
         with open(file_name, "w+") as f:
             f.write(message)
     except IOError as e:
-        print("I/O error({0}): {1}".format(e.errno, e.strerror))
+        print(f"I/O error({e.errno}): {e.strerror}; file name: {file_name}")
 
 
 def save_data_to_recover(file_name, message_mediator_length):
@@ -48,7 +48,7 @@ def save_data_to_recover(file_name, message_mediator_length):
         with open(file_name, "w+") as f:
             f.write(str(message_mediator_length))
     except IOError as e:
-        print("I/O error({0}): {1}".format(e.errno, e.strerror))
+        print(f"I/O error({e.errno}): {e.strerror}; file name: {file_name}")
 
 
 def load_data_to_recover(file_name):
@@ -63,7 +63,7 @@ def load_data_to_recover(file_name):
             with open(file_name, "r") as f:
                 message_mediator_length = int(f.read())
         except IOError as e:
-            print("I/O error({0}): {1}".format(e.errno, e.strerror))
+            print(f"I/O error({e.errno}): {e.strerror}; file name: {file_name}")
     else:
-        print("File doesn't exists! [%s]" % (file_name))
+        print(f"File doesn't exists! [{file_name}]")
     return message_mediator_length
