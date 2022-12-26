@@ -2,7 +2,6 @@ build/
 .idea/
 .vscode/
 .eggs/
-data/
 dist/
 *.pyc
 *.c

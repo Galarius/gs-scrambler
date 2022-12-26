@@ -69,8 +69,8 @@ cd ..
 ### 'file to file' mode
 
 ```
-python gs_scrambler.py -i "wav/input.wav" -m "data/msg.txt" -o "wav/output.wav" -k 7 -r "data/recover_info.txt"
-python gs_scrambler.py -i "wav/output.wav" -m "data/msg_recovered.txt" -k 7 -r "data/recover_info.txt"
+python gs_scrambler.py -i "example/input.wav" -m "example/msg.txt" -o "example/output.wav" -k 7 -r "example/recover_info.txt"
+python gs_scrambler.py -i "example/output.wav" -m "example/msg_recovered.txt" -k 7 -r "example/recover_info.txt"
 ```
 
 * Interactive streaming mode 

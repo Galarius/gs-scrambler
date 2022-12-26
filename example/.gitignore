@@ -1,0 +1,4 @@
+*.wav
+!input.wav
+*.txt
+!msg.wav
