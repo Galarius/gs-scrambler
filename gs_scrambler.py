@@ -21,13 +21,14 @@ from gs_core import StegoCore, StegoMode, audio_decode, audio_encode
 from gs_settings import StreamMode, StegoSettings
 from extensions import COLORS, colorize
 from urllib.parse import urlparse
+from urllib.parse import parse_qs
 
 import sys, getopt, cmd, inspect
 import numpy as np
 import math
 
 
-RECOVER_INFO_DEFAULT_FILE_NAME = "data/recover_info.txt"
+RECOVER_INFO_DEFAULT_FILE_NAME = "example/recover_info.txt"
 # Keys
 KEY_INPUT_FILE_NAME = "input_key"
 KEY_OUTPUT_FILE_NAME = "output_key"
@@ -399,7 +400,7 @@ def main(opts):
                 },
             )
             stego_session.open_stream()
-            stego_session.hide(message_file_name, key)
+            stego_session.hide(message_file_name, key, recover_info_file_name)
         else:
             print("There are no supported audio devices for current stream mode.")
         # --------------------------------------
@@ -488,7 +489,7 @@ class InteractiveStegoScrambler(cmd.Cmd):
             0 - false (default)
             1 - true
         """
-        args = urlparse.parse_qs(line)
+        args = parse_qs(urlparse(line).query)
         try:
             mode = int(args["m"][0])
         except KeyError:
@@ -537,10 +538,10 @@ class InteractiveStegoScrambler(cmd.Cmd):
         :param key: key to encode message (unsigned integer)
         """
         if self.debug:
-            msg_file_name = "data/msg.txt"
+            msg_file_name = "example/msg.txt"
             key = 7
         else:
-            args = urlparse.parse_qs(line)
+            args = parse_qs(urlparse(line).query)
             try:
                 msg_file_name, key = args["f"][0], int(args["k"][0])
                 if msg_file_name.strip() == "" or key <= 0:
@@ -573,11 +574,11 @@ class InteractiveStegoScrambler(cmd.Cmd):
         """
 
         if self.debug:
-            msg_file_name = "data/msg_r.txt"
+            msg_file_name = "example/msg.txt"
             user_key = 7
-            session_key = gs_io.load_data_to_recover("data/recover_info.txt")
+            session_key = gs_io.load_data_to_recover("example/recover_info.txt")
         else:
-            args = urlparse.parse_qs(line)
+            args = parse_qs(urlparse(line).query)
             try:
                 session_key, user_key, msg_file_name = (
                     int(args["s"][0]),
