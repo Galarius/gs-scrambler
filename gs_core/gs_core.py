@@ -3,9 +3,9 @@
 __author__ = "Ilya Shoshin"
 __copyright__ = "Copyright 2015, Ilya Shoshin"
 
-from gs_q_matrix import *
-import gs_helper as sh
-import gsc_core
+from .gs_q_matrix import *
+from . import gs_helper as sh
+from . import gsc_core
 import numpy as np
 import math
 

@@ -16,10 +16,6 @@ cdef extern from "Python.h":
     object PyUnicode_FromString(const char *u)
     object PyUnicode_FromStringAndSize(const char *u, Py_ssize_t size)
 
-cdef extern from "stdint.h" nogil:
-    ctypedef   signed char  int8_t
-    ctypedef   signed short int16_t
-
 cdef extern from "gsc_core.h" namespace "gsc":
     cdef cppclass Core[I, B]:
         Core(const B * mark, size_t size, size_t frameSize, size_t scanBufferMaxSize, int security_or_capacity) except +
@@ -125,7 +121,7 @@ def bin_arr_to_integer(np.ndarray[np.int8_t, ndim=1] bits):
     :param x:   np.array([0, 0, 1, ...], dtype=np.int8)
     :return:    integer
     """
-    cdef int16_t x
+    cdef int16_t x = 0
     binary_arr_to_short(<int8_t*> &bits[0], x)
     return x
 

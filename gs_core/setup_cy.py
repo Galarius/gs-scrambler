@@ -40,11 +40,11 @@ ext_modules = [
 ]
 
 setup(
-    name="gs",
+    name="gs_core",
     cmdclass={"build_ext": build_ext},
     ext_modules=ext_modules,
     version="0.1.0",
-    description="steganography scrambler",
+    description="Steganography Scrambler Core",
     author="galarius",
     author_email="",
 )

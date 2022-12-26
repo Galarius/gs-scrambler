@@ -9,7 +9,7 @@ import math
 import numpy as np
 import collections
 import pyaudio
-import gsc_core
+from . import gsc_core
 
 def message_to_matrix(message):
     """

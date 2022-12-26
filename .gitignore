@@ -1,6 +1,7 @@
 build/
 .idea/
 .vscode/
+.eggs/
 wav/
 data/
 dist/

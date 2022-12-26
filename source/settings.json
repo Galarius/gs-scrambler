@@ -1,9 +1,0 @@
-{
-    "frames_to_skip": 5,
-    "sync_mark": "*()@beg^^^$!7",
-    "frame_size": 1024,
-    "security_or_capacity": 0,
-    "build_in_input_audio_device_name":  "Built-in Microph",
-    "build_in_output_audio_device_name": "Built-in Output",
-    "virtual_audio_device_name":         "Soundflower (2ch)"
-}

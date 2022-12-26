@@ -12,17 +12,11 @@ Moreover it is possible to perform just 'file to file' processing if audio conta
 __author__ = "Ilya Shoshin"
 __copyright__ = "Copyright 2015, Ilya Shoshin"
 
-# Example commands for 'file to file' mode
-# python gs_scrambler.py -i "wav/input.wav" -m "data/msg.txt" -o "wav/output.wav" -k 7 -r "data/recover_info.txt"
-# python gs_scrambler.py -i "wav/output.wav" -m "data/msg_recovered.txt" -k 7 -r "data/recover_info.txt"
-
 import pyaudio, wave, time
 
-import gs_helper
 import gs_io
 import gs_device_info
-
-from gs_core import StegoCore, StegoMode
+from gs_core import StegoCore, StegoMode, audio_decode, audio_encode
 
 from gs_settings import StreamMode, StegoSettings
 from extensions import COLORS, colorize
@@ -109,13 +103,13 @@ class StegoScramblerSession:
             in_data = self.file_source.readframes(frame_count)
             if StegoScramblerSession.is_power2(len(in_data)):
                 # decode frames
-                left, right = gs_helper.audio_decode(
+                left, right = audio_decode(
                     in_data, self.file_source.getnchannels(), np.int16
                 )
                 # process frames
                 left, right = self.core.process(left, right)
                 # encode back
-                processed_data = gs_helper.audio_encode((left, right), np.int16)
+                processed_data = audio_encode((left, right), np.int16)
             else:
                 processed_data = in_data
             # write to file
@@ -127,13 +121,13 @@ class StegoScramblerSession:
             if not self.enable_processing:
                 return in_data, pyaudio.paContinue
             # decode frames
-            left, right = gs_helper.audio_decode(in_data, CHANNELS)
+            left, right = audio_decode(in_data, CHANNELS)
             # process frames
             left, right = self.core.process(left, right)
             if not len(self.core.message_to_proc_part):
                 self.enable_processing = False
             # encode back
-            processed_data = gs_helper.audio_encode((left, right))
+            processed_data = audio_encode((left, right))
 
         # -----------------------------------------------------------------------
         elif self.stream_mode == StreamMode.StreamFromSoundFlowerToBuildInOutput:
@@ -141,11 +135,11 @@ class StegoScramblerSession:
             if not self.enable_processing:
                 return in_data, pyaudio.paContinue
             # decode frames
-            left, right = gs_helper.audio_decode(in_data, CHANNELS)
+            left, right = audio_decode(in_data, CHANNELS)
             # process frames
             left, right = self.core.process(left, right)
             # encode back
-            processed_data = gs_helper.audio_encode((left, right))
+            processed_data = audio_encode((left, right))
         else:
             print("Unknown mode!")
             processed_data = in_data
